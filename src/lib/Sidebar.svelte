@@ -79,7 +79,6 @@
 		class="round"
 		title="Friends"
 		class:new-msgs={$friends.incoming.length > 0}
-		data-count={$friends.incoming.length || ""}
 	>
 		<img src={friendsIcon} alt="Friends" draggable={false} />
 	</button>
@@ -292,26 +291,18 @@
 	}
 
 	.new-msgs::after {
-		content: attr(data-count);
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		content: "";
+		display: inline-block;
 
-		min-width: 1.1em;
-		height: 1.1em;
-		padding: 0 0.15em;
-		box-sizing: border-box;
-		border-radius: 1em;
+		width: 0.8em;
+		height: 0.8em;
+		border-radius: 50%;
 
 		position: absolute;
-		right: 0.1em;
-		top: 0.1em;
+		right: 0.3em;
+		top: 0.3em;
 
 		background: crimson;
-		color: white;
-		font-size: 0.75em;
-		font-weight: bold;
-		line-height: 1;
 		box-shadow: 0 0 0 2px var(--orange);
 	}
 

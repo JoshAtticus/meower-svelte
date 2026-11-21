@@ -158,6 +158,12 @@
 					</div>
 				</Container>
 			{:else if chat.type === 1}
+				{#if chat.dm_request && chat.dm_request.from !== $user.name}
+					<Container>
+						<b>@{chat.dm_request.from}</b> sent you a DM
+						request — open the chat to accept or decline it.
+					</Container>
+				{/if}
 				<ProfileView
 					username={chat.members.filter(
 						username => username !== $user.name

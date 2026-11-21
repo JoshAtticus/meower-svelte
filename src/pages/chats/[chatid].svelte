@@ -40,6 +40,43 @@
 		ban => ban.username === $user.name
 	);
 
+	$: dmRequest = $chat.dm_request;
+	$: dmRecipient =
+		dmRequest && dmRequest.from !== $user.name && $user.name;
+	$: dmWaiting =
+		dmRequest &&
+		dmRequest.from === $user.name &&
+		dmRequest.first_message_sent;
+
+	async function respondToDMRequest(accept) {
+		try {
+			const resp = await fetch(
+				`${apiUrl}chats/${$chat._id}/dm_request` +
+					(accept ? "/accept" : ""),
+				{
+					method: accept ? "POST" : "DELETE",
+					headers: $authHeader,
+				}
+			);
+			if (!resp.ok) {
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			if (accept) {
+				chat.set(await resp.json());
+			} else {
+				$chats = $chats.filter(c => c._id !== $chat._id);
+				$goto("/chats");
+			}
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: "Failed to respond to DM request",
+				desc: `${e}`,
+			});
+		}
+	}
+
 	async function loadInvites() {
 		if (
 			$params.admin ||
@@ -288,6 +325,35 @@
 				</p>
 			</Container>
 		{/if}
+		{#if dmRecipient}
+			<Container>
+				<p class="dm-request">
+					<b>@{dmRequest.from}</b> wants to send you a message.
+					You can accept or decline this DM request.
+				</p>
+				<div class="dm-request-actions">
+					<button on:click={() => respondToDMRequest(true)}
+						>Accept</button
+					>
+					<button on:click={() => respondToDMRequest(false)}
+						>Decline</button
+					>
+				</div>
+			</Container>
+		{:else if dmWaiting}
+			<Container>
+				<p class="dm-request">
+					Your DM request is pending. You can send one more
+					message once
+					<b
+						>@{$chat.members.filter(
+							m => m !== $user.name
+						)[0]}</b
+					>
+					accepts it.
+				</p>
+			</Container>
+		{/if}
 		<PostList
 			fetchUrl={$params.chatid === "livechat"
 				? null
@@ -296,7 +362,10 @@
 				: `posts/${$params.chatid}`}
 			postOrigin={$params.admin ? "" : $params.chatid}
 			chatName={$chat.nickname}
-			canPost={($chat._id === "livechat" || !$params.admin) && !myBan}
+			canPost={($chat._id === "livechat" || !$params.admin) &&
+				!myBan &&
+				!dmRecipient &&
+				!dmWaiting}
 		/>
 	</div>
 	{#if showMembers && $chat._id !== "livechat" && $chat.type === 0}
@@ -421,6 +490,15 @@
 		min-width: 1.6em;
 		min-height: 1.6em;
 	}
+	.dm-request {
+		margin: 0;
+	}
+	.dm-request-actions {
+		display: flex;
+		gap: 0.5em;
+		margin-top: 0.5em;
+	}
+
 	.invites-title {
 		margin: 0.5em 0 0.25em 0.25em;
 		font-size: 1.1em;
