@@ -25,6 +25,7 @@
 			queryParams={{q: $params.q}}
 			postOrigin=""
 			canPost={false}
+			showJump={true}
 		>
 			<Container slot="error" let:error>
 				Error loading results. Please try again.

@@ -17,6 +17,7 @@
 	import LeaveChatModal from "../../lib/modals/chats/LeaveChat.svelte";
 
 	import {chats, user, authHeader} from "../../lib/stores.js";
+	import {chatReads, isChatUnread} from "../../lib/unread.js";
 	import {apiUrl} from "../../lib/urls.js";
 	import {default as loadProfile, profileCache} from "../../lib/loadProfile.js";
 	import PFP from "../../lib/PFP.svelte";
@@ -249,6 +250,9 @@
 							on:click={() => $goto(`/chats/${chat._id}`)}
 						>
 							<span class="chat-heading-icon"><ChatIcon {chat} /></span>
+							{#if isChatUnread(chat, $chatReads)}
+								<span class="unread-dot" />
+							{/if}
 							<h1>{chat.nickname}</h1>
 						</button>
 						<div class="member-stack">
@@ -290,6 +294,7 @@
 					canClick={true}
 					canDoActions={true}
 					dmChat={chat}
+					unread={isChatUnread(chat, $chatReads)}
 				/>
 			{/if}
 		</div>
@@ -327,6 +332,14 @@
 	}
 	.chat-heading h1 {
 		margin: 0 0 0.1em;
+	}
+	.unread-dot {
+		display: inline-block;
+		width: 0.55em;
+		height: 0.55em;
+		border-radius: 50%;
+		background: crimson;
+		flex-shrink: 0;
 	}
 	.member-stack {
 		display: flex;

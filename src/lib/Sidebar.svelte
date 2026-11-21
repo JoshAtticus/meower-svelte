@@ -7,7 +7,8 @@
 	import ModPanelModal from "./modals/moderation/ModPanel.svelte";
 	import LogoutModal from "./modals/Logout.svelte";
 
-	import {user, friends, OOBERunning} from "../lib/stores.js";
+	import {user, friends, chats, OOBERunning} from "../lib/stores.js";
+	import {chatReads, isChatUnread} from "./unread.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import * as modals from "./modals.js";
 
@@ -96,6 +97,7 @@
 		}}
 		title="Group Chats"
 		class="gc-btn round"
+		class:new-msgs={$chats.some(c => isChatUnread(c, $chatReads))}
 	>
 		<img src={gc} alt="Group chats" draggable={false} />
 	</button>

@@ -12,6 +12,7 @@
 	let {username} = modalData;
 
 	let blocked, loading, error;
+	let notify = false;
 
 	$: blocked = $relationships[username] === 2;
 </script>
@@ -31,7 +32,10 @@
 								"Content-Type": "application/json",
 								...$authHeader,
 							},
-							body: JSON.stringify({state: blocked ? 0 : 2}),
+							body: JSON.stringify({
+								state: blocked ? 0 : 2,
+								notify: blocked ? false : notify,
+							}),
 						}
 					);
 					if (!resp.ok) {
@@ -63,6 +67,10 @@
 					prevent you from seeing their posts. You may unblock them at
 					any time.
 				</p>
+				<label class="notify-row">
+					<input type="checkbox" bind:checked={notify} />
+					Let them know they've been blocked
+				</label>
 			{/if}
 			{#if error}
 				<p style="color: crimson;">{error}</p>
@@ -83,3 +91,11 @@
 		</form>
 	</div>
 </Modal>
+
+<style>
+	.notify-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+</style>

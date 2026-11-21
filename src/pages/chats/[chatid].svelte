@@ -3,6 +3,7 @@
 -->
 <script>
 	import BasicModal from "../../lib/modals/Basic.svelte";
+	import ConfirmDMRequestModal from "../../lib/modals/chats/ConfirmDMRequest.svelte";
 	import ChangeChatNicknameModal from "../../lib/modals/chats/ChangeChatNickname.svelte";
 	import GCMemberModal from "../../lib/modals/chats/GCMember.svelte";
 	import ChatIcon from "../../lib/ChatIcon.svelte";
@@ -21,6 +22,7 @@
 	import {apiUrl} from "../../lib/urls.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
+	import {markChatRead} from "../../lib/unread.js";
 	import ProfileView from "../../lib/ProfileView.svelte";
 	import Member from "../../lib/Member.svelte";
 	import Container from "../../lib/Container.svelte";
@@ -40,6 +42,15 @@
 	$: myBan = ($chat.bans || []).find(
 		ban => ban.username === $user.name
 	);
+
+	$: currentLastActive = ($chats.find(c => c._id === $chat._id) || {})
+		.last_active;
+	$: if (!$params.admin && $chat._id && $chat._id !== "livechat") {
+		markChatRead(
+			$chat._id,
+			Math.max(Math.floor(Date.now() / 1000), currentLastActive || 0)
+		);
+	}
 
 	$: dmRequest = $chat.type === 1 ? $chat.dm_request : null;
 	$: dmOther = $chat.members.filter(m => m !== $user.name)[0];
@@ -67,41 +78,19 @@
 	}
 
 	async function ignoreDMRequest() {
-		try {
-			const resp = await fetch(
-				`${apiUrl}chats/${$chat._id}/dm_request/ignore`,
-				{method: "POST", headers: $authHeader}
-			);
-			if (!resp.ok) {
-				throw new Error(
-					"Response code is not OK; code is " + resp.status
-				);
-			}
-			$chats = $chats.filter(c => c._id !== $chat._id);
-			$goto("/chats");
-		} catch (e) {
-			modals.showModal(BasicModal, {
-				title: "Failed to respond to message request",
-				desc: `${e}`,
-			});
-		}
+		modals.showModal(ConfirmDMRequestModal, {
+			mode: "ignore",
+			username: dmRequest.from,
+			chatId: $chat._id,
+		});
 	}
 
 	async function blockAndIgnoreDMRequest() {
-		try {
-			const resp = await clm.setRelationship(dmRequest.from, 2);
-			if (!resp.ok) {
-				throw new Error(
-					"Response code is not OK; code is " + resp.status
-				);
-			}
-			await ignoreDMRequest();
-		} catch (e) {
-			modals.showModal(BasicModal, {
-				title: "Failed to respond to message request",
-				desc: `${e}`,
-			});
-		}
+		modals.showModal(ConfirmDMRequestModal, {
+			mode: "block",
+			username: dmRequest.from,
+			chatId: $chat._id,
+		});
 	}
 
 	async function loadInvites() {
@@ -382,6 +371,12 @@
 				</p>
 			</Container>
 		{/if}
+		{#if $chat.type === 1 && $chat.block_notice && $chat.block_notice !== $user.name}
+			<p class="block-notice">
+				You can no longer send messages to this user because
+				they've blocked you.
+			</p>
+		{/if}
 		<PostList
 			fetchUrl={$params.chatid === "livechat"
 				? null
@@ -393,7 +388,8 @@
 			textOnly={!!(dmRequest && !dmRequest.from)}
 			canPost={($chat._id === "livechat" || !$params.admin) &&
 				!myBan &&
-				!dmWaiting}
+				!dmWaiting &&
+				!($chat.block_notice && $chat.block_notice !== $user.name)}
 		/>
 	</div>
 	{#if showMembers && $chat._id !== "livechat" && $chat.type === 0}
@@ -525,6 +521,12 @@
 		display: flex;
 		gap: 0.5em;
 		margin-top: 0.5em;
+	}
+	.block-notice {
+		margin: 0.4em 0;
+		font-size: 0.85em;
+		opacity: 0.75;
+		text-align: center;
 	}
 
 	.invites-title {

@@ -1,7 +1,7 @@
 <script>
 	import Modal from "../../Modal.svelte";
 
-	import {authHeader} from "../../stores.js";
+	import {authHeader, user} from "../../stores.js";
 	import {apiUrl} from "../../urls.js";
 	import * as modals from "../../modals.js";
 
@@ -12,10 +12,15 @@
 	let {chat} = modalData;
 
 	let loading, error;
+
+	$: isDM = chat.type === 1;
+	$: otherMember = isDM
+		? chat.members.filter(m => m !== $user.name)[0]
+		: null;
 </script>
 
 <Modal on:close={modals.closeLastModal}>
-	<h2 slot="header">Leave Chat</h2>
+	<h2 slot="header">{isDM ? "Close DM" : "Leave Chat"}</h2>
 	<div slot="default">
 		<form
 			on:submit|preventDefault={async () => {
@@ -42,7 +47,11 @@
 				}
 			}}
 		>
-			Are you sure you want to leave {chat.nickname}?
+			{#if isDM}
+				Are you sure you want to close your DM with @{otherMember}?
+			{:else}
+				Are you sure you want to leave {chat.nickname}?
+			{/if}
 			{#if error}
 				<p style="color: crimson;">{error}</p>
 			{:else}
@@ -54,7 +63,8 @@
 					disabled={loading}
 					on:click={modals.closeLastModal}>Cancel</button
 				>
-				<button type="submit" disabled={loading} use:focus>Leave</button
+				<button type="submit" disabled={loading} use:focus
+					>{isDM ? "Close" : "Leave"}</button
 				>
 			</div>
 		</form>

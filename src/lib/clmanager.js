@@ -26,6 +26,7 @@ import {
 import unloadedProfile from "./unloadedprofile.js";
 import {stringToTheme, applyTheme, removeTheme} from "./CustomTheme.js";
 import {linkUrl, apiUrl} from "./urls.js";
+import {markChatRead} from "./unread.js";
 import * as modals from "./modals.js";
 
 import {tick} from "svelte";
@@ -592,6 +593,9 @@ export async function connect() {
 				_chats[chatIndex].last_active = cmd.val.t.e;
 				chats.set(_chats);
 			}
+			if (cmd.val.u === _user.name) {
+				markChatRead(cmd.val.post_origin, cmd.val.t.e);
+			}
 		}
 	});
 	disconnectRequest = link.on("direct", async cmd => {
@@ -704,14 +708,14 @@ export async function updateFriends() {
  *
  * @returns {Promise<Response>}
  */
-export async function setRelationship(username, state) {
+export async function setRelationship(username, state, extra = {}) {
 	const resp = await fetch(`${apiUrl}users/${username}/relationship`, {
 		method: "PATCH",
 		headers: {
 			"Content-Type": "application/json",
 			..._authHeader,
 		},
-		body: JSON.stringify({state}),
+		body: JSON.stringify({state, ...extra}),
 	});
 	await updateFriends();
 	return resp;

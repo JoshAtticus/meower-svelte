@@ -19,6 +19,7 @@
 	import FormattedDate from "./FormattedDate.svelte";
 
 	import BasicModal from "./modals/Basic.svelte";
+	import LeaveChatModal from "./modals/chats/LeaveChat.svelte";
 	import ModerateUserModal from "./modals/moderation/ModerateUser.svelte";
 	import ReportUserModal from "./modals/safety/ReportUser.svelte";
 	import AccountBannedModal from "./modals/safety/AccountBanned.svelte";
@@ -38,6 +39,7 @@
 	export let canClick = false;
 	export let canDoActions = false;
 	export let dmChat = null;
+	export let unread = false;
 
 	function load() {
 		if (profile) {
@@ -94,15 +96,10 @@
 					{#if !$user.favorited_chats.includes(dmChat._id)}
 						<button
 							class="circle close"
-							on:click={() => {
-								fetch(`${apiUrl}chats/${dmChat._id}`, {
-									method: "DELETE",
-									headers: $authHeader,
-								});
-								$chats.filter(
-									_chat => _chat._id !== dmChat._id
-								);
-							}}
+							on:click={() =>
+								modals.showModal(LeaveChatModal, {
+									chat: dmChat,
+								})}
 						/>
 					{/if}
 					<button
@@ -232,7 +229,9 @@
 				<div class="profile-header-info" class:small>
 					{#if small}
 						<h2 class="profile-username">
-							<LiText text={data._id} />
+							{#if unread}<span class="unread-dot" />{/if}<LiText
+								text={data._id}
+							/>
 						</h2>
 					{:else}
 						<h1 class="profile-username">
@@ -299,6 +298,15 @@
 
 	.profile-active {
 		margin-bottom: 0.5em;
+	}
+
+	.unread-dot {
+		display: inline-block;
+		width: 0.55em;
+		height: 0.55em;
+		border-radius: 50%;
+		background: crimson;
+		margin-right: 0.15em;
 	}
 
 	.clickable-pfp {

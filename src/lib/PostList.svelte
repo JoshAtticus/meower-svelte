@@ -66,6 +66,7 @@
 	export let chatName = "Home";
 	export let canPost = true;
 	export let textOnly = false;
+	export let showJump = false;
 	export let queryParams = {};
 	export let addToChat = false;
 	export let adminView = false;
@@ -708,18 +709,25 @@
 						<Post
 							{post}
 							{adminView}
+							{showJump}
 							input={postInput}
-							onReply={post => {
-								if (
-									pendingReplies.length < 10 &&
-									!pendingReplies.find(
-										r => r.post_id === post.post_id
-									)
-								) {
-									pendingReplies = [...pendingReplies, post];
-									postInput.focus();
-								}
-							}}
+							onReply={canPost
+								? post => {
+										if (
+											pendingReplies.length < 10 &&
+											!pendingReplies.find(
+												r =>
+													r.post_id === post.post_id
+											)
+										) {
+											pendingReplies = [
+												...pendingReplies,
+												post,
+											];
+											postInput.focus();
+										}
+									}
+								: undefined}
 							error={postErrors[post.id]}
 							retryPost={() => {
 								sendPost(post.content);

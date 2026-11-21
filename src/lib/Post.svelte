@@ -48,6 +48,7 @@
 	export let retryPost;
 	export let removePost;
 	export let onReply;
+	export let showJump = false;
 
 	let bridged = false;
 	let webhook = false;
@@ -405,11 +406,18 @@
 						/>
 					{/if}
 				{:else if !adminView}
-					{#if !editing && post.post_origin !== "inbox" && post.post_origin !== "livechat"}
+					{#if !editing && onReply && post.post_origin !== "inbox" && post.post_origin !== "livechat"}
 						<button
 							class="circle reply"
 							title="Reply"
-							on:click={() => onReply && onReply(post)}
+							on:click={() => onReply(post)}
+						/>
+					{/if}
+					{#if showJump && post.post_id && !post.pending}
+						<button
+							class="circle join"
+							title="Jump to post"
+							on:click={() => $goto(`/posts/${post.post_id}`)}
 						/>
 					{/if}
 					{#if !editing && post.post_origin !== "inbox"}
