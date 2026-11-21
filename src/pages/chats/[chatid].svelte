@@ -41,38 +41,64 @@
 		ban => ban.username === $user.name
 	);
 
-	$: dmRequest = $chat.dm_request;
-	$: dmRecipient =
-		dmRequest && dmRequest.from !== $user.name && $user.name;
-	$: dmWaiting =
-		dmRequest &&
-		dmRequest.from === $user.name &&
-		dmRequest.first_message_sent;
+	$: dmRequest = $chat.type === 1 ? $chat.dm_request : null;
+	$: dmOther = $chat.members.filter(m => m !== $user.name)[0];
+	$: dmWaiting = dmRequest && dmRequest.from === $user.name;
+	$: dmRecipient = dmRequest && dmRequest.from && dmRequest.to === $user.name;
 
-	async function respondToDMRequest(accept) {
+	async function acceptDMRequest() {
 		try {
 			const resp = await fetch(
-				`${apiUrl}chats/${$chat._id}/dm_request` +
-					(accept ? "/accept" : ""),
-				{
-					method: accept ? "POST" : "DELETE",
-					headers: $authHeader,
-				}
+				`${apiUrl}chats/${$chat._id}/dm_request/accept`,
+				{method: "POST", headers: $authHeader}
 			);
 			if (!resp.ok) {
 				throw new Error(
 					"Response code is not OK; code is " + resp.status
 				);
 			}
-			if (accept) {
-				chat.set(await resp.json());
-			} else {
-				$chats = $chats.filter(c => c._id !== $chat._id);
-				$goto("/chats");
-			}
+			chat.set(await resp.json());
 		} catch (e) {
 			modals.showModal(BasicModal, {
-				title: "Failed to respond to DM request",
+				title: "Failed to respond to message request",
+				desc: `${e}`,
+			});
+		}
+	}
+
+	async function ignoreDMRequest() {
+		try {
+			const resp = await fetch(
+				`${apiUrl}chats/${$chat._id}/dm_request/ignore`,
+				{method: "POST", headers: $authHeader}
+			);
+			if (!resp.ok) {
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			$chats = $chats.filter(c => c._id !== $chat._id);
+			$goto("/chats");
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: "Failed to respond to message request",
+				desc: `${e}`,
+			});
+		}
+	}
+
+	async function blockAndIgnoreDMRequest() {
+		try {
+			const resp = await clm.setRelationship(dmRequest.from, 2);
+			if (!resp.ok) {
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			await ignoreDMRequest();
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: "Failed to respond to message request",
 				desc: `${e}`,
 			});
 		}
@@ -332,29 +358,27 @@
 		{#if dmRecipient}
 			<Container>
 				<p class="dm-request">
-					<b>@{dmRequest.from}</b> wants to send you a message.
-					You can accept or decline this DM request.
+					<b>@{dmRequest.from}</b> sent you a message request.
 				</p>
 				<div class="dm-request-actions">
-					<button on:click={() => respondToDMRequest(true)}
-						>Accept</button
-					>
-					<button on:click={() => respondToDMRequest(false)}
-						>Decline</button
-					>
+					<button on:click={ignoreDMRequest}>Ignore</button>
+					<button on:click={blockAndIgnoreDMRequest}>Block</button>
+					<button on:click={acceptDMRequest}>Accept</button>
 				</div>
+			</Container>
+		{:else if dmRequest && !dmRequest.from}
+			<Container>
+				<p class="dm-request">
+					You can send 1 message (no images) as a message request.
+					<b>@{dmOther}</b> will need to accept it before you can keep
+					chatting.
+				</p>
 			</Container>
 		{:else if dmWaiting}
 			<Container>
 				<p class="dm-request">
-					Your DM request is pending. You can send one more
-					message once
-					<b
-						>@{$chat.members.filter(
-							m => m !== $user.name
-						)[0]}</b
-					>
-					accepts it.
+					Message request sent. You can keep chatting once
+					<b>@{dmOther}</b> accepts.
 				</p>
 			</Container>
 		{/if}
@@ -366,9 +390,9 @@
 				: `posts/${$params.chatid}`}
 			postOrigin={$params.admin ? "" : $params.chatid}
 			chatName={$chat.nickname}
+			textOnly={!!(dmRequest && !dmRequest.from)}
 			canPost={($chat._id === "livechat" || !$params.admin) &&
 				!myBan &&
-				!dmRecipient &&
 				!dmWaiting}
 		/>
 	</div>

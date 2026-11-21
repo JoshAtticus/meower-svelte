@@ -54,7 +54,9 @@
 		e => !query || (e.name || e.v || "").toLowerCase().includes(query.toLowerCase())
 	);
 	$: recentEmojis = filteredRecents.filter(e => e.t !== "s");
-	$: recentStickers = filteredRecents.filter(e => e.t === "s");
+	$: recentStickers = onSticker
+		? filteredRecents.filter(e => e.t === "s")
+		: [];
 
 	$: sectionChat = section.startsWith("chat:")
 		? $chats.find(c => c._id === section.slice(5))
@@ -66,9 +68,13 @@
 	$: filteredEmojis = sectionEmotes.emojis.filter(
 		e => !query || e.name.toLowerCase().includes(query.toLowerCase())
 	);
-	$: filteredStickers = sectionEmotes.stickers.filter(
-		e => !query || e.name.toLowerCase().includes(query.toLowerCase())
-	);
+	$: filteredStickers = onSticker
+		? sectionEmotes.stickers.filter(
+				e =>
+					!query ||
+					e.name.toLowerCase().includes(query.toLowerCase())
+			)
+		: [];
 
 	function selectChat(c) {
 		section = `chat:${c._id}`;

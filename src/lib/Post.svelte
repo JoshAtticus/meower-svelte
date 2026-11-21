@@ -440,7 +440,7 @@
 						/>
 					{/if}
 					{#if input && !input.disabled && !noPFP && !editing}
-						{#if post.user === $user.name}
+						{#if post.user === $user.name && !($chat.dm_request && $chat.dm_request.from === $user.name)}
 							{#if !bridged}
 								<button
 									class="circle pen"
@@ -537,9 +537,9 @@
 								post.user.startsWith("Notification to"))
 						? 101
 						: -2
-					: postProfile.temporary || !postProfile.pfp_data
+					: postProfile.error
 					? -2
-					: postProfile.pfp_data}
+					: postProfile.pfp_data ?? -1}
 				avatar={postProfile.avatar}
 				avatarColor={postProfile.avatar_color}
 				alt="{post.user}'s profile picture"

@@ -65,6 +65,7 @@
 	export let postOrigin = "home";
 	export let chatName = "Home";
 	export let canPost = true;
+	export let textOnly = false;
 	export let queryParams = {};
 	export let addToChat = false;
 	export let adminView = false;
@@ -563,14 +564,16 @@
 						>Unblock</button
 					>
 				{:else}
-					<button
-						class="send-files"
-						title="Send files"
-						on:click|preventDefault={() => {
-							modals.closeAllModals();
-							modals.showModal(SendFiles, {postOrigin});
-						}}>+</button
-					>
+					{#if !textOnly}
+						<button
+							class="send-files"
+							title="Send files"
+							on:click|preventDefault={() => {
+								modals.closeAllModals();
+								modals.showModal(SendFiles, {postOrigin});
+							}}>+</button
+						>
+					{/if}
 					<button
 						type="button"
 						class="send-files emoji-trigger"
@@ -602,14 +605,16 @@
 						postInput.value += ch;
 						postInput.focus();
 					}}
-					onSticker={id => {
-						sendPost(
-							"",
-							[id],
-							pendingReplies.map(r => r.post_id)
-						);
-						pendingReplies = [];
-					}}
+					onSticker={textOnly
+						? null
+						: id => {
+								sendPost(
+									"",
+									[id],
+									pendingReplies.map(r => r.post_id)
+								);
+								pendingReplies = [];
+							}}
 					onClose={() => (showEmojiPopup = false)}
 				/>
 			{/if}

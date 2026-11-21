@@ -23,6 +23,8 @@ function getCache(username, ignoreSpecialUsers) {
 	return _profileCache[username];
 }
 
+const inFlight = {};
+
 export default async function loadProfile(username, ignoreSpecialUsers) {
 	if (
 		["Server", "Deleted", "Notification", "Announcement"].includes(username)
@@ -38,30 +40,37 @@ export default async function loadProfile(username, ignoreSpecialUsers) {
 		return getCache(username, ignoreSpecialUsers);
 	}
 
-	_profileCache[username] = {
-		pfp_data: -1,
-	};
-	profileCache.set(_profileCache);
-
-	try {
-		const resp = await fetch(`${apiUrl}users/${username}`);
-
-		if (!resp.ok) {
-			throw new Error("response code not OK; code " + resp.status);
-		}
-
-		const json = await resp.json();
-		_profileCache[username] = json;
-		profileCache.set(_profileCache);
-	} catch (e) {
-		console.log(e);
+	// Share one request between concurrent callers instead of handing the
+	// placeholder back as if it were the loaded profile
+	if (!inFlight[username]) {
 		_profileCache[username] = {
-			error: true,
-			pfp_data: -2,
+			pfp_data: -1,
 			temporary: true,
 		};
 		profileCache.set(_profileCache);
-		throw e;
+
+		inFlight[username] = (async () => {
+			try {
+				const resp = await fetch(`${apiUrl}users/${username}`);
+				if (!resp.ok) {
+					throw new Error("response code not OK; code " + resp.status);
+				}
+				_profileCache[username] = await resp.json();
+				profileCache.set(_profileCache);
+			} catch (e) {
+				console.log(e);
+				_profileCache[username] = {
+					error: true,
+					pfp_data: -2,
+					temporary: true,
+				};
+				profileCache.set(_profileCache);
+				throw e;
+			} finally {
+				delete inFlight[username];
+			}
+		})();
 	}
+	await inFlight[username];
 	return getCache(username, ignoreSpecialUsers);
 }

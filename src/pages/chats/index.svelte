@@ -16,7 +16,8 @@
 	import CreateChatModal from "../../lib/modals/chats/CreateChat.svelte";
 	import LeaveChatModal from "../../lib/modals/chats/LeaveChat.svelte";
 
-	import {chats, user} from "../../lib/stores.js";
+	import {chats, user, authHeader} from "../../lib/stores.js";
+	import {apiUrl} from "../../lib/urls.js";
 	import {default as loadProfile, profileCache} from "../../lib/loadProfile.js";
 	import PFP from "../../lib/PFP.svelte";
 	import {userRestrictions, isRestricted} from "../../lib/bitField.js";
@@ -27,8 +28,58 @@
 	import {flip} from "svelte/animate";
 
 	import {goto} from "@roxi/routify";
+	import {onMount, onDestroy} from "svelte";
 
 	let favoritedChats, nonFavoritedChats, sortedChats;
+
+	let invites = [];
+	let inviteErrors = {};
+	let inviteEvent = null;
+
+	async function loadInvites() {
+		try {
+			const resp = await fetch(`${apiUrl}invites/`, {
+				headers: $authHeader,
+			});
+			if (resp.ok) invites = (await resp.json()).autoget;
+		} catch {}
+	}
+
+	async function respondToInvite(invite, accept) {
+		inviteErrors[invite._id] = "";
+		try {
+			const resp = await fetch(`${apiUrl}invites/${invite._id}${accept ? "/accept" : ""}`, {
+				method: accept ? "POST" : "DELETE",
+				headers: $authHeader,
+			});
+			if (!resp.ok) {
+				const json = await resp.json();
+				if (json.type === "chatBanned") {
+					throw new Error(
+						"You have been banned from this chat."
+					);
+				}
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			invites = invites.filter(i => i._id !== invite._id);
+			if (accept) $goto(`/chats/${invite.chat_id}`);
+		} catch (e) {
+			inviteErrors[invite._id] = e.message;
+		}
+	}
+
+	onMount(() => {
+		loadInvites();
+		inviteEvent = clm.link.on("direct", cmd => {
+			if (cmd.val && cmd.val.mode === "chat_invite") loadInvites();
+		});
+	});
+
+	onDestroy(() => {
+		if (inviteEvent) clm.link.off(inviteEvent);
+	});
 
 	$: {
 		favoritedChats = $chats
@@ -73,6 +124,39 @@
 			/>
 		</div>
 	</Container>
+	{#if invites.length > 0}
+		<Container>
+			<h2>Group Chat Invites</h2>
+			{#each invites as invite (invite._id)}
+				<div class="invite">
+					<span>
+						<b>@{invite.from}</b> invited you to join
+						<b>{invite.chat_nickname || "a group chat"}</b>
+						{#if invite.expires}
+							<i>
+								(expires {new Date(
+									invite.expires * 1000
+								).toLocaleString()})
+							</i>
+						{/if}
+					</span>
+					<span class="invite-buttons">
+						<button
+							on:click={() => respondToInvite(invite, true)}
+							>Accept</button
+						>
+						<button
+							on:click={() => respondToInvite(invite, false)}
+							>Decline</button
+						>
+					</span>
+					{#if inviteErrors[invite._id]}
+						<p style="color: crimson;">{inviteErrors[invite._id]}</p>
+					{/if}
+				</div>
+			{/each}
+		</Container>
+	{/if}
 	<Container>
 		<div class="chat">
 			<div class="settings-controls">
@@ -192,10 +276,10 @@
 					</div>
 				</Container>
 			{:else if chat.type === 1}
-				{#if chat.dm_request && chat.dm_request.from !== $user.name}
+				{#if chat.dm_request && chat.dm_request.to === $user.name && chat.dm_request.from}
 					<Container>
-						<b>@{chat.dm_request.from}</b> sent you a DM
-						request — open the chat to accept or decline it.
+						<b>@{chat.dm_request.from}</b> sent you a message
+						request.
 					</Container>
 				{/if}
 				<ProfileView
@@ -268,5 +352,17 @@
 		border: none;
 		margin: 0;
 		margin-left: 0.125em;
+	}
+	.invite {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.5em;
+		padding: 0.3em 0;
+	}
+	.invite-buttons {
+		display: flex;
+		gap: 0.4em;
 	}
 </style>
