@@ -35,7 +35,9 @@
 		class:pfp={!raw}
 		class:raw-pfp={raw}
 		class:custom-avatar={!!avatar}
-		style:border-color={avatarColor ? `#${avatarColor}` : null}
+		style:border-color={avatarColor && avatarColor !== "000000"
+			? `#${avatarColor}`
+			: null}
 	>
 		<img
 			{alt}

@@ -124,10 +124,6 @@
 			</label>
 			<span class="color-hex">#{$user.avatar_color || "000000"}</span>
 		</div>
-		<p class="color-hint">
-			Used as the outline on your profile picture and to theme
-			your profile page.
-		</p>
 	</div>
 </Modal>
 
@@ -193,9 +189,5 @@
 	.color-hex {
 		font-family: monospace;
 		font-size: 1.1em;
-	}
-	.color-hint {
-		opacity: 0.7;
-		font-size: 0.9em;
 	}
 </style>

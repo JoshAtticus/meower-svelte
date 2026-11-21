@@ -493,3 +493,24 @@ hr {
 	background: transparent;
 	padding: 0;
 }
+
+/* Themed scrollbars */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--orange);
+	border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: var(--orange-dark);
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+	background: transparent;
+}
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--orange) transparent;
+}

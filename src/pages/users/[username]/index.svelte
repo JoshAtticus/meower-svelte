@@ -35,13 +35,14 @@
 			<Loading />
 		</div>
 	{:then data}
+		{@const profileColor =
+			(data._id === $user.name
+				? $user.avatar_color
+				: data.avatar_color) || ""}
 		<div
-			style:--orange={/^[0-9a-fA-F]{6}$/.test(
-				(data._id === $user.name
-					? $user.avatar_color
-					: data.avatar_color) || ""
-			)
-				? `#${data._id === $user.name ? $user.avatar_color : data.avatar_color}`
+			style:--orange={/^[0-9a-fA-F]{6}$/.test(profileColor) &&
+			profileColor !== "000000"
+				? `#${profileColor}`
 				: null}
 		>
 		<ProfileView profile={data} canDoActions={true} />
