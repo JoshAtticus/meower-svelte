@@ -18,6 +18,7 @@
 -->
 <script>
 	import Loading from "./Loading.svelte";
+	import {tick} from "svelte";
 
 	/**
 	 * @type {Array<Object>}
@@ -34,12 +35,30 @@
 	 */
 	export let maxItems = Infinity;
 
+	let listEl;
+
+	function getScrollContainer() {
+		let el = listEl?.parentElement;
+		while (el) {
+			if (/(auto|scroll)/.test(getComputedStyle(el).overflowY))
+				return el;
+			el = el.parentElement;
+		}
+		return document.scrollingElement;
+	}
+
 	/**
 	 * Adds a item to the list.
 	 *
 	 * @param {*} item
 	 */
-	export const addItem = function (item) {
+	export const addItem = async function (item) {
+		// Keep track of the scroll position so we can restore it if
+		// prepending an item would push the visible content down
+		const scroller = getScrollContainer();
+		const prevTop = scroller?.scrollTop ?? 0;
+		const prevHeight = scroller?.scrollHeight ?? 0;
+
 		id++;
 		items.unshift({
 			id,
@@ -53,6 +72,15 @@
 
 		items = items;
 		itemOffset++;
+
+		// If the user is scrolled down, keep the same content in view.
+		// Browsers with scroll anchoring will have already adjusted
+		// scrollTop, so only compensate when they haven't (e.g. Safari).
+		await tick();
+		if (scroller && prevTop > 0 && scroller.scrollTop === prevTop) {
+			const added = scroller.scrollHeight - prevHeight;
+			if (added !== 0) scroller.scrollTop = prevTop + added;
+		}
 	};
 
 	export let itemsPerPage = 25;
@@ -111,7 +139,7 @@
 	let itemOffset = 0;
 </script>
 
-<div>
+<div bind:this={listEl}>
 	{#await loadPageWithOverflow(1)}
 		<div class="center loading-start">
 			<Loading />
