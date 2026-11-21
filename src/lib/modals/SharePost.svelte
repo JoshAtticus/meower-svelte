@@ -157,8 +157,10 @@
 		background-color: var(--brand);
 		border-color: var(--brand);
 	}
-	:global(main.input-hover) .share-option:hover {
+	:global(main.input-hover)
+		button.share-option:not(.circle):not(.white):not(:disabled):hover {
 		background-color: var(--brand);
+		border-color: var(--brand);
 		filter: brightness(1.15);
 	}
 	.share-option svg {
