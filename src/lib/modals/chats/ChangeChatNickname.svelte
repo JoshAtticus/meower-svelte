@@ -1,7 +1,15 @@
+<script context="module">
+	// Only one modal renders at a time, so confirmations opened from here
+	// remount this modal; remember the tab so it reopens where it was.
+	let lastTab = "general";
+	let lastChatId = null;
+</script>
+
 <script>
 	import Modal from "../../Modal.svelte";
 	import ChatIcon from "../../ChatIcon.svelte";
 	import BasicModal from "../Basic.svelte";
+	import ConfirmActionModal from "../ConfirmAction.svelte";
 
 	import {authHeader, chat, user} from "../../stores.js";
 	import {apiUrl, uploadsUrl} from "../../urls.js";
@@ -11,7 +19,9 @@
 	import {focus, params} from "@roxi/routify";
 	import {onMount} from "svelte";
 
-	let tab = "general";
+	let tab = $chat._id === lastChatId ? lastTab : "general";
+	lastChatId = $chat._id;
+	$: lastTab = tab;
 
 	let nickname = $chat.nickname;
 	let loading, error;
@@ -200,24 +210,15 @@
 	}
 
 	async function deleteEmote(type, emoteId) {
-		try {
-			const resp = await fetch(
-				`${apiUrl}chats/${$chat._id}/${type}/${emoteId}`,
-				{method: "DELETE", headers: $authHeader}
-			);
-			if (!resp.ok) {
-				throw new Error(
-					"Response code is not OK; code is " + resp.status
-				);
-			}
-			await refreshEmotes($chat._id);
-			$chat[type] = emotes[type];
-		} catch (e) {
-			modals.showModal(BasicModal, {
-				title: `Failed to delete ${type.slice(0, -1)}`,
-				desc: `${e}`,
-			});
+		const resp = await fetch(
+			`${apiUrl}chats/${$chat._id}/${type}/${emoteId}`,
+			{method: "DELETE", headers: $authHeader}
+		);
+		if (!resp.ok) {
+			throw new Error("Response code is not OK; code is " + resp.status);
 		}
+		await refreshEmotes($chat._id);
+		$chat[type] = emotes[type];
 	}
 </script>
 
@@ -489,7 +490,13 @@
 							type="button"
 							class="circle trash"
 							title="Delete {type.slice(0, -1)}"
-							on:click={() => deleteEmote(type, emote._id)}
+							on:click={() =>
+								modals.showModal(ConfirmActionModal, {
+									title: `Delete ${type === "emojis" ? "Emoji" : "Sticker"}`,
+									desc: `Delete :${emote.name}:? It'll be removed from this chat for everyone.`,
+									confirmLabel: "Delete",
+									onConfirm: () => deleteEmote(type, emote._id),
+								})}
 						/>
 					</div>
 				{:else}
@@ -619,6 +626,8 @@
 	.emote-list {
 		max-height: 16em;
 		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 0.15em;
 		display: flex;
 		flex-direction: column;
 		gap: 0.4em;
