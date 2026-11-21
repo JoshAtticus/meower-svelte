@@ -383,7 +383,8 @@
 		!post.pending &&
 		!post.isDeleted &&
 		!adminView &&
-		post.user !== "Server";
+		post.user !== "Server" &&
+		(!isGroupPost || hasChatPerm($chat, $user.name, "add_reactions"));
 
 	function openReactPopup() {
 		const rect = reactButton.getBoundingClientRect();
@@ -862,7 +863,7 @@
 						type="button"
 						class="reaction"
 						class:mine={reaction.user_reacted}
-						disabled={!canReact}
+						disabled={!(canReact || (reaction.user_reacted && $user.name))}
 						title={reactorTitles[reaction.emoji] || ""}
 						on:mouseenter={() => loadReactors(reaction.emoji)}
 						on:click={() => toggleReaction(reaction.emoji)}

@@ -12,6 +12,7 @@ export const PERMISSIONS = [
 	{key: "delete_icon", tier: 0, label: "Remove group icon"},
 	{key: "pin_messages", tier: 0, label: "Pin messages"},
 	{key: "unpin_messages", tier: 0, label: "Unpin messages"},
+	{key: "add_reactions", tier: 0, label: "Add reactions"},
 	{key: "delete_others_messages", tier: 1, label: "Delete others' messages"},
 	{key: "remove_members", tier: 1, label: "Remove members"},
 	{key: "ban_members", tier: 2, label: "Ban members"},
