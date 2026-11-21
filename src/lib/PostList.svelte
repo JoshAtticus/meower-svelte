@@ -234,6 +234,7 @@
 				attachments: post.attachments,
 				stickers: post.stickers,
 				reply_to: post.reply_to,
+				reactions: post.reactions || [],
 				date: post.t.e,
 				edited_at: post.edited_at,
 				pinned: post.pinned,
@@ -325,6 +326,32 @@
 					if (adminView) return;
 					items = items.filter(post => post.post_id !== cmd.val.id);
 				}
+				if (
+					cmd.val.mode === "post_reaction_add" ||
+					cmd.val.mode === "post_reaction_remove"
+				) {
+					const {post_id, emoji, username} = cmd.val.payload;
+					const adding = cmd.val.mode === "post_reaction_add";
+					const index = items.findIndex(p => p.post_id === post_id);
+					if (index !== -1) {
+						const mine = username === $user.name;
+						let reactions = (items[index].reactions || []).map(r => ({...r}));
+						const existing = reactions.find(r => r.emoji === emoji);
+						if (existing) {
+							// our own clicks are applied optimistically already
+							if (!(mine && existing.user_reacted === adding)) {
+								existing.count += adding ? 1 : -1;
+								if (mine) existing.user_reacted = adding;
+							}
+							reactions = reactions.filter(r => r.count > 0);
+						} else if (adding && !mine) {
+							reactions.push({emoji, count: 1, user_reacted: false});
+						} else if (adding && mine) {
+							reactions.push({emoji, count: 1, user_reacted: true});
+						}
+						items[index] = {...items[index], reactions};
+					}
+				}
 				if (cmd.val.mode === "update_post") {
 					let itemIndex = items.findIndex(
 						post => post.post_id === cmd.val.payload._id
@@ -340,6 +367,7 @@
 							attachments: post.attachments,
 							stickers: post.stickers,
 							reply_to: post.reply_to,
+							reactions: post.reactions || [],
 							date: post.t.e,
 							edited_at: post.edited_at,
 							pinned: post.pinned,
@@ -360,6 +388,7 @@
 						attachments: cmd.val.attachments,
 						stickers: cmd.val.stickers,
 						reply_to: cmd.val.reply_to,
+						reactions: cmd.val.reactions || [],
 						date: cmd.val.t.e,
 						edited_at: cmd.val.edited_at,
 						pinned: cmd.val.pinned,

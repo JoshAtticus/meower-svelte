@@ -19,6 +19,9 @@
 	export let onUnicode; // (char)
 	export let onSticker; // (id)
 	export let onClose; // () - called after a pick unless shift is held
+	// Optional fixed screen position {top|bottom, right} in px, for use inside
+	// containers that clip overflow (e.g. posts)
+	export let anchor = null;
 
 	function done(event) {
 		if (!(event && event.shiftKey) && onClose) onClose();
@@ -36,6 +39,18 @@
 	let section =
 		chatId && chatId !== "livechat" ? `chat:${chatId}` : "unicode";
 	if (section.startsWith("chat:")) loadEmotes(chatId);
+
+	// Fall back to the emoji tab when this chat has nothing to show, unless
+	// the user chose the tab themselves
+	let userPicked = false;
+	$: if (
+		!userPicked &&
+		section === `chat:${chatId}` &&
+		$chatEmotes[chatId] &&
+		!$chatEmotes[chatId].emojis.length &&
+		(!onSticker || !$chatEmotes[chatId].stickers.length)
+	)
+		section = "unicode";
 
 	let visibleCount = 120;
 	let gridEl;
@@ -77,6 +92,7 @@
 		: [];
 
 	function selectChat(c) {
+		userPicked = true;
 		section = `chat:${c._id}`;
 		loadEmotes(c._id);
 	}
@@ -88,7 +104,7 @@
 	}
 	function pickEmoji(e, chatId, ev) {
 		recordEmote({t: "e", id: e._id, name: e.name, chatId});
-		onEmoji && onEmoji(e.name);
+		onEmoji && onEmoji(e.name, e);
 		done(ev);
 	}
 	function pickSticker(e, chatId, ev) {
@@ -100,7 +116,7 @@
 		if (e.t === "u") {
 			onUnicode && onUnicode(e.v);
 		} else if (e.t === "e") {
-			onEmoji && onEmoji(e.name);
+			onEmoji && onEmoji(e.name, {_id: e.id, name: e.name});
 		} else {
 			onSticker && onSticker(e.id);
 		}
@@ -119,7 +135,13 @@
 	}
 </script>
 
-<div class="emoji-popup">
+<div
+	class="emoji-popup"
+	class:anchored={!!anchor}
+	style:top={anchor && anchor.top != null ? anchor.top + "px" : null}
+	style:bottom={anchor && anchor.bottom != null ? anchor.bottom + "px" : null}
+	style:right={anchor ? anchor.right + "px" : null}
+>
 	<div class="search-row">
 		<input
 			type="search"
@@ -133,13 +155,13 @@
 				class="side-btn"
 				class:active={section === "recent"}
 				title="Recent"
-				on:click={() => (section = "recent")}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></button
+				on:click={() => {userPicked = true; section = "recent";}}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></button
 			>
 			<button type="button"
 				class="side-btn"
 				class:active={section === "unicode"}
 				title="Emoji"
-				on:click={() => (section = "unicode")}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" x2="9.01" y1="9" y2="9" /><line x1="15" x2="15.01" y1="9" y2="9" /></svg></button
+				on:click={() => {userPicked = true; section = "unicode";}}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" x2="9.01" y1="9" y2="9" /><line x1="15" x2="15.01" y1="9" y2="9" /></svg></button
 			>
 			{#each $chats.filter(c => c.type === 0) as c}
 				<button type="button"
@@ -250,6 +272,11 @@
 </div>
 
 <style>
+	.emoji-popup.anchored {
+		position: fixed;
+		top: auto;
+		z-index: 10002;
+	}
 	.emoji-popup {
 		position: absolute;
 		top: calc(100% + 0.25em);

@@ -15,6 +15,7 @@
 	import ModeratePostModal from "./modals/moderation/ModeratePost.svelte";
 	import SharePostModal from "./modals/SharePost.svelte";
 	import PinPostModal from "./modals/PinPost.svelte";
+	import EmojiPopup from "./EmojiPopup.svelte";
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
@@ -368,6 +369,84 @@
 		adminRestoreButton.disabled = false;
 	}
 
+	// --- Reactions ---------------------------------------------------------
+	let reactButton;
+	let reactPopupAnchor = null;
+	let reactorTitles = {};
+
+	// custom emoji reactions are stored by emoji id
+	const isCustomReaction = emoji => /^[A-Za-z0-9]{24}$/.test(emoji);
+
+	$: canReact =
+		$user.name &&
+		post.post_id &&
+		!post.pending &&
+		!post.isDeleted &&
+		!adminView &&
+		post.user !== "Server";
+
+	function openReactPopup() {
+		const rect = reactButton.getBoundingClientRect();
+		const right = Math.max(8, window.innerWidth - rect.right);
+		// open upwards when there isn't room below
+		reactPopupAnchor =
+			window.innerHeight - rect.bottom > 380
+				? {top: rect.bottom + 4, right}
+				: {bottom: window.innerHeight - rect.top + 4, right};
+	}
+
+	async function toggleReaction(emoji) {
+		const reactions = (post.reactions || []).map(r => ({...r}));
+		let existing = reactions.find(r => r.emoji === emoji);
+		const adding = !(existing && existing.user_reacted);
+		// optimistic update; the live event reconciles other clients
+		if (existing) {
+			existing.count += adding ? 1 : -1;
+			existing.user_reacted = adding;
+		} else {
+			reactions.push({emoji, count: 1, user_reacted: true});
+		}
+		const previous = post.reactions;
+		post.reactions = reactions.filter(r => r.count > 0);
+		delete reactorTitles[emoji];
+		try {
+			const resp = await fetch(
+				`${apiUrl}posts/${post.post_id}/reactions/${encodeURIComponent(emoji)}` +
+					(adding ? "" : "/@me"),
+				{method: adding ? "POST" : "DELETE", headers: $authHeader}
+			);
+			if (!resp.ok) {
+				const json = await resp.json().catch(() => ({}));
+				throw new Error(
+					resp.status === 429
+						? "Too many requests! Try again later."
+						: json.type === "tooManyReactions"
+						? "This post has too many reactions."
+						: "Response code is not OK; code is " + resp.status
+				);
+			}
+		} catch (e) {
+			post.reactions = previous;
+			error = e;
+		}
+	}
+
+	async function loadReactors(emoji) {
+		if (reactorTitles[emoji]) return;
+		reactorTitles[emoji] = "...";
+		try {
+			const resp = await fetch(
+				`${apiUrl}posts/${post.post_id}/reactions/${encodeURIComponent(emoji)}`,
+				{headers: $authHeader}
+			);
+			const json = await resp.json();
+			const names = (json.autoget || []).map(u => u._id);
+			reactorTitles[emoji] = names.length ? names.join(", ") : "";
+		} catch {
+			delete reactorTitles[emoji];
+		}
+	}
+
 	onMount(async () => {
 		initPostUser();
 	});
@@ -438,6 +517,14 @@
 							class="circle join"
 							title="Jump to post"
 							on:click={() => $goto(`/posts/${post.post_id}`)}
+						/>
+					{/if}
+					{#if !editing && canReact}
+						<button
+							class="circle react"
+							title="React"
+							bind:this={reactButton}
+							on:click={openReactPopup}
 						/>
 					{/if}
 					{#if !editing && post.post_origin !== "inbox"}
@@ -768,6 +855,52 @@
 				<ExternalImage {title} {url} />
 			{/each}
 		</div>
+		{#if (post.reactions || []).length}
+			<div class="reactions">
+				{#each post.reactions as reaction (reaction.emoji)}
+					<button
+						type="button"
+						class="reaction"
+						class:mine={reaction.user_reacted}
+						disabled={!canReact}
+						title={reactorTitles[reaction.emoji] || ""}
+						on:mouseenter={() => loadReactors(reaction.emoji)}
+						on:click={() => toggleReaction(reaction.emoji)}
+					>
+						{#if isCustomReaction(reaction.emoji)}
+							<img
+								class="reaction-emoji"
+								src="{uploadsUrl}emojis/{reaction.emoji}"
+								alt="Custom emoji"
+								draggable="false"
+							/>
+						{:else}
+							<span class="reaction-emoji"
+								>{@html twemoji.parse(reaction.emoji, {
+									folder: "svg",
+									ext: ".svg",
+								})}</span
+							>
+						{/if}
+						<span class="reaction-count">{reaction.count}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
+	{/if}
+	{#if reactPopupAnchor}
+		<div
+			class="react-overlay"
+			on:click={() => (reactPopupAnchor = null)}
+		/>
+		<EmojiPopup
+			chatId={post.post_origin}
+			anchor={reactPopupAnchor}
+			onUnicode={ch => toggleReaction(ch)}
+			onEmoji={(name, emote) => emote && toggleReaction(emote._id)}
+			onSticker={null}
+			onClose={() => (reactPopupAnchor = null)}
+		/>
 	{/if}
 </Container>
 {/if}
@@ -817,6 +950,45 @@
 		margin-left: 0.125em;
 	}
 
+	.reactions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3em;
+		margin-top: 0.5em;
+	}
+	.reaction {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3em;
+		margin: 0;
+		padding: 0.15em 0.5em;
+		border-radius: 1em;
+		border: solid 2px var(--orange);
+		background-color: transparent;
+		color: var(--foreground);
+		font-size: 0.9em;
+		line-height: 1.2;
+	}
+	.reaction.mine {
+		background-color: var(--orange);
+		color: white;
+	}
+	.reaction-emoji,
+	.reaction-emoji :global(img.emoji) {
+		width: 1.2em;
+		height: 1.2em;
+		display: inline-block;
+		vertical-align: middle;
+		object-fit: contain;
+	}
+	.reaction-count {
+		font-weight: bold;
+	}
+	.react-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10001;
+	}
 	.post-images {
 		display: flex;
 		flex-wrap: wrap;

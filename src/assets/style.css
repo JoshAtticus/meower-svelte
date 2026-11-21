@@ -519,3 +519,8 @@ hr {
 	scrollbar-width: thin;
 	scrollbar-color: var(--orange) transparent;
 }
+
+button.react {
+	background-image: url("./emoji.svg");
+	background-size: 55%;
+}
