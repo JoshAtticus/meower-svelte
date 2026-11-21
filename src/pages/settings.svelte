@@ -1,6 +1,7 @@
 <!-- You probably know what this is. -->
 <script>
 	import Container from "../lib/Container.svelte";
+	import FormattedDate from "../lib/FormattedDate.svelte";
 
 	import BasicModal from "../lib/modals/Basic.svelte";
 	import SwitchThemeModal from "../lib/modals/settings/SwitchTheme.svelte";
@@ -278,7 +279,8 @@
 						{:else if exportState && exportState.status === "completed"}
 							Your export is ready{exportState.size
 								? ` · ${formatSize(exportState.size)}`
-								: ""}
+								: ""}{#if exportState.expires_at}
+								· expires <FormattedDate date={exportState.expires_at} />{/if}
 						{:else if exportState && exportState.status === "failed"}
 							Your last export failed
 						{:else}
