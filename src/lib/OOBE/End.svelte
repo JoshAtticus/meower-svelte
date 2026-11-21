@@ -5,17 +5,17 @@
     let tosettings = true
 </script>
 
-<h1>Thats it for now.</h1>
-<p>You can customize more things via the settings</p>
-<p>To access settings, click on your pfp (Profile picture) icon in the bottom left.</p>
-<p>or, you can optionally go to the settings here</p>
+<h1>You're all set!</h1>
+<p>That's everything for now — you can customize a lot more in Settings.</p>
+<p>To get there later, click your profile picture in the bottom left, then choose Settings.</p>
+<p>Or head straight there now:</p>
 <div id="exitthingy">
-    <label for="SettingsONExit">Exit the OOBE to settings</label>
+    <label for="SettingsONExit">Take me to Settings</label>
     <input
         type="checkbox"
         id="SettingsONExit"
         bind:checked={tosettings}
-    /> 
+    />
 </div>
 <br />
 <button
@@ -26,7 +26,7 @@
             $goto("/home")
         }
         OOBERunning.set(false);
-    }}>Exit the OOBE</button
+    }}>Get started</button
 >
 
 <style>

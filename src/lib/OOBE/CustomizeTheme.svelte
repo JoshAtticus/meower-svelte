@@ -6,10 +6,10 @@
 </script>
 
 <div class="content">
-	<h1>Personalization</h1>
-	<p>Personalize your layout and theme</p>
+	<h1>Make it yours</h1>
+	<p>Personalize your layout and theme.</p>
 	<SwitchThemeModal fromoobe={true} />
-	<p>Hit the gear icon below to select a layout</p>
+	<p>Hit the gear icon below to switch layouts.</p>
 	<button
 		class="circle settings"
 		on:click={() =>
@@ -17,7 +17,7 @@
 				layout: $user.layout === "new" ? "old" : "new",
 			})}
 	/>
-	<p>You are currently using the "{$user.layout}" layout.</p>
+	<p>You're currently using the "{$user.layout}" layout.</p>
 </div>
 
 <style>

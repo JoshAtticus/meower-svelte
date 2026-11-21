@@ -6,7 +6,7 @@
 
 <div class="content">
 	<h1>Quote</h1>
-	Give yourself a quote, these can be used as a "Bio"
+	Write a quote for yourself — it's shown on your profile like a bio.
 	<br />
 	<br />
 	<input
