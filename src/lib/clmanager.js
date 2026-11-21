@@ -85,6 +85,59 @@ let _chats = null;
 chats.subscribe(v => (_chats = v));
 
 /**
+ * The websocket can silently die while the page is suspended (especially
+ * on mobile, where the OS freezes the tab's connection without firing a
+ * close event). When the page becomes visible again after being hidden
+ * for a while, probe the connection and force a reconnect if it's stale.
+ */
+let hiddenAt = null;
+let probingConnection = false;
+document.addEventListener("visibilitychange", async () => {
+	if (document.visibilityState === "hidden") {
+		hiddenAt = Date.now();
+		return;
+	}
+	if (
+		probingConnection ||
+		!hiddenAt ||
+		Date.now() - hiddenAt < 10000 ||
+		!link.ws ||
+		link.ws.readyState !== WebSocket.OPEN
+	) {
+		return;
+	}
+	hiddenAt = null;
+	probingConnection = true;
+	try {
+		const alive = await new Promise(resolve => {
+			const listener = `probe_${Math.floor(Math.random() * 1e7)}`;
+			const timer = setTimeout(() => resolve(false), 5000);
+			const ev = link.onListener(listener, () => {
+				clearTimeout(timer);
+				link.off(ev);
+				resolve(true);
+			});
+			try {
+				link.send({cmd: "ping", val: "", listener});
+			} catch (e) {
+				clearTimeout(timer);
+				link.off(ev);
+				resolve(false);
+			}
+		});
+		if (!alive) {
+			link.warn(
+				"manager",
+				"connection is stale, forcing reconnection"
+			);
+			link.disconnect(1000, "Stale connection");
+		}
+	} finally {
+		probingConnection = false;
+	}
+});
+
+/**
  * Listens to username and token updates that could happen by other tabs.
  */
 addEventListener("storage", event => {
