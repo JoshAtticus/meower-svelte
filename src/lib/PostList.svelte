@@ -24,7 +24,7 @@
 	import AccountBannedModal from "./modals/safety/AccountBanned.svelte";
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
 	import SendFiles from "./modals/SendFiles.svelte";
-	import EmotePicker from "./modals/EmotePicker.svelte";
+	import EmojiPopup from "./EmojiPopup.svelte";
 
 	import {
 		relationships,
@@ -100,6 +100,7 @@
 
 	let pendingStickers = [];
 	let pendingReplies = [];
+	let showEmojiPopup = false;
 	$: chatEmoteData = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
 	$: if ($chat._id) loadEmotes($chat._id);
 
@@ -509,32 +510,34 @@
 				<button
 					class="send-files"
 					title="Emotes"
-					on:click|preventDefault={() => {
-						modals.closeAllModals();
-						modals.showModal(EmotePicker, {
-							chatId: $chat._id,
-							onEmoji: name => {
-								postInput.value += `:${name}:`;
-								postInput.focus();
-							},
-							onUnicode: ch => {
-								postInput.value += ch;
-								postInput.focus();
-							},
-							onSticker: id => {
-								if (
-									pendingStickers.length < 10 &&
-									!pendingStickers.includes(id)
-								) {
-									pendingStickers = [
-										...pendingStickers,
-										id,
-									];
-								}
-							},
-						});
-					}}>:)</button
+					on:click|preventDefault={() =>
+						(showEmojiPopup = !showEmojiPopup)}>:)</button
 				>
+				{#if showEmojiPopup}
+					<div
+						class="popup-overlay"
+						on:click={() => (showEmojiPopup = false)}
+					/>
+					<EmojiPopup
+						chatId={$chat._id}
+						onEmoji={name => {
+							postInput.value += `:${name}:`;
+							postInput.focus();
+						}}
+						onUnicode={ch => {
+							postInput.value += ch;
+							postInput.focus();
+						}}
+						onSticker={id => {
+							if (
+								pendingStickers.length < 10 &&
+								!pendingStickers.includes(id)
+							) {
+								pendingStickers = [...pendingStickers, id];
+							}
+						}}
+					/>
+				{/if}
 				<button
 					bind:this={submitBtn}
 					name="submit"
@@ -685,6 +688,18 @@
 		padding-left: 0.8rem;
 		padding-right: 0.8rem;
 		font-size: 2rem;
+	}
+
+	.createpost {
+		position: relative;
+	}
+	.popup-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 99;
 	}
 
 	.pending-replies {

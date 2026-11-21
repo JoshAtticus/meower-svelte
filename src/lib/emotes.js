@@ -40,3 +40,26 @@ export function refreshEmotes(chatId) {
 	});
 	return loadEmotes(chatId);
 }
+
+/**
+ * Recently used emotes, persisted to localStorage.
+ * Entries: {t: "u", v: "😀"} | {t: "e"|"s", id, name, chatId}
+ */
+export const recentEmotes = writable(
+	JSON.parse(localStorage.getItem("meower_recent_emotes") || "[]")
+);
+
+export function recordEmote(entry) {
+	recentEmotes.update(recent => {
+		const key = e => `${e.t}:${e.v || e.id}`;
+		recent = [
+			entry,
+			...recent.filter(e => key(e) !== key(entry)),
+		].slice(0, 24);
+		localStorage.setItem(
+			"meower_recent_emotes",
+			JSON.stringify(recent)
+		);
+		return recent;
+	});
+}
