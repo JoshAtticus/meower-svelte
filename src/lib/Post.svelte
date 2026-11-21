@@ -16,6 +16,7 @@
 	import SharePostModal from "./modals/SharePost.svelte";
 	import PinPostModal from "./modals/PinPost.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import {portal} from "./portal.js";
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
@@ -483,12 +484,17 @@
 					on:click={() => (actionsOpen = true)}
 				/>
 				{#if actionsOpen}
-					<div class="sheet-overlay" on:click={() => (actionsOpen = false)} />
+					<div
+						class="sheet-overlay"
+						use:portal
+						on:click={() => (actionsOpen = false)}
+					/>
 				{/if}
 			{/if}
 			<div
 				class="settings-controls"
 				class:action-sheet={$mobile && !post.pending}
+				use:portal={$mobile && !post.pending}
 				class:open={actionsOpen}
 				on:click={() => {
 					// any action closes the sheet
@@ -978,57 +984,6 @@
 	}
 	:global(main.layout-mobile) .creator h2 {
 		font-size: 150%;
-	}
-	/* Mobile: one "more" button opens the actions as a bottom sheet */
-	.mobile-more {
-		position: absolute;
-		top: 0.25em;
-		right: 0.25em;
-		border: none;
-		margin: 0;
-	}
-	.sheet-overlay {
-		position: fixed;
-		inset: 0;
-		z-index: 10002;
-		background: rgba(0, 0, 0, 0.5);
-	}
-	.settings-controls.action-sheet {
-		position: fixed;
-		top: auto;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		z-index: 10003;
-		display: flex;
-		flex-direction: column;
-		gap: 0.35em;
-		padding: 0.75em 0.75em calc(0.75em + env(safe-area-inset-bottom));
-		background-color: var(--background);
-		border: solid 2px var(--orange);
-		border-bottom: none;
-		border-radius: 1em 1em 0 0;
-		transform: translateY(105%);
-		transition: transform 0.25s ease;
-	}
-	.settings-controls.action-sheet.open {
-		transform: translateY(0);
-	}
-	.settings-controls.action-sheet button.circle {
-		width: 100%;
-		height: auto;
-		min-height: 2.9em;
-		margin: 0;
-		border-radius: 5px;
-		background-position: 0.9em center;
-		background-size: 1.3em;
-		padding-left: 3em;
-		text-align: left;
-		color: white;
-		font-size: 1em;
-	}
-	.settings-controls.action-sheet button.circle::after {
-		content: attr(title);
 	}
 
 	.reactions {

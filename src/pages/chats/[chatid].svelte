@@ -22,6 +22,7 @@
 	} from "../../lib/bitField.js";
 	import {apiUrl} from "../../lib/urls.js";
 	import {has as hasChatPerm, highestRole, nameColorStyle} from "../../lib/chatPermissions.js";
+	import {portal} from "../../lib/portal.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
 	import {markChatRead} from "../../lib/unread.js";
@@ -37,6 +38,7 @@
 	let chatsStoreSubscription;
 
 	let showMembers = !$mobile;
+	let headerMenuOpen = false;
 
 	let pendingInvites = [];
 	let invitesEvent = null;
@@ -261,7 +263,29 @@
 					</p>
 				{/if}
 				{#if $chat._id !== "livechat"}
-					<div class="settings-controls">
+					{#if $mobile}
+						<button
+							class="circle more mobile-more"
+							title="More"
+							on:click={() => (headerMenuOpen = true)}
+						/>
+						{#if headerMenuOpen}
+							<div
+								class="sheet-overlay"
+								use:portal
+								on:click={() => (headerMenuOpen = false)}
+							/>
+						{/if}
+					{/if}
+					<div
+						class="settings-controls"
+						class:action-sheet={$mobile}
+						use:portal={$mobile}
+						class:open={headerMenuOpen}
+						on:click={() => {
+							if ($mobile) setTimeout(() => (headerMenuOpen = false));
+						}}
+					>
 						{#if $params.admin}
 							<button
 								class="circle admin"
@@ -305,7 +329,7 @@
 						{/if}
 						<button
 							class="circle members"
-							title="Toggle member list"
+							title="Members"
 							on:click={() => (showMembers = !showMembers)}
 						/>
 					</div>
@@ -416,6 +440,9 @@
 		/>
 	</div>
 	{#if showMembers && $chat._id !== "livechat" && $chat.type === 0}
+		{#if $mobile}
+			<div class="sheet-overlay" on:click={() => (showMembers = false)} />
+		{/if}
 		<div id="members">
 			<div id="members-inner">
 				{#each $chat.members as chatmember}
@@ -562,9 +589,6 @@
 		font-size: 1.1em;
 		opacity: 0.8;
 	}
-	:global(#main.layout-mobile) #chat:not(.active) {
-		display: none;
-	}
 
 	.groupchat {
 		display: flex;
@@ -592,8 +616,27 @@
 		flex-shrink: 0;
 		flex-grow: 0;
 	}
+	/* Mobile: members slide up as a bottom sheet over the chat */
 	:global(#main.layout-mobile) #members {
+		position: fixed;
+		top: auto;
+		left: 0;
+		right: 0;
+		bottom: 0;
 		width: 100%;
+		height: 70vh;
+		z-index: 10003;
+		border-bottom: none;
+		border-radius: 1em 1em 0 0;
+		animation: members-up 0.25s ease;
+	}
+	@keyframes members-up {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
 	}
 	#members-inner {
 		position: relative;

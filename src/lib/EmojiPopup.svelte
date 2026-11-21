@@ -15,6 +15,32 @@
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
 	import {mobile} from "./responsiveness.js";
+	import {portal} from "./portal.js";
+	import {fly, fade} from "svelte/transition";
+
+	// Mobile sheet: slide out on close, and swipe down (from the top bar) to close
+	const sheetOut = node =>
+		$mobile ? fly(node, {y: 500, duration: 220}) : {duration: 0};
+	const backdropOut = node =>
+		$mobile ? fade(node, {duration: 200}) : {duration: 0};
+	let dragStart = null;
+	let dragY = 0;
+	function dragBegin(e) {
+		if (!$mobile) return;
+		dragStart = e.touches[0].clientY;
+		dragY = 0;
+	}
+	function dragMove(e) {
+		if (dragStart === null) return;
+		dragY = Math.max(0, e.touches[0].clientY - dragStart);
+	}
+	function dragEnd() {
+		if (dragStart === null) return;
+		const close = dragY > 100;
+		dragStart = null;
+		dragY = 0;
+		if (close) onClose && onClose();
+	}
 
 	export let chatId;
 	export let onEmoji; // (name)
@@ -138,16 +164,32 @@
 </script>
 
 {#if $mobile}
-	<div class="sheet-backdrop" on:click={() => onClose && onClose()} />
+	<div
+		class="sheet-backdrop"
+		use:portal
+		out:backdropOut
+		on:click={() => onClose && onClose()}
+	/>
 {/if}
 <div
 	class="emoji-popup"
 	class:anchored={!!anchor}
 	class:sheet={$mobile}
+	use:portal={$mobile}
+	out:sheetOut
+	style:transform={$mobile && dragY ? `translateY(${dragY}px)` : null}
+	on:touchstart={e => {
+		if (e.target.closest(".search-row, .sidebar, .sheet-handle")) dragBegin(e);
+	}}
+	on:touchmove={dragMove}
+	on:touchend={dragEnd}
 	style:top={anchor && anchor.top != null ? anchor.top + "px" : null}
 	style:bottom={anchor && anchor.bottom != null ? anchor.bottom + "px" : null}
 	style:right={anchor ? anchor.right + "px" : null}
 >
+	{#if $mobile}
+		<div class="sheet-handle" />
+	{/if}
 	<div class="search-row">
 		<input
 			type="search"
@@ -461,5 +503,14 @@
 		to {
 			opacity: 1;
 		}
+	}
+	.sheet-handle {
+		width: 2.5em;
+		height: 0.3em;
+		border-radius: 1em;
+		background-color: var(--orange);
+		opacity: 0.6;
+		margin: 0.4em auto 0;
+		flex-shrink: 0;
 	}
 </style>
