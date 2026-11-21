@@ -123,7 +123,8 @@ export function highestRole(chat, username) {
 	let best = null;
 	for (const roleId of chat.member_roles?.[username] || []) {
 		const role = roles[roleId];
-		if (role && (!best || role.tier > best.tier)) best = role;
+		// ties go to the most recently given role (member_roles is append-ordered)
+		if (role && (!best || role.tier >= best.tier)) best = role;
 	}
 	return best;
 }
@@ -137,4 +138,37 @@ export function canAssignRole(chat, actor, target, role) {
 		return actor === chat.owner && target !== chat.owner;
 	}
 	return canManageRole(chat, actor, role);
+}
+
+// CSS for a role's name colour: 1 colour = solid, 2 = left-to-right gradient
+export function colorsStyle(colors) {
+	if (!colors || !colors.length) return "";
+	if (colors.length === 1) return `color: #${colors[0]};`;
+	return (
+		`background-image: linear-gradient(90deg, #${colors[0]}, #${colors[1]});` +
+		"-webkit-background-clip: text; background-clip: text;" +
+		"-webkit-text-fill-color: transparent; color: transparent;"
+	);
+}
+
+// Name style for a member: their coloured role with the highest tier; ties go
+// to the role they were given most recently (member_roles is append-ordered)
+export function nameColorStyle(chat, username) {
+	if (!isGroup(chat)) return "";
+	const roles = Object.fromEntries((chat.roles || []).map(r => [r._id, r]));
+	let best = null;
+	let bestIndex = -1;
+	(chat.member_roles?.[username] || []).forEach((roleId, index) => {
+		const role = roles[roleId];
+		if (!role || !(role.colors || []).length) return;
+		if (
+			!best ||
+			role.tier > best.tier ||
+			(role.tier === best.tier && index > bestIndex)
+		) {
+			best = role;
+			bestIndex = index;
+		}
+	});
+	return best ? colorsStyle(best.colors) : "";
 }

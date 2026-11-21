@@ -10,6 +10,7 @@
 	export let member = "";
 	export let owner = false;
 	export let role = "";
+	export let nameStyle = "";
 
 	let pfp = 0;
 	let avatar = "";
@@ -47,7 +48,7 @@
 			/>
 		</div>
 		<div class="member-text">
-			<p class="member-name">{member}</p>
+			<p class="member-name"><span style={nameStyle}>{member}</span></p>
 			{#if role}
 				<p class="member-role">{role}</p>
 			{/if}

@@ -19,7 +19,7 @@
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
 	import {apiUrl, uploadsUrl} from "./urls.js";
-	import {has as hasChatPerm, outranks, rank as chatRank, ADMIN_TIER} from "./chatPermissions.js";
+	import {has as hasChatPerm, outranks, rank as chatRank, ADMIN_TIER, nameColorStyle} from "./chatPermissions.js";
 	import {chatEmotes, loadEmotes} from "../lib/emotes.js";
 	import {shiftHeld} from "../lib/keyDetect.js";
 	import {mobile} from "../lib/responsiveness.js";
@@ -577,7 +577,9 @@
 		<div class="creatordate">
 			<div class="creator">
 				<h2>
-					<LiText text={post.user} />
+					<span style={isGroupPost ? nameColorStyle($chat, post.user) : ""}
+						><LiText text={post.user} /></span
+					>
 				</h2>
 
 				{#if bridged}

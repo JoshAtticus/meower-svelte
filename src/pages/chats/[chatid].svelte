@@ -20,7 +20,7 @@
 		isRestricted,
 	} from "../../lib/bitField.js";
 	import {apiUrl} from "../../lib/urls.js";
-	import {has as hasChatPerm, highestRole} from "../../lib/chatPermissions.js";
+	import {has as hasChatPerm, highestRole, nameColorStyle} from "../../lib/chatPermissions.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
 	import {markChatRead} from "../../lib/unread.js";
@@ -432,6 +432,7 @@
 						<Member
 							member={chatmember}
 							owner={chatmember === $chat.owner}
+							nameStyle={nameColorStyle($chat, chatmember)}
 							role={memberRole && memberRole._id !== "default"
 								? memberRole.name
 								: ""}

@@ -24,6 +24,7 @@
 		canManageRole,
 		canGrantPerm,
 		inheritsPerm,
+		colorsStyle,
 	} from "../../chatPermissions.js";
 	import * as modals from "../../modals.js";
 
@@ -371,6 +372,14 @@
 		if (!name || name === role.name) return;
 		try {
 			await patchRole(role._id, {name});
+		} catch (e) {
+			roleModalError(e);
+		}
+	}
+
+	async function setRoleColors(role, colors) {
+		try {
+			await patchRole(role._id, {colors});
 		} catch (e) {
 			roleModalError(e);
 		}
@@ -768,7 +777,9 @@
 											? null
 											: role._id)}
 							>
-								<b>{role.name}</b>
+								<b><span style={colorsStyle(role.colors)}
+										>{role.name}</span
+									></b>
 								<span class="role-meta">Tier {role.tier}</span>
 								<span class="role-meta"
 									>{memberCount(role)} member{memberCount(
@@ -795,6 +806,11 @@
 							{/if}
 						</div>
 						{#if expandedRole === role._id}
+							{@const colors = role.colors || []}
+							{@const canColor =
+								role._id === "administrator"
+									? $user.name === $chat.owner
+									: canManage}
 							<div class="role-editor">
 								<input
 									type="text"
@@ -812,6 +828,61 @@
 									}}
 									on:blur={e => renameRole(role, e.target.value)}
 								/>
+								<div class="role-colors">
+									<b>Colour</b>
+									{#each colors.length ? colors : [null] as color, i}
+										<label
+											class="role-swatch"
+											class:empty={!color}
+											class:disabled={!canColor}
+											style:background-color={color
+												? `#${color}`
+												: null}
+										>
+											<input
+												type="color"
+												disabled={!canColor}
+												value={`#${color || "f9a636"}`}
+												on:change={e => {
+													const next = [...colors];
+													next[i] = e.target.value
+														.slice(1)
+														.toLowerCase();
+													setRoleColors(role, next);
+												}}
+											/>
+										</label>
+									{/each}
+									{#if canColor}
+										<label class="role-gradient">
+											<input
+												type="checkbox"
+												checked={colors.length === 2}
+												on:change={e =>
+													setRoleColors(
+														role,
+														e.target.checked
+															? [
+																	colors[0] || "f9a636",
+																	colors[0] === "ff5e5e"
+																		? "f9a636"
+																		: "ff5e5e",
+																]
+															: colors.slice(0, 1)
+													)}
+											/>
+											Gradient
+										</label>
+										{#if colors.length}
+											<button
+												type="button"
+												class="role-color-clear"
+												on:click={() => setRoleColors(role, [])}
+												>Clear</button
+											>
+										{/if}
+									{/if}
+								</div>
 								{#if role._id === "administrator"}
 									<p class="role-note">
 										Has every permission.
@@ -1113,6 +1184,43 @@
 		font-size: 0.85em;
 		opacity: 0.6;
 	}
+	.role-colors {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		margin: 0.6em 0 0.2em;
+		font-size: 0.9em;
+	}
+	.role-swatch {
+		width: 1.8em;
+		height: 1.8em;
+		border-radius: 0.4em;
+		border: solid 2px var(--orange);
+		cursor: pointer;
+		flex-shrink: 0;
+	}
+	.role-swatch.empty {
+		border-style: dashed;
+	}
+	.role-swatch.disabled {
+		cursor: default;
+	}
+	.role-swatch input {
+		opacity: 0;
+		width: 0;
+		height: 0;
+		position: absolute;
+	}
+	.role-gradient {
+		display: flex;
+		align-items: center;
+		gap: 0.3em;
+	}
+	.role-color-clear {
+		margin: 0 0 0 auto;
+		padding: 0.15em 0.6em;
+	}
+
 	.perm-seg {
 		display: flex;
 		flex-shrink: 0;
