@@ -24,7 +24,13 @@
 	style:--size={size}
 	style:border-color={color}
 >
-	<img {src} alt="Chat icon" draggable="false" on:error={() => (failed = true)} />
+	<img
+		{src}
+		alt="Chat icon"
+		class:fallback={!(chat && chat.icon) || failed}
+		draggable="false"
+		on:error={() => (failed = true)}
+	/>
 </span>
 
 <style>
@@ -49,5 +55,10 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+	img.fallback {
+		width: 60%;
+		height: 60%;
+		object-fit: contain;
 	}
 </style>

@@ -17,6 +17,8 @@
 	import LeaveChatModal from "../../lib/modals/chats/LeaveChat.svelte";
 
 	import {chats, user} from "../../lib/stores.js";
+	import {default as loadProfile, profileCache} from "../../lib/loadProfile.js";
+	import PFP from "../../lib/PFP.svelte";
 	import {userRestrictions, isRestricted} from "../../lib/bitField.js";
 	import * as modals from "../../lib/modals.js";
 	import * as clm from "../../lib/clmanager.js";
@@ -43,6 +45,10 @@
 			});
 
 		sortedChats = favoritedChats.concat(nonFavoritedChats);
+
+		sortedChats.forEach(chat =>
+			chat.members.slice(0, 5).forEach(m => loadProfile(m).catch(() => {}))
+		);
 	}
 </script>
 
@@ -156,9 +162,28 @@
 							<ChatIcon {chat} />
 							<h1>{chat.nickname}</h1>
 						</div>
-						Members: {chat.members.length > 100
-							? chat.members.slice(0, 99).join(", ") + "..."
-							: chat.members.join(", ")}
+						<div class="member-stack">
+							{#each chat.members.slice(0, 5) as member}
+								<span class="member-pfp">
+									<PFP
+										icon={($profileCache[member] || {})
+											.pfp_data || -1}
+										avatar={($profileCache[member] || {})
+											.avatar}
+										avatarColor={($profileCache[member] ||
+											{}).avatar_color}
+										alt="{member}'s profile picture"
+										size={0.6}
+									/>
+								</span>
+							{/each}
+							<span class="member-count">
+								{chat.members.length} member{chat.members
+									.length === 1
+									? ""
+									: "s"}
+							</span>
+						</div>
 					</div>
 				</Container>
 			{:else if chat.type === 1}
@@ -195,7 +220,22 @@
 		gap: 0.5em;
 	}
 	.chat-heading h1 {
-		margin: 0;
+		margin: 0 0 0.1em;
+	}
+	.member-stack {
+		display: flex;
+		align-items: center;
+		margin-top: 0.3em;
+	}
+	.member-pfp {
+		margin-left: -0.5em;
+	}
+	.member-pfp:first-child {
+		margin-left: 0;
+	}
+	.member-count {
+		margin-left: 0.6em;
+		font-size: 0.9em;
 	}
 	.settings-controls {
 		position: absolute;

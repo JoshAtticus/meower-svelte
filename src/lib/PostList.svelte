@@ -24,6 +24,7 @@
 	import AccountBannedModal from "./modals/safety/AccountBanned.svelte";
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
 	import SendFiles from "./modals/SendFiles.svelte";
+	import EmotePicker from "./modals/EmotePicker.svelte";
 
 	import {
 		relationships,
@@ -43,7 +44,8 @@
 	import TypingIndicator from "./TypingIndicator.svelte";
 	import ProfileView from "./ProfileView.svelte";
 	import * as clm from "./clmanager.js";
-	import {apiUrl, encodeApiURLParams} from "./urls.js";
+	import {apiUrl, encodeApiURLParams, uploadsUrl} from "./urls.js";
+	import {chatEmotes, loadEmotes} from "./emotes.js";
 
 	import {createEventDispatcher} from "svelte";
 	const dispatch = createEventDispatcher();
@@ -181,6 +183,7 @@
 				user: post.u,
 				content: post.p,
 				attachments: post.attachments,
+				stickers: post.stickers,
 				date: post.t.e,
 				edited_at: post.edited_at,
 				pinned: post.pinned,
@@ -281,6 +284,7 @@
 							user: post.u,
 							content: post.p,
 							attachments: post.attachments,
+							stickers: post.stickers,
 							date: post.t.e,
 							edited_at: post.edited_at,
 							pinned: post.pinned,
@@ -299,6 +303,7 @@
 						user: cmd.val.u,
 						content: cmd.val.p,
 						attachments: cmd.val.attachments,
+						stickers: cmd.val.stickers,
 						date: cmd.val.t.e,
 						edited_at: cmd.val.edited_at,
 						pinned: cmd.val.pinned,

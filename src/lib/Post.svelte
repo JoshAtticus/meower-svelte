@@ -16,7 +16,8 @@
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
-	import {apiUrl} from "./urls.js";
+	import {apiUrl, uploadsUrl} from "./urls.js";
+	import {chatEmotes, loadEmotes} from "../lib/emotes.js";
 	import {shiftHeld} from "../lib/keyDetect.js";
 	import {mobile} from "../lib/responsiveness.js";
 	import * as modals from "./modals.js";
@@ -57,6 +58,12 @@
 	let pinButton;
 
 	$: postProfile = $profileCache[post.user] || {};
+
+	$: postEmotes = $chatEmotes[post.post_origin] || {
+		emojis: [],
+		stickers: [],
+	};
+	$: if (post.post_origin) loadEmotes(post.post_origin);
 
 	let adminDeleteButton, adminRestoreButton;
 
@@ -167,7 +174,7 @@
 	// @ts-ignore
 	window.confirmLink = confirmLink;
 
-	function addFancyElements(content) {
+	function addFancyElements(content, emotes) {
 		// markdown (which has HTML escaping built-in)
 		try {
 			const md = new MarkdownIt("default", {
@@ -250,6 +257,19 @@
 			// this is to stop any possible XSS attacks by bypassing the markdown lib
 			// which is responsible for escaping HTML
 			return `Failed rendering post: ${e}`;
+		}
+
+		// custom chat emojis
+		if (emotes && emotes.emojis && emotes.emojis.length) {
+			content = content.replaceAll(
+				/:([a-zA-Z0-9_-]{1,32}):/g,
+				(match, name) => {
+					const emote = emotes.emojis.find(e => e.name === name);
+					return emote
+						? `<img class="custom-emoji" src="${uploadsUrl}emojis/${emote._id}" alt=":${name}:">`
+						: match;
+				}
+			);
 		}
 
 		// twemoji
@@ -491,7 +511,7 @@
 			<PFP
 				icon={noPFP
 					? post.user === "Server"
-						? 102
+						? -4
 						: post.post_origin === "inbox" &&
 						  (post.user === "Announcement" ||
 								post.user === "Notification" ||
@@ -639,7 +659,7 @@
 				? 'opacity: 0.5;'
 				: ''}"
 		>
-			{#await addFancyElements(post.content) then content}
+			{#await addFancyElements(post.content, postEmotes) then content}
 				{@html content}
 			{/await}
 		</p>
@@ -649,6 +669,14 @@
 	{/if}
 	{#if !editing}
 		<div class="post-images">
+			{#each post.stickers || [] as stickerId}
+				<img
+					class="post-sticker"
+					src="{uploadsUrl}stickers/{stickerId}"
+					alt="Sticker"
+					draggable="false"
+				/>
+			{/each}
 			{#each post.attachments as attachment}
 				<Attachment
 					id={attachment.id}
@@ -712,6 +740,14 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25em;
+	}
+	.post-sticker {
+		max-width: 12em;
+		max-height: 12em;
+	}
+	.post-content :global(img.custom-emoji) {
+		height: 1.4em;
+		vertical-align: -0.35em;
 	}
 
 	textarea {

@@ -9,7 +9,7 @@ profileCache.subscribe(v => (_profileCache = v));
 const SPECIAL_USERS = {
 	Notification: 101,
 	Announcement: 102,
-	Server: 102,
+	Server: -4,
 };
 
 function getCache(username, ignoreSpecialUsers) {

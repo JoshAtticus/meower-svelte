@@ -9,6 +9,7 @@
 	export let raw = false;
 
 	import errorIcon from "../assets/avatars/icon_err.svg";
+	import meowyIcon from "../assets/meowy.svg";
 	import {uploadsUrl} from "./urls.js";
 
 	/**
@@ -68,6 +69,8 @@
 			bind:this={imgEl}
 			src={avatar
 				? `${uploadsUrl}icons/${avatar}`
+				: id === -4
+				? meowyIcon
 				: icons[
 				`../assets/avatars/icon_${
 					id === -1
