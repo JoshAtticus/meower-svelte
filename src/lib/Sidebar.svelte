@@ -10,6 +10,7 @@
 	import {user, friends, chats, OOBERunning} from "../lib/stores.js";
 	import {chatReads, isChatUnread} from "./unread.js";
 	import {mobile} from "./responsiveness.js";
+	import {swipeDismiss} from "./swipeDismiss.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import * as modals from "./modals.js";
 
@@ -170,7 +171,15 @@
 		<div class="popup-overlay" />
 	{/if}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div on:click|stopPropagation class="popup" class:sheet={$mobile}>
+	<div
+		on:click|stopPropagation
+		class="popup"
+		class:sheet={$mobile}
+		use:swipeDismiss={{
+			enabled: $mobile,
+			onDismiss: () => (popupShown = false),
+		}}
+	>
 		<button
 			on:click={() => {
 				if (!$user.name) {
@@ -436,5 +445,17 @@
 		to {
 			transform: translateY(0);
 		}
+	}
+	:global(main) .popup.sheet::before {
+		content: "";
+		display: block;
+		align-self: center;
+		flex-shrink: 0;
+		width: 2.5em;
+		height: 0.3em;
+		margin: -0.3em 0 0.25em;
+		border-radius: 1em;
+		background-color: var(--orange);
+		opacity: 0.6;
 	}
 </style>

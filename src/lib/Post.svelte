@@ -17,6 +17,7 @@
 	import PinPostModal from "./modals/PinPost.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
 	import {portal} from "./portal.js";
+	import {swipeDismiss} from "./swipeDismiss.js";
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
@@ -495,6 +496,10 @@
 				class="settings-controls"
 				class:action-sheet={$mobile && !post.pending}
 				use:portal={$mobile && !post.pending}
+				use:swipeDismiss={{
+					enabled: $mobile && actionsOpen,
+					onDismiss: () => (actionsOpen = false),
+				}}
 				class:open={actionsOpen}
 				on:click={() => {
 					// any action closes the sheet

@@ -23,6 +23,7 @@
 	import {apiUrl} from "../../lib/urls.js";
 	import {has as hasChatPerm, highestRole, nameColorStyle} from "../../lib/chatPermissions.js";
 	import {portal} from "../../lib/portal.js";
+	import {swipeDismiss} from "../../lib/swipeDismiss.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
 	import {markChatRead} from "../../lib/unread.js";
@@ -281,6 +282,10 @@
 						class="settings-controls"
 						class:action-sheet={$mobile}
 						use:portal={$mobile}
+						use:swipeDismiss={{
+							enabled: $mobile && headerMenuOpen,
+							onDismiss: () => (headerMenuOpen = false),
+						}}
 						class:open={headerMenuOpen}
 						on:click={() => {
 							if ($mobile) setTimeout(() => (headerMenuOpen = false));
@@ -443,7 +448,13 @@
 		{#if $mobile}
 			<div class="sheet-overlay" on:click={() => (showMembers = false)} />
 		{/if}
-		<div id="members">
+		<div
+			id="members"
+			use:swipeDismiss={{
+				enabled: $mobile,
+				onDismiss: () => (showMembers = false),
+			}}
+		>
 			<div id="members-inner">
 				{#each $chat.members as chatmember}
 					{@const memberRole = highestRole($chat, chatmember)}
@@ -680,5 +691,18 @@
 
 	.small {
 		font-size: 75%;
+	}
+	:global(#main.layout-mobile) #members::before {
+		content: "";
+		position: absolute;
+		top: 0.3em;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 2;
+		width: 2.5em;
+		height: 0.3em;
+		border-radius: 1em;
+		background-color: var(--orange);
+		opacity: 0.6;
 	}
 </style>

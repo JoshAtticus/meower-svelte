@@ -530,7 +530,7 @@ button.more {
 }
 
 /* Mobile: one "more" button opens the actions as a bottom sheet */
-.mobile-more {
+#main .mobile-more {
 	position: absolute;
 	top: 0.25em;
 	right: 0.25em;
@@ -543,7 +543,7 @@ button.more {
 	z-index: 10002;
 	background: rgba(0, 0, 0, 0.5);
 }
-.settings-controls.action-sheet {
+#main .settings-controls.action-sheet {
 	position: fixed;
 	top: auto;
 	left: 0;
@@ -561,10 +561,10 @@ button.more {
 	transform: translateY(105%);
 	transition: transform 0.25s ease;
 }
-.settings-controls.action-sheet.open {
+#main .settings-controls.action-sheet.open {
 	transform: translateY(0);
 }
-.settings-controls.action-sheet button.circle {
+#main .settings-controls.action-sheet button.circle {
 	width: 100%;
 	height: auto;
 	min-height: 2.9em;
@@ -577,7 +577,7 @@ button.more {
 	color: white;
 	font-size: 1em;
 }
-.settings-controls.action-sheet button.circle::after {
+#main .settings-controls.action-sheet button.circle::after {
 	content: attr(title);
 }
 .sheet-overlay {
@@ -590,4 +590,17 @@ button.more {
 	to {
 		opacity: 1;
 	}
+}
+/* grab handle on bottom sheets */
+#main .settings-controls.action-sheet::before {
+	content: "";
+	display: block;
+	align-self: center;
+	flex-shrink: 0;
+	width: 2.5em;
+	height: 0.3em;
+	margin: -0.3em 0 0.25em;
+	border-radius: 1em;
+	background-color: var(--orange);
+	opacity: 0.6;
 }
