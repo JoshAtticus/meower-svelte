@@ -347,6 +347,11 @@ button.pin.filled {
 	background-size: 55%;
 }
 
+button.share {
+	background-image: url("./share.svg");
+	background-size: 55%;
+}
+
 button.admin {
 	background-image: url("./shield.svg");
 	background-size: 50%;

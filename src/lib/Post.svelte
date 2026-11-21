@@ -350,6 +350,22 @@
 						/>
 					{/if}
 				{:else if !adminView}
+					{#if !editing && post.post_origin !== "inbox"}
+						<button
+							class="circle share"
+							title="Share post"
+							on:click={() =>
+								window.open(
+									`https://shareopenly.org/share/?url=${encodeURIComponent(
+										window.location.origin +
+											"/posts/" +
+											post.post_id
+									)}`,
+									"_blank",
+									"noopener"
+								)}
+						/>
+					{/if}
 					{#if !editing && canPin}
 						<button
 							class="circle pin"
