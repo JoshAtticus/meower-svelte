@@ -7,6 +7,7 @@
 
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
+	import RemoveFriendModal from "../../../lib/modals/RemoveFriend.svelte";
 
 	import {relationships, friends, user} from "../../../lib/stores.js";
 	import {userRestrictions, isRestricted} from "../../../lib/bitField.js";
@@ -134,8 +135,10 @@
 				{#if $friends.friends.includes(data._id)}
 					<button
 						class="long"
-						on:click={() => clm.setRelationship(data._id, 0)}
-						>Remove Friend</button
+						on:click={() =>
+							modals.showModal(RemoveFriendModal, {
+								username: data._id,
+							})}>Remove Friend</button
 					>
 				{:else if $friends.outgoing.includes(data._id)}
 					<button

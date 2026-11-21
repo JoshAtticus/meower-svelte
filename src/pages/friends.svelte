@@ -3,6 +3,7 @@
 	import Container from "../lib/Container.svelte";
 	import Member from "../lib/Member.svelte";
 	import BasicModal from "../lib/modals/Basic.svelte";
+	import RemoveFriendModal from "../lib/modals/RemoveFriend.svelte";
 
 	import {friends, user, authHeader, chats} from "../lib/stores.js";
 	import {apiUrl} from "../lib/urls.js";
@@ -171,15 +172,15 @@
 					<button
 						class="circle close"
 						title="Remove friend"
-						on:click={() => clm.setRelationship(username, 0)}
+						on:click={() =>
+							modals.showModal(RemoveFriendModal, {username})}
 					/>
 				</div>
 			{:else}
 				<div class="empty">
 					<p class="empty-title">No friends yet</p>
 					<p>
-						Send someone a friend request above, or visit
-						their profile and hit "Send Friend Request".
+						Why not send someone a friend request?
 					</p>
 				</div>
 			{/each}
