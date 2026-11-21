@@ -13,6 +13,7 @@
 
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
+	import {mobile} from "./responsiveness.js";
 
 	export let chatId;
 	export let onEmoji; // (name)
@@ -138,6 +139,7 @@
 <div
 	class="emoji-popup"
 	class:anchored={!!anchor}
+	class:sheet={$mobile}
 	style:top={anchor && anchor.top != null ? anchor.top + "px" : null}
 	style:bottom={anchor && anchor.bottom != null ? anchor.bottom + "px" : null}
 	style:right={anchor ? anchor.right + "px" : null}
@@ -400,5 +402,32 @@
 		grid-column: 1 / -1;
 		text-align: center;
 		opacity: 0.6;
+	}
+
+	/* Mobile: bottom sheet with the categories in a scrolling row on top */
+	.emoji-popup.sheet {
+		position: fixed;
+		top: auto !important;
+		bottom: 0 !important;
+		left: 0;
+		right: 0 !important;
+		width: auto;
+		height: 65vh;
+		z-index: 10003;
+		border-bottom: none;
+		border-radius: 1em 1em 0 0;
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+	.emoji-popup.sheet .popup-body {
+		flex-direction: column;
+	}
+	.emoji-popup.sheet .sidebar {
+		width: auto;
+		flex-direction: row;
+		overflow-x: auto;
+		overflow-y: hidden;
+		border-right: none;
+		border-bottom: solid 1px var(--foreground-orange);
+		padding: 0.35em 0.5em;
 	}
 </style>
