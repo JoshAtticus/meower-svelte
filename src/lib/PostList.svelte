@@ -56,7 +56,7 @@
 	const dispatch = createEventDispatcher();
 
 	// @ts-ignore
-	import {autoresize} from "svelte-textarea-autoresize";
+	import {richInput} from "./richInput.js";
 
 	import {params} from "@roxi/routify";
 	import {onMount, onDestroy} from "svelte";
@@ -485,10 +485,8 @@
 				class="createpost"
 				autocomplete="off"
 				on:submit|preventDefault={/** @type {SubmitEvent} */ e => {
-					// @ts-ignore
-					const input = e.target.elements.input;
-					// @ts-ignore
-					const content = e.target.elements.input.value.trim();
+					const input = postInput;
+					const content = postInput.value.trim();
 					if (!content) {
 						return;
 					}
@@ -537,24 +535,22 @@
 					}
 	
 					input.value = "";
-					input.rows = "1";
-					input.style.height = "45px";
 				}}
 			>
-				<textarea
-					type="text"
-					class="white"
-					placeholder={userRestricted
+				<div
+					class="composer-input"
+					role="textbox"
+					aria-multiline="true"
+					tabindex="0"
+					data-placeholder={userRestricted
 						? "Your account is currently restricted."
 						: recipientBlocked
 						? `You have blocked ${dmWith}.`
 						: "Write something..."}
-					name="input"
-					autocomplete="off"
-					maxlength="4000"
-					rows="1"
-					disabled={userRestricted || recipientBlocked}
-					use:autoresize
+					use:richInput={{
+						uploadsUrl,
+						disabled: userRestricted || recipientBlocked,
+					}}
 					on:input={() => {
 						if ($lastTyped + 2000 < +new Date()) {
 							lastTyped.set(+new Date());
@@ -631,12 +627,10 @@
 				<EmojiPopup
 					chatId={$chat._id}
 					onEmoji={(name, emote) => {
-						postInput.value += `<:${emote._id}>`;
-						postInput.focus();
+						postInput.insert(`<:${emote._id}>`);
 					}}
 					onUnicode={ch => {
-						postInput.value += ch;
-						postInput.focus();
+						postInput.insert(ch);
 					}}
 					onSticker={textOnly
 						? null
@@ -800,10 +794,42 @@
 		margin-bottom: 0.5em;
 		gap: 0.25em;
 	}
-	.createpost textarea {
+	.composer-input {
 		flex-grow: 1;
-		resize: none;
+		min-width: 5em;
+		min-height: 45px;
 		max-height: 300px;
+		overflow-y: auto;
+		box-sizing: border-box;
+		padding: 0.6em 1em;
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		background-color: var(--background);
+		color: var(--foreground);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		outline: none;
+		cursor: text;
+		line-height: 1.4;
+	}
+	.composer-input:focus {
+		border-radius: 2px;
+	}
+	.composer-input:global(.empty)::before {
+		content: attr(data-placeholder);
+		opacity: 0.5;
+		pointer-events: none;
+	}
+	.composer-input:global(.disabled) {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.composer-input :global(img.composer-emoji) {
+		width: 1.35em;
+		height: 1.35em;
+		object-fit: contain;
+		vertical-align: -0.3em;
+		margin: 0 0.05em;
 	}
 
 	.send-files {
