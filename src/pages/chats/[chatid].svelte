@@ -20,6 +20,7 @@
 		isRestricted,
 	} from "../../lib/bitField.js";
 	import {apiUrl} from "../../lib/urls.js";
+	import {has as hasChatPerm, highestRole} from "../../lib/chatPermissions.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
 	import {markChatRead} from "../../lib/unread.js";
@@ -51,6 +52,23 @@
 			Math.max(Math.floor(Date.now() / 1000), currentLastActive || 0)
 		);
 	}
+
+	const SETTINGS_PERMS = [
+		"change_name", "change_color", "change_icon", "delete_icon",
+		"add_emotes", "edit_emotes", "delete_emotes",
+		"modify_roles", "create_roles", "delete_roles", "assign_roles",
+		"change_settings", "toggle_invites",
+	];
+	$: isGroupChat = $chat.type === 0 && $chat._id !== "livechat";
+	$: canOpenSettings =
+		isGroupChat &&
+		SETTINGS_PERMS.some(p => hasChatPerm($chat, $user.name, p));
+	$: canSend = !isGroupChat || hasChatPerm($chat, $user.name, "send_messages");
+	$: canInvite =
+		isGroupChat &&
+		hasChatPerm($chat, $user.name, "invite_members") &&
+		($chat.invites_enabled !== false ||
+			hasChatPerm($chat, $user.name, "toggle_invites"));
 
 	$: dmRequest = $chat.type === 1 ? $chat.dm_request : null;
 	$: dmOther = $chat.members.filter(m => m !== $user.name)[0];
@@ -252,7 +270,7 @@
 									modals.showModal(ModerateChatModal)}
 							/>
 						{/if}
-						{#if $chat.owner === $user.name || ($params.admin && hasPermission(adminPermissions.EDIT_CHATS))}
+						{#if canOpenSettings || ($params.admin && hasPermission(adminPermissions.EDIT_CHATS))}
 							<button
 								class="circle settings"
 								title="Group chat settings"
@@ -377,6 +395,11 @@
 				they've blocked you.
 			</p>
 		{/if}
+		{#if isGroupChat && !canSend}
+			<p class="block-notice">
+				You don't have permission to send messages here.
+			</p>
+		{/if}
 		<PostList
 			fetchUrl={$params.chatid === "livechat"
 				? null
@@ -389,6 +412,7 @@
 			canPost={($chat._id === "livechat" || !$params.admin) &&
 				!myBan &&
 				!dmWaiting &&
+				canSend &&
 				!($chat.block_notice && $chat.block_notice !== $user.name)}
 		/>
 	</div>
@@ -396,6 +420,7 @@
 		<div id="members">
 			<div id="members-inner">
 				{#each $chat.members as chatmember}
+					{@const memberRole = highestRole($chat, chatmember)}
 					<button
 						class="member-button"
 						on:click={() => {
@@ -408,6 +433,9 @@
 							member={chatmember}
 							owner={chatmember === $chat.owner}
 						/>
+						{#if memberRole && memberRole._id !== "default"}
+							<span class="member-role">{memberRole.name}</span>
+						{/if}
 					</button>
 				{/each}
 				{#if pendingInvites.length}
@@ -419,7 +447,7 @@
 					{#each pendingInvites as invite}
 						<div class="member-button pending-invite">
 							<Member member={invite.to} owner={false} />
-							{#if $chat.owner === $user.name}
+							{#if invite.from === $user.name || hasChatPerm($chat, $user.name, "remove_members")}
 								<button
 									class="circle close revoke-invite"
 									title="Revoke invite"
@@ -444,7 +472,7 @@
 					Members <span class="small">({$chat.members.length})</span>
 				</h2>
 				<div class="settings-controls">
-					{#if !$params.admin}
+					{#if !$params.admin && canInvite}
 						<button
 							class="circle plus"
 							on:click={() => {
@@ -513,6 +541,12 @@
 		flex-shrink: 0;
 		min-width: 1.6em;
 		min-height: 1.6em;
+	}
+	.member-role {
+		display: block;
+		margin-left: 2.6em;
+		font-size: 0.8em;
+		opacity: 0.65;
 	}
 	.dm-request {
 		margin: 0;

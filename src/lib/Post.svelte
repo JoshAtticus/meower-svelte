@@ -19,6 +19,7 @@
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
 	import {apiUrl, uploadsUrl} from "./urls.js";
+	import {has as hasChatPerm, outranks, rank as chatRank, ADMIN_TIER} from "./chatPermissions.js";
 	import {chatEmotes, loadEmotes} from "../lib/emotes.js";
 	import {shiftHeld} from "../lib/keyDetect.js";
 	import {mobile} from "../lib/responsiveness.js";
@@ -94,13 +95,32 @@
 
 	let adminDeleteButton, adminRestoreButton;
 
+	$: isGroupPost =
+		post.post_origin === $chat._id &&
+		$chat.type === 0 &&
+		post.post_origin !== "livechat";
+
 	$: canPin =
 		post.post_origin &&
 		!["home", "inbox", "livechat"].includes(post.post_origin) &&
 		post.post_origin === $chat._id &&
-		($chat.owner === $user.name ||
-			$chat.allow_pinning ||
-			hasPermission(adminPermissions.EDIT_CHATS));
+		(hasPermission(adminPermissions.EDIT_CHATS) ||
+			(isGroupPost &&
+				hasChatPerm(
+					$chat,
+					$user.name,
+					post.pinned ? "unpin_messages" : "pin_messages"
+				)));
+
+	$: canDelete =
+		post.user === $user.name
+			? !isGroupPost ||
+				hasChatPerm($chat, $user.name, "delete_own_messages")
+			: isGroupPost &&
+				(post.user === "Server"
+					? chatRank($chat, $user.name) >= ADMIN_TIER
+					: hasChatPerm($chat, $user.name, "delete_others_messages") &&
+						outranks($chat, $user.name, post.user));
 
 	function togglePin() {
 		modals.showModal(PinPostModal, {
@@ -470,7 +490,7 @@
 								/>
 							{/if}
 						{/if}
-						{#if post.user === $user.name || (post.post_origin === $chat._id && $chat.owner === $user.name)}
+						{#if canDelete}
 							{#if !bridged}
 								<button
 									class="circle trash"

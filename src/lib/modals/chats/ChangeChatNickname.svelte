@@ -14,14 +14,57 @@
 	import {authHeader, chat, user} from "../../stores.js";
 	import {apiUrl, uploadsUrl} from "../../urls.js";
 	import {chatEmotes, refreshEmotes} from "../../emotes.js";
+	import {adminPermissions, hasPermission} from "../../bitField.js";
+	import {
+		PERMISSIONS,
+		OWNER_RANK,
+		ADMIN_TIER,
+		has as hasChatPerm,
+		rank as chatRank,
+		canManageRole,
+		canGrantPerm,
+		inheritsPerm,
+	} from "../../chatPermissions.js";
 	import * as modals from "../../modals.js";
 
 	import {focus, params} from "@roxi/routify";
 	import {onMount} from "svelte";
 
-	let tab = $chat._id === lastChatId ? lastTab : "general";
+	const isAdmin = () =>
+		$params.admin && hasPermission(adminPermissions.EDIT_CHATS);
+	const canPerm = perm =>
+		isAdmin() || hasChatPerm($chat, $user.name, perm);
+	const anyPerm = perms => isAdmin() || perms.some(canPerm);
+
+	const GENERAL_PERMS = [
+		"change_name", "change_color", "change_icon", "delete_icon",
+		"change_settings", "toggle_invites",
+	];
+	const EMOTE_PERMS = ["add_emotes", "edit_emotes", "delete_emotes"];
+	const ROLE_PERMS = ["modify_roles", "create_roles", "delete_roles"];
+
+	// A plain function so it can run during component setup (reactive
+	// declarations aren't evaluated until after the instance script runs)
+	const computeTabVisible = () => ({
+		general: anyPerm(GENERAL_PERMS),
+		emojis: anyPerm(EMOTE_PERMS),
+		stickers: anyPerm(EMOTE_PERMS),
+		roles: anyPerm(ROLE_PERMS),
+	});
+	const firstVisible = visible =>
+		["general", "emojis", "stickers", "roles"].find(t => visible[t]) ||
+		"general";
+	$: tabVisible = ($chat, $user, computeTabVisible());
+	$: firstVisibleTab = firstVisible(tabVisible);
+
+	const initialVisible = computeTabVisible();
+	let tab =
+		$chat._id === lastChatId && initialVisible[lastTab]
+			? lastTab
+			: firstVisible(initialVisible);
 	lastChatId = $chat._id;
 	$: lastTab = tab;
+	$: if (!tabVisible[tab]) tab = firstVisibleTab;
 
 	let nickname = $chat.nickname;
 	let loading, error;
@@ -54,7 +97,10 @@
 	$: emotes = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
 
 	$: {
-		if (!$params.admin && $chat.owner !== $user.name) {
+		if (
+			!$params.admin &&
+			![...GENERAL_PERMS, ...EMOTE_PERMS, ...ROLE_PERMS].some(canPerm)
+		) {
 			modals.closeLastModal();
 		}
 	}
@@ -220,24 +266,153 @@
 		await refreshEmotes($chat._id);
 		$chat[type] = emotes[type];
 	}
+
+	// Roles tab
+	let newRoleName = "";
+	let newRoleTier = 0;
+	let expandedRole = null;
+
+	$: myRank = chatRank($chat, $user.name);
+	$: creatableTiers = [0, 1, 2, 3].filter(
+		t =>
+			isAdmin() ||
+			$user.name === $chat.owner ||
+			myRank >= ADMIN_TIER ||
+			t < myRank
+	);
+	$: sortedRoles = ($chat.roles || [])
+		.map((role, i) => ({role, i}))
+		.sort((a, b) => b.role.tier - a.role.tier || a.i - b.i)
+		.map(({role}) => role);
+	const memberCount = role =>
+		Object.values($chat.member_roles || {}).filter(list =>
+			list.includes(role._id)
+		).length;
+	$: permsForTier = tier =>
+		PERMISSIONS.filter(p => p.tier <= tier).reduce(
+			(groups, perm) => {
+				(groups[perm.tier] = groups[perm.tier] || []).push(perm);
+				return groups;
+			},
+			{}
+		);
+
+	function friendlyRoleError(type, status) {
+		return (
+			{
+				missingPermission: "You don't have permission to do that.",
+				insufficientRank:
+					"You can't manage someone ranked at or above you.",
+				permissionAboveRoleTier:
+					"That permission is above this role's tier.",
+			}[type] || `Response code is not OK; code is ${status}`
+		);
+	}
+
+	async function createRole() {
+		const resp = await fetch(`${apiUrl}chats/${$chat._id}/roles`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+				...$authHeader,
+			},
+			body: JSON.stringify({
+				name: newRoleName.trim(),
+				tier: Number(newRoleTier),
+				permissions: {},
+			}),
+		});
+		if (!resp.ok) {
+			const json = await resp.json().catch(() => ({}));
+			throw new Error(friendlyRoleError(json.type, resp.status));
+		}
+		newRoleName = "";
+	}
+
+	async function patchRole(roleId, body) {
+		const resp = await fetch(
+			`${apiUrl}chats/${$chat._id}/roles/${roleId}`,
+			{
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+					...$authHeader,
+				},
+				body: JSON.stringify(body),
+			}
+		);
+		if (!resp.ok) {
+			const json = await resp.json().catch(() => ({}));
+			throw new Error(friendlyRoleError(json.type, resp.status));
+		}
+	}
+
+	async function deleteRole(roleId) {
+		const resp = await fetch(
+			`${apiUrl}chats/${$chat._id}/roles/${roleId}`,
+			{method: "DELETE", headers: $authHeader}
+		);
+		if (!resp.ok) {
+			const json = await resp.json().catch(() => ({}));
+			throw new Error(friendlyRoleError(json.type, resp.status));
+		}
+		if (expandedRole === roleId) expandedRole = null;
+	}
+
+	function roleModalError(e) {
+		modals.showModal(BasicModal, {
+			title: "Failed to update role",
+			desc: `${e}`,
+		});
+	}
+
+	async function renameRole(role, name) {
+		name = name.trim();
+		if (!name || name === role.name) return;
+		try {
+			await patchRole(role._id, {name});
+		} catch (e) {
+			roleModalError(e);
+		}
+	}
+
+	async function setRolePerm(role, permKey, value) {
+		try {
+			await patchRole(role._id, {permissions: {[permKey]: value}});
+		} catch (e) {
+			roleModalError(e);
+		}
+	}
 </script>
 
 <Modal on:close={modals.closeLastModal}>
 	<h2 slot="header">Group Chat Settings</h2>
 	<div slot="default">
 		<div class="tabs">
-			<button
-				class:active={tab === "general"}
-				on:click={() => (tab = "general")}>General</button
-			>
-			<button
-				class:active={tab === "emojis"}
-				on:click={() => (tab = "emojis")}>Emojis</button
-			>
-			<button
-				class:active={tab === "stickers"}
-				on:click={() => (tab = "stickers")}>Stickers</button
-			>
+			{#if tabVisible.general}
+				<button
+					class:active={tab === "general"}
+					on:click={() => (tab = "general")}>General</button
+				>
+			{/if}
+			{#if tabVisible.emojis}
+				<button
+					class:active={tab === "emojis"}
+					on:click={() => (tab = "emojis")}>Emojis</button
+				>
+			{/if}
+			{#if tabVisible.stickers}
+				<button
+					class:active={tab === "stickers"}
+					on:click={() => (tab = "stickers")}>Stickers</button
+				>
+			{/if}
+			{#if tabVisible.roles}
+				<button
+					class:active={tab === "roles"}
+					on:click={() => (tab = "roles")}>Roles</button
+				>
+			{/if}
 		</div>
 
 		{#if tab === "general"}
@@ -252,31 +427,36 @@
 						disabled={uploading}
 						hidden
 					/>
-					<button
-						disabled={uploading}
-						on:click={() => fileInput.click()}
-					>
-						{uploading ? "Uploading..." : "Upload icon"}
-					</button>
-					{#if $chat.icon}
+					{#if canPerm("change_icon")}
+						<button
+							disabled={uploading}
+							on:click={() => fileInput.click()}
+						>
+							{uploading ? "Uploading..." : "Upload icon"}
+						</button>
+					{/if}
+					{#if $chat.icon && canPerm("delete_icon")}
 						<button on:click={() => patchChat({icon: ""})}
 							>Remove icon</button
 						>
 					{/if}
-					<label class="icon-color">
-						<input
-							type="color"
-							value={`#${$chat.icon_color || "000000"}`}
-							on:change={e =>
-								patchChat({
-									icon_color: e.target.value.substring(1),
-								})}
-						/>
-						Icon colour
-					</label>
+					{#if canPerm("change_color")}
+						<label class="icon-color">
+							<input
+								type="color"
+								value={`#${$chat.icon_color || "000000"}`}
+								on:change={e =>
+									patchChat({
+										icon_color: e.target.value.substring(1),
+									})}
+							/>
+							Icon colour
+						</label>
+					{/if}
 				</div>
 			</div>
 
+			{#if canPerm("change_name")}
 			<form
 				on:change={() => (error = "")}
 				on:submit|preventDefault={async () => {
@@ -347,7 +527,9 @@
 					>
 				</div>
 			</form>
+			{/if}
 
+			{#if canPerm("change_settings")}
 			<div class="announce-deletes">
 				<label class="announce-row">
 					<input
@@ -389,6 +571,31 @@
 					Show who deleted them
 				</label>
 			</div>
+			{/if}
+
+			{#if canPerm("toggle_invites")}
+			<div class="announce-deletes">
+				<label class="announce-row">
+					<input
+						type="checkbox"
+						checked={$chat.invites_enabled !== false}
+						on:change={async e => {
+							try {
+								await patchChat({
+									invites_enabled: e.target.checked,
+								});
+							} catch (e2) {
+								modals.showModal(BasicModal, {
+									title: "Failed to update chat settings",
+									desc: `${e2}`,
+								});
+							}
+						}}
+					/>
+					Allow invites
+				</label>
+			</div>
+			{/if}
 
 			<div class="chat-id-row">
 				<b>Chat ID</b>
@@ -397,8 +604,9 @@
 					>{idCopied ? "Copied!" : "Copy"}</button
 				>
 			</div>
-		{:else}
+		{:else if tab === "emojis" || tab === "stickers"}
 			{@const type = tab}
+			{#if canPerm("add_emotes")}
 			<div class="emote-upload">
 				<input
 					type="file"
@@ -455,6 +663,7 @@
 					{emoteUploading ? "Uploading..." : "Add"}
 				</button>
 			</div>
+			{/if}
 			<div class="emote-list">
 				{#each emotes[type] as emote (emote._id)}
 					<div class="emote-row">
@@ -470,6 +679,7 @@
 							class:invalid={renameErrors[emote._id]}
 							maxlength="32"
 							value={emote.name}
+							readonly={!canPerm("edit_emotes")}
 							title="Rename"
 							on:input={() => {
 								if (renameErrors[emote._id]) {
@@ -484,25 +694,185 @@
 									e.target.blur();
 								}
 							}}
-							on:blur={e => renameEmote(type, emote, e.target.value)}
+							on:blur={e => {
+								if (canPerm("edit_emotes"))
+									renameEmote(type, emote, e.target.value);
+							}}
 						/>
-						<button
-							type="button"
-							class="circle trash"
-							title="Delete {type.slice(0, -1)}"
-							on:click={() =>
-								modals.showModal(ConfirmActionModal, {
-									title: `Delete ${type === "emojis" ? "Emoji" : "Sticker"}`,
-									desc: `Delete :${emote.name}:? It'll be removed from this chat for everyone.`,
-									confirmLabel: "Delete",
-									onConfirm: () => deleteEmote(type, emote._id),
-								})}
-						/>
+						{#if canPerm("delete_emotes")}
+							<button
+								type="button"
+								class="circle trash"
+								title="Delete {type.slice(0, -1)}"
+								on:click={() =>
+									modals.showModal(ConfirmActionModal, {
+										title: `Delete ${type === "emojis" ? "Emoji" : "Sticker"}`,
+										desc: `Delete :${emote.name}:? It'll be removed from this chat for everyone.`,
+										confirmLabel: "Delete",
+										onConfirm: () =>
+											deleteEmote(type, emote._id),
+									})}
+							/>
+						{/if}
 					</div>
 				{:else}
 					<p class="emote-empty">
 						No {type} yet.
 					</p>
+				{/each}
+			</div>
+		{:else if tab === "roles"}
+			{#if canPerm("create_roles") && creatableTiers.length}
+				<div class="role-create">
+					<input
+						type="text"
+						class="modal-input white"
+						placeholder="Role name"
+						maxlength="32"
+						bind:value={newRoleName}
+					/>
+					<select
+						class="modal-input white"
+						bind:value={newRoleTier}
+					>
+						{#each creatableTiers as t}
+							<option value={t}>Tier {t}</option>
+						{/each}
+					</select>
+					<button
+						type="button"
+						disabled={!newRoleName.trim()}
+						on:click={async () => {
+							try {
+								await createRole();
+							} catch (e) {
+								roleModalError(e);
+							}
+						}}>Create</button
+					>
+				</div>
+			{/if}
+			<div class="role-list">
+				{#each sortedRoles as role (role._id)}
+					{@const canManage =
+						canPerm("modify_roles") &&
+						canManageRole($chat, $user.name, role)}
+					<div class="role-item">
+						<div class="role-row">
+							<button
+								type="button"
+								class="role-expand"
+								on:click={() =>
+									(expandedRole =
+										expandedRole === role._id
+											? null
+											: role._id)}
+							>
+								<b>{role.name}</b>
+								<span class="role-meta">Tier {role.tier}</span>
+								<span class="role-meta"
+									>{memberCount(role)} member{memberCount(
+										role
+									) === 1
+										? ""
+										: "s"}</span
+								>
+							</button>
+							{#if canPerm("delete_roles") && canManageRole($chat, $user.name, role) && role._id !== "default" && role._id !== "administrator"}
+								<button
+									type="button"
+									class="circle trash"
+									title="Delete role"
+									on:click={() =>
+										modals.showModal(ConfirmActionModal, {
+											title: "Delete Role",
+											desc: `Delete the ${role.name} role? It'll be removed from every member who has it.`,
+											confirmLabel: "Delete",
+											onConfirm: () =>
+												deleteRole(role._id),
+										})}
+								/>
+							{/if}
+						</div>
+						{#if expandedRole === role._id}
+							<div class="role-editor">
+								<input
+									type="text"
+									class="modal-input white"
+									maxlength="32"
+									value={role.name}
+									disabled={!canManage}
+									title="Role name"
+									on:keydown={e => {
+										if (e.key === "Enter") e.target.blur();
+										if (e.key === "Escape") {
+											e.target.value = role.name;
+											e.target.blur();
+										}
+									}}
+									on:blur={e => renameRole(role, e.target.value)}
+								/>
+								{#if role._id === "administrator"}
+									<p class="role-note">
+										Has every permission.
+									</p>
+								{:else}
+									{#each Object.entries(permsForTier(role.tier)).sort(([a], [b]) => a - b) as [tier, perms]}
+										<h4 class="perm-tier">
+											Tier {tier}
+										</h4>
+										{#each perms as perm}
+											{@const val =
+												role.permissions?.[
+													perm.key
+												] ?? null}
+											{@const editable =
+												canManage &&
+												canGrantPerm(
+													$chat,
+													$user.name,
+													perm.key
+												)}
+											<div class="perm-row">
+												<span class="perm-label">
+													{perm.label}
+													{#if val === null}
+														<span
+															class="perm-hint"
+															>({inheritsPerm(
+																$chat,
+																role,
+																perm.key
+															)
+																? "on"
+																: "off"})</span
+														>
+													{/if}
+												</span>
+												<div class="perm-seg">
+													{#each [["Deny", false], ["Inherit", null], ["Allow", true]] as [segLabel, segVal]}
+														<button
+															type="button"
+															class:selected={val ===
+																segVal}
+															disabled={!editable}
+															on:click={() =>
+																setRolePerm(
+																	role,
+																	perm.key,
+																	segVal
+																)}
+															>{segLabel}</button
+														>
+													{/each}
+												</div>
+											</div>
+										{/each}
+									{/each}
+								{/if}
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -664,5 +1034,116 @@
 	.emote-empty {
 		text-align: center;
 		opacity: 0.7;
+	}
+
+	.role-create {
+		display: flex;
+		gap: 0.5em;
+		margin-bottom: 0.75em;
+	}
+	.role-create input {
+		flex: 1;
+		width: auto;
+		min-width: 0;
+		margin: 0;
+	}
+	.role-create select {
+		flex: 0 0 auto;
+		width: auto;
+		margin: 0;
+	}
+	.role-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4em;
+	}
+	.role-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	.role-expand {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+		margin: 0;
+		background-color: transparent;
+		border: none;
+		color: var(--foreground);
+		text-align: left;
+		padding: 0.3em;
+	}
+	.role-meta {
+		font-size: 0.8em;
+		opacity: 0.65;
+		font-weight: normal;
+	}
+	.role-row button.circle {
+		flex-shrink: 0;
+		margin: 0;
+		border: none;
+	}
+	.role-editor {
+		padding: 0.4em 0.3em 0.6em 0.3em;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4em;
+	}
+	.role-note {
+		margin: 0.3em 0;
+		opacity: 0.7;
+	}
+	.perm-tier {
+		margin: 0.4em 0 0 0;
+		font-size: 0.85em;
+		opacity: 0.7;
+	}
+	.perm-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+	}
+	.perm-label {
+		flex: 1;
+		min-width: 0;
+	}
+	.perm-hint {
+		font-size: 0.85em;
+		opacity: 0.6;
+	}
+	.perm-seg {
+		display: flex;
+		flex-shrink: 0;
+	}
+	.perm-seg button {
+		margin: 0;
+		font-size: 0.8em;
+		padding: 0.2em 0.5em;
+		border-radius: 0;
+		border: solid 2px var(--orange);
+		background-color: transparent;
+		color: var(--foreground);
+	}
+	.perm-seg button + button {
+		border-left-width: 0;
+	}
+	.perm-seg button:first-child {
+		border-radius: 4px 0 0 4px;
+	}
+	.perm-seg button:last-child {
+		border-radius: 0 4px 4px 0;
+	}
+	.perm-seg button.selected {
+		background-color: var(--orange);
+		color: white;
+		font-weight: bold;
+	}
+	.perm-seg button:disabled {
+		opacity: 0.55;
+	}
+	.perm-seg button.selected:disabled {
+		opacity: 0.8;
 	}
 </style>

@@ -3,6 +3,7 @@
 
 	import {authHeader, chat, user} from "../../stores.js";
 	import {apiUrl} from "../../urls.js";
+	import {has as hasChatPerm} from "../../chatPermissions.js";
 	import * as modals from "../../modals.js";
 
 	import {focus, params} from "@roxi/routify";
@@ -14,7 +15,10 @@
 	let loading, error;
 
 	$: {
-		if (!$params.admin && $chat.owner !== $user.name) {
+		if (
+			!$params.admin &&
+			!hasChatPerm($chat, $user.name, "remove_members")
+		) {
 			modals.closeLastModal();
 		}
 	}
