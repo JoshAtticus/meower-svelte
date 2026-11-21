@@ -158,10 +158,15 @@
 							/>
 						</div>
 
-						<div class="chat-heading">
-							<ChatIcon {chat} />
+						<button
+							type="button"
+							class="chat-heading"
+							title="Open {chat.nickname}"
+							on:click={() => $goto(`/chats/${chat._id}`)}
+						>
+							<span class="chat-heading-icon"><ChatIcon {chat} /></span>
 							<h1>{chat.nickname}</h1>
-						</div>
+						</button>
 						<div class="member-stack">
 							{#each chat.members.slice(0, 5) as member}
 								<span class="member-pfp">
@@ -218,6 +223,23 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: none !important;
+		color: inherit;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+	.chat-heading-icon {
+		display: inline-flex;
+		transition: transform 0.15s;
+	}
+	:global(main.input-hover) .chat-heading:hover .chat-heading-icon,
+	:global(main.input-touch) .chat-heading:active .chat-heading-icon,
+	.chat-heading:focus-visible .chat-heading-icon {
+		transform: scale(1.1);
 	}
 	.chat-heading h1 {
 		margin: 0 0 0.1em;
