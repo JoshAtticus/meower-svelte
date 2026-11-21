@@ -53,8 +53,39 @@
 	let editContentInput, editSaveButton;
 
 	let deleteButton;
+	let pinButton;
 
 	let adminDeleteButton, adminRestoreButton;
+
+	$: canPin =
+		post.post_origin &&
+		!["home", "inbox", "livechat"].includes(post.post_origin) &&
+		post.post_origin === $chat._id &&
+		($chat.owner === $user.name ||
+			$chat.allow_pinning ||
+			hasPermission(adminPermissions.EDIT_CHATS));
+
+	async function togglePin() {
+		pinButton.disabled = true;
+		try {
+			const resp = await fetch(`${apiUrl}posts/${post.post_id}/pin`, {
+				method: post.pinned ? "DELETE" : "POST",
+				headers: $authHeader,
+			});
+			if (!resp.ok) {
+				if (resp.status === 429) {
+					throw new Error("Too many requests! Try again later.");
+				}
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			post.pinned = !post.pinned;
+		} catch (e) {
+			error = e;
+		}
+		pinButton.disabled = false;
+	}
 
 	// TODO: make bridged tag a setting
 
@@ -319,6 +350,15 @@
 						/>
 					{/if}
 				{:else if !adminView}
+					{#if !editing && canPin}
+						<button
+							class="circle pin"
+							class:filled={post.pinned}
+							title={post.pinned ? "Unpin post" : "Pin post"}
+							bind:this={pinButton}
+							on:click={togglePin}
+						/>
+					{/if}
 					{#if !editing && hasPermission(adminPermissions.VIEW_POSTS)}
 						<button
 							class="circle admin"
@@ -497,6 +537,9 @@
 			</div>
 
 			<FormattedDate date={post.date} />
+			{#if post.pinned}
+				<i>(pinned)</i>
+			{/if}
 			{#if post.edited_at}
 				<i
 					>(<FormattedDate

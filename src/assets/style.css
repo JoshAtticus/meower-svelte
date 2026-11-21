@@ -337,6 +337,16 @@ button.star.filled {
 	background-size: 62%;
 }
 
+button.pin {
+	background-image: url("./pin.svg");
+	background-size: 55%;
+}
+
+button.pin.filled {
+	background-image: url("./pin_filled.svg");
+	background-size: 55%;
+}
+
 button.admin {
 	background-image: url("./shield.svg");
 	background-size: 50%;

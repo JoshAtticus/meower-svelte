@@ -5,6 +5,7 @@
 	import BasicModal from "../../lib/modals/Basic.svelte";
 	import ChangeChatNicknameModal from "../../lib/modals/chats/ChangeChatNickname.svelte";
 	import GCMemberModal from "../../lib/modals/chats/GCMember.svelte";
+	import ViewPinsModal from "../../lib/modals/chats/ViewPins.svelte";
 	import AddMemberModeModal from "../../lib/modals/chats/AddMember_Mode.svelte";
 	import AccountBannedModal from "../../lib/modals/safety/AccountBanned.svelte";
 	import ModerateChatModal from "../../lib/modals/moderation/ModerateChat.svelte";
@@ -173,6 +174,14 @@
 										);
 									}
 								}}
+							/>
+						{/if}
+						{#if !$params.admin}
+							<button
+								class="circle pin"
+								title="View pinned posts"
+								on:click={() =>
+									modals.showModal(ViewPinsModal)}
 							/>
 						{/if}
 						<button
