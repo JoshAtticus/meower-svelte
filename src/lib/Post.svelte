@@ -242,6 +242,13 @@
 			for (const token of tokens) {
 				if (token.children) {
 					for (const childToken of token.children) {
+						if (childToken.type === "text") {
+							childToken.type = "html_inline";
+							childToken.content = renderTextEmojis(
+								md.utils.escapeHtml(childToken.content),
+								emotes
+							);
+						}
 						if (childToken.type === "image") {
 							const srcPos = childToken.attrs.findIndex(
 								attr => attr[0] === "src"
@@ -283,27 +290,29 @@
 			return `Failed rendering post: ${e}`;
 		}
 
-		// custom chat emojis
+		return content;
+	}
+
+	// Takes already-escaped text from a markdown text token, never rendered
+	// HTML, so emoji markup can't land inside an attribute value.
+	function renderTextEmojis(escapedText, emotes) {
 		if (emotes && emotes.emojis && emotes.emojis.length) {
-			content = content.replaceAll(
+			escapedText = escapedText.replaceAll(
 				/:([a-zA-Z0-9_-]{1,32}):/g,
 				(match, name) => {
 					const emote = emotes.emojis.find(e => e.name === name);
 					return emote
-						? `<img class="custom-emoji" src="${uploadsUrl}emojis/${emote._id}" alt=":${name}:">`
+						? `<img class="custom-emoji" src="${uploadsUrl}emojis/${encodeURIComponent(emote._id)}" alt=":${name}:">`
 						: match;
 				}
 			);
 		}
 
-		// twemoji
-		content = twemoji.parse(content, {
+		return twemoji.parse(escapedText, {
 			folder: "svg",
 			ext: ".svg",
 			size: 20,
 		});
-
-		return content;
 	}
 
 	function relativeDate(timestamp) {
