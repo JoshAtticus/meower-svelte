@@ -27,6 +27,8 @@
 	// @ts-ignore
 	import {autoresize} from "svelte-textarea-autoresize";
 	import MarkdownIt from "markdown-it";
+	import hljs from "highlight.js/lib/common";
+	import "highlight.js/styles/github-dark.css";
 	import twemoji from "twemoji";
 	import {goto} from "@roxi/routify";
 	import {onMount, tick} from "svelte";
@@ -138,6 +140,21 @@
 				breaks: true,
 				linkify: true,
 				typographer: true,
+				highlight: function (str, lang) {
+					if (lang && hljs.getLanguage(lang)) {
+						try {
+							return (
+								'<pre><code class="hljs">' +
+								hljs.highlight(str, {
+									language: lang,
+									ignoreIllegals: true,
+								}).value +
+								"</code></pre>"
+							);
+						} catch {}
+					}
+					return ""; // use default escaping
+				},
 			});
 			md.linkify.add("@", {
 				validate: function (text, pos) {
