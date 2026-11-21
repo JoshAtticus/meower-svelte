@@ -6,9 +6,9 @@ import routify from "@roxi/routify/plugins/rollup.js";
 // import {injectManifest} from "rollup-plugin-workbox";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({command}) => ({
 	plugins: [
-		routify({singleBuild: false}),
+		routify({singleBuild: command === "build"}),
 		svelte(),
 		/*
 		injectManifest({
@@ -25,4 +25,4 @@ export default defineConfig({
 		*/
 	],
 	base: "/",
-});
+}));
