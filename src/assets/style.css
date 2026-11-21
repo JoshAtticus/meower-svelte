@@ -352,6 +352,11 @@ button.share {
 	background-size: 55%;
 }
 
+button.reply {
+	background-image: url("./reply.svg");
+	background-size: 55%;
+}
+
 button.admin {
 	background-image: url("./shield.svg");
 	background-size: 50%;

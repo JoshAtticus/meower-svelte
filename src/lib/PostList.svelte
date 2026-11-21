@@ -99,6 +99,7 @@
 	let postInput, submitBtn;
 
 	let pendingStickers = [];
+	let pendingReplies = [];
 	$: chatEmoteData = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
 	$: if ($chat._id) loadEmotes($chat._id);
 
@@ -188,6 +189,7 @@
 				content: post.p,
 				attachments: post.attachments,
 				stickers: post.stickers,
+				reply_to: post.reply_to,
 				date: post.t.e,
 				edited_at: post.edited_at,
 				pinned: post.pinned,
@@ -214,7 +216,7 @@
 		};
 	}
 
-	function sendPost(content, stickers = []) {
+	function sendPost(content, stickers = [], replyTo = []) {
 		/**
 		 * @type {import('src/lib/types.js').ListPost}
 		 */
@@ -226,6 +228,7 @@
 			content,
 			attachments: [],
 			stickers,
+			reply_to: replyTo,
 			date: Math.floor(new Date().getTime() / 1000),
 			isDeleted: false,
 			pending: true,
@@ -248,6 +251,7 @@
 							content,
 							nonce: pendingPost.nonce,
 							stickers,
+							reply_to: replyTo,
 						}),
 					}
 				);
@@ -291,6 +295,7 @@
 							content: post.p,
 							attachments: post.attachments,
 							stickers: post.stickers,
+							reply_to: post.reply_to,
 							date: post.t.e,
 							edited_at: post.edited_at,
 							pinned: post.pinned,
@@ -310,6 +315,7 @@
 						content: cmd.val.p,
 						attachments: cmd.val.attachments,
 						stickers: cmd.val.stickers,
+						reply_to: cmd.val.reply_to,
 						date: cmd.val.t.e,
 						edited_at: cmd.val.edited_at,
 						pinned: cmd.val.pinned,
@@ -337,6 +343,25 @@
 	<!-- I think we discussed that guest posting will not be in
 		the official client, due to moderation reasons -->
 	{#if canPost && $user.name}
+		{#if pendingReplies.length}
+			<div class="pending-replies">
+				{#each pendingReplies as reply, i}
+					<button
+						class="pending-reply"
+						title="Remove reply"
+						on:click={() =>
+							(pendingReplies = pendingReplies.filter(
+								(_, j) => j !== i
+							))}
+					>
+						Replying to <b>@{reply.user}</b>:
+						{(reply.content || "").length > 50
+							? reply.content.slice(0, 50) + "…"
+							: reply.content}
+					</button>
+				{/each}
+			</div>
+		{/if}
 		{#if pendingStickers.length}
 			<div class="pending-stickers">
 				{#each pendingStickers as stickerId, i}
@@ -403,8 +428,13 @@
 					}
 				} else {
 					// normal post
-					sendPost(content, pendingStickers);
+					sendPost(
+						content,
+						pendingStickers,
+						pendingReplies.map(r => r.post_id)
+					);
 					pendingStickers = [];
+					pendingReplies = [];
 				}
 
 				input.value = "";
@@ -476,33 +506,35 @@
 						modals.showModal(SendFiles, {postOrigin});
 					}}>+</button
 				>
-				{#if $chat._id && $chat._id !== "livechat" && (chatEmoteData.emojis.length || chatEmoteData.stickers.length)}
-					<button
-						class="send-files"
-						title="Emotes"
-						on:click|preventDefault={() => {
-							modals.closeAllModals();
-							modals.showModal(EmotePicker, {
-								chatId: $chat._id,
-								onEmoji: name => {
-									postInput.value += `:${name}:`;
-									postInput.focus();
-								},
-								onSticker: id => {
-									if (
-										pendingStickers.length < 10 &&
-										!pendingStickers.includes(id)
-									) {
-										pendingStickers = [
-											...pendingStickers,
-											id,
-										];
-									}
-								},
-							});
-						}}>:)</button
-					>
-				{/if}
+				<button
+					class="send-files"
+					title="Emotes"
+					on:click|preventDefault={() => {
+						modals.closeAllModals();
+						modals.showModal(EmotePicker, {
+							chatId: $chat._id,
+							onEmoji: name => {
+								postInput.value += `:${name}:`;
+								postInput.focus();
+							},
+							onUnicode: ch => {
+								postInput.value += ch;
+								postInput.focus();
+							},
+							onSticker: id => {
+								if (
+									pendingStickers.length < 10 &&
+									!pendingStickers.includes(id)
+								) {
+									pendingStickers = [
+										...pendingStickers,
+										id,
+									];
+								}
+							},
+						});
+					}}>:)</button
+				>
 				<button
 					bind:this={submitBtn}
 					name="submit"
@@ -592,6 +624,17 @@
 							{post}
 							{adminView}
 							input={postInput}
+							onReply={post => {
+								if (
+									pendingReplies.length < 10 &&
+									!pendingReplies.find(
+										r => r.post_id === post.post_id
+									)
+								) {
+									pendingReplies = [...pendingReplies, post];
+									postInput.focus();
+								}
+							}}
 							error={postErrors[post.id]}
 							retryPost={() => {
 								sendPost(post.content);
@@ -642,6 +685,22 @@
 		padding-left: 0.8rem;
 		padding-right: 0.8rem;
 		font-size: 2rem;
+	}
+
+	.pending-replies {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3em;
+		margin-bottom: 0.4em;
+	}
+	.pending-reply {
+		text-align: left;
+		background: none;
+		border: none;
+		border-left: solid 3px var(--orange);
+		padding: 0.15em 0.5em;
+		font-size: 0.85em;
+		opacity: 0.85;
 	}
 
 	.pending-stickers {

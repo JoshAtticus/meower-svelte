@@ -45,6 +45,7 @@
 	export let error = "";
 	export let retryPost;
 	export let removePost;
+	export let onReply;
 
 	let bridged = false;
 	let webhook = false;
@@ -395,6 +396,13 @@
 						/>
 					{/if}
 				{:else if !adminView}
+					{#if !editing && post.post_origin !== "inbox" && post.post_origin !== "livechat"}
+						<button
+							class="circle reply"
+							title="Reply"
+							on:click={() => onReply && onReply(post)}
+						/>
+					{/if}
 					{#if !editing && post.post_origin !== "inbox"}
 						<button
 							class="circle share"
@@ -675,6 +683,24 @@
 			>
 		</div>
 	{:else}
+		{#each post.reply_to || [] as reply}
+			<button
+				class="reply-quote"
+				disabled={!reply || !reply._id}
+				on:click={() => $goto(`/posts/${reply._id}`)}
+			>
+				{#if reply && reply._id}
+					<b>@{reply.u}</b>
+					<span class="reply-text"
+						>{(reply.p || "").length > 100
+							? reply.p.slice(0, 100) + "…"
+							: reply.p || "(no content)"}</span
+					>
+				{:else}
+					<i>Original post was deleted</i>
+				{/if}
+			</button>
+		{/each}
 		<p
 			class="post-content"
 			style="border-left-color: #4b5563; {post.pending
@@ -763,6 +789,26 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25em;
+	}
+	.reply-quote {
+		display: block;
+		width: 100%;
+		text-align: left;
+		background: none;
+		border: none;
+		border-left: solid 3px var(--orange);
+		padding: 0.15em 0.5em;
+		margin: 0 0 0.3em;
+		font-size: 0.85em;
+		opacity: 0.85;
+		cursor: pointer;
+	}
+	.reply-quote:disabled {
+		cursor: default;
+	}
+	.reply-text {
+		margin-left: 0.4em;
+		overflow-wrap: anywhere;
 	}
 	.server-wrap :global(> div) {
 		padding: 0.3em 0.6em;
