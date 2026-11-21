@@ -684,11 +684,27 @@
 		</div>
 	{:else}
 		{#each post.reply_to || [] as reply}
-			<button
+			<div
 				class="reply-quote"
-				disabled={!reply || !reply._id}
-				on:click={() => $goto(`/posts/${reply._id}`)}
+				role={reply && reply._id ? "link" : undefined}
+				on:click={() =>
+					reply && reply._id && $goto(`/posts/${reply._id}`)}
+				on:keydown={e =>
+					e.key === "Enter" &&
+					reply &&
+					reply._id &&
+					$goto(`/posts/${reply._id}`)}
 			>
+				<svg
+					class="reply-arrow"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+				>
+					<polyline points="9 17 4 12 9 7" />
+					<path d="M20 18v-2a4 4 0 0 0-4-4H4" />
+				</svg>
 				{#if reply && reply._id}
 					<b>@{reply.u}</b>
 					<span class="reply-text"
@@ -699,7 +715,7 @@
 				{:else}
 					<i>Original post was deleted</i>
 				{/if}
-			</button>
+			</div>
 		{/each}
 		<p
 			class="post-content"
@@ -791,24 +807,28 @@
 		gap: 0.25em;
 	}
 	.reply-quote {
-		display: block;
-		width: 100%;
-		text-align: left;
-		background: none;
-		border: none;
-		border-left: solid 3px var(--orange);
-		padding: 0.15em 0.5em;
-		margin: 0 0 0.3em;
+		display: flex;
+		align-items: baseline;
+		gap: 0.3em;
 		font-size: 0.85em;
-		opacity: 0.85;
+		opacity: 0.75;
+		margin: 0 0 0.25em;
 		cursor: pointer;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
-	.reply-quote:disabled {
-		cursor: default;
+	.reply-arrow {
+		width: 0.9em;
+		height: 0.9em;
+		flex-shrink: 0;
+		position: relative;
+		top: 0.1em;
 	}
 	.reply-text {
-		margin-left: 0.4em;
-		overflow-wrap: anywhere;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.server-wrap :global(> div) {
 		padding: 0.3em 0.6em;
