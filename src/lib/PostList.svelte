@@ -409,11 +409,7 @@
 					}
 				}}
 				on:keydown={event => {
-					if (
-						event.key == "Enter" &&
-						!shiftHeld &&
-						!($mobile && shiftHeld)
-					) {
+					if (event.key == "Enter" && !shiftHeld && !$mobile) {
 						event.preventDefault();
 						if (!submitBtn.disabled) submitBtn.click();
 					}

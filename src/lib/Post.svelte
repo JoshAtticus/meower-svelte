@@ -17,6 +17,7 @@
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
 	import {apiUrl} from "./urls.js";
 	import {shiftHeld} from "../lib/keyDetect.js";
+	import {mobile} from "../lib/responsiveness.js";
 	import * as modals from "./modals.js";
 
 	import {IMAGE_HOST_WHITELIST} from "./hostWhitelist.js";
@@ -515,7 +516,7 @@
 			bind:this={editContentInput}
 			use:autoresize
 			on:keydown={event => {
-				if (event.key == "Enter" && !shiftHeld) {
+				if (event.key == "Enter" && !shiftHeld && !$mobile) {
 					event.preventDefault();
 					if (!editSaveButton.disabled) editSaveButton.click();
 				} else if (event.key == "Escape") {
