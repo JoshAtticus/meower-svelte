@@ -171,6 +171,17 @@
 							clm.updateProfile({avatar_color: "000000"})}
 						>Clear</button
 					>
+				{:else}
+					<button
+						style="margin-left: auto;"
+						on:click={() =>
+							clm.updateProfile({
+								avatar_color:
+									Math.floor(Math.random() * 0xffffff)
+										.toString(16)
+										.padStart(6, "0"),
+							})}>Surprise Me</button
+					>
 				{/if}
 			</div>
 		{/if}
