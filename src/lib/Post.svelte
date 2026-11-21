@@ -14,6 +14,7 @@
 	import ReportPostModal from "./modals/safety/ReportPost.svelte";
 	import ModeratePostModal from "./modals/moderation/ModeratePost.svelte";
 	import SharePostModal from "./modals/SharePost.svelte";
+	import PinPostModal from "./modals/PinPost.svelte";
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
@@ -100,26 +101,11 @@
 			$chat.allow_pinning ||
 			hasPermission(adminPermissions.EDIT_CHATS));
 
-	async function togglePin() {
-		pinButton.disabled = true;
-		try {
-			const resp = await fetch(`${apiUrl}posts/${post.post_id}/pin`, {
-				method: post.pinned ? "DELETE" : "POST",
-				headers: $authHeader,
-			});
-			if (!resp.ok) {
-				if (resp.status === 429) {
-					throw new Error("Too many requests! Try again later.");
-				}
-				throw new Error(
-					"Response code is not OK; code is " + resp.status
-				);
-			}
-			post.pinned = !post.pinned;
-		} catch (e) {
-			error = e;
-		}
-		pinButton.disabled = false;
+	function togglePin() {
+		modals.showModal(PinPostModal, {
+			post,
+			onDone: pinned => (post.pinned = pinned),
+		});
 	}
 
 	// TODO: make bridged tag a setting
