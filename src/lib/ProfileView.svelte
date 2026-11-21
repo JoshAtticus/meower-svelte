@@ -39,6 +39,7 @@
 	export let canClick = false;
 	export let canDoActions = false;
 	export let dmChat = null;
+	export let onEdit = null;
 	export let unread = false;
 
 	function load() {
@@ -57,6 +58,13 @@
 	{:then data}
 		<Container>
 			<div class="settings-controls">
+				{#if onEdit}
+					<button
+						class="circle pen"
+						title="Edit profile"
+						on:click={onEdit}
+					/>
+				{/if}
 				{#if dmChat}
 					<button
 						class="circle star"

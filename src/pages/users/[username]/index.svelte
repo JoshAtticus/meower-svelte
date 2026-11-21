@@ -3,6 +3,7 @@
 	import ProfileView from "../../../lib/ProfileView.svelte";
 	import Loading from "../../../lib/Loading.svelte";
 	import Container from "../../../lib/Container.svelte";
+	import PostList from "../../../lib/PostList.svelte";
 	import EditProfileModal from "../../../lib/modals/EditProfile.svelte";
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
@@ -56,7 +57,13 @@
 				? `color-mix(in srgb, #${profileColor} 70%, black)`
 				: null}
 		>
-		<ProfileView profile={data} canDoActions={true} />
+		<ProfileView
+			profile={data}
+			canDoActions={true}
+			onEdit={$user.name === data._id
+				? () => modals.showModal(EditProfileModal)
+				: null}
+		/>
 
 		{#if data._id === $user.name ? $user.quote : data.quote}
 			<Container>
@@ -65,20 +72,6 @@
 			</Container>
 		{/if}
 
-		{#if $user.name === data._id}
-			<button
-				class="long"
-				title="Edit Profile"
-				on:click={() => modals.showModal(EditProfileModal)}
-				>Edit Profile</button
-			>
-		{/if}
-
-		<button
-			class="long"
-			title="View Recent Posts"
-			on:click={() => $goto("./posts")}>View Recent Posts</button
-		>
 
 		{#if $user.name && $user.name !== data._id}
 			{#if $relationships[data._id] !== 2}
@@ -125,6 +118,20 @@
 				>{$relationships[data._id] === 2 ? "Unb" : "B"}lock User</button
 			>
 		{/if}
+
+		<h2 class="recent-title">Recent Posts</h2>
+		{#key data._id}
+			<PostList
+				fetchUrl="users/{data._id}/posts"
+				postOrigin=""
+				canPost={false}
+				showJump={true}
+			>
+				<Container slot="empty">
+					{data._id} hasn't made any posts yet.
+				</Container>
+			</PostList>
+		{/key}
 		</div>
 	{:catch}
 		<ProfileView username={$params.username} />
@@ -132,6 +139,9 @@
 </div>
 
 <style>
+	.recent-title {
+		margin: 0.75em 0 0.4em 0.2em;
+	}
 	.fullcenter {
 		text-align: center;
 		display: flex;

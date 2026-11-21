@@ -39,6 +39,13 @@
 				$user.mode ? "Light" : "Dark"
 			}`;
 
+	const formatSize = bytes =>
+		bytes < 1024
+			? `${bytes} B`
+			: bytes < 1048576
+			? `${(bytes / 1024).toFixed(1)} KB`
+			: `${(bytes / 1048576).toFixed(1)} MB`;
+
 	// --- Data export --------------------------------------------------------
 	let exportState = null; // null | {status, completed_at}
 	let exportLoaded = false;
@@ -269,7 +276,9 @@
 						{:else if exportState && exportState.status === "pending"}
 							Preparing your export...
 						{:else if exportState && exportState.status === "completed"}
-							Your export is ready
+							Your export is ready{exportState.size
+								? ` · ${formatSize(exportState.size)}`
+								: ""}
 						{:else if exportState && exportState.status === "failed"}
 							Your last export failed
 						{:else}
