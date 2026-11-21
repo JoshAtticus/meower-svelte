@@ -282,6 +282,15 @@
 		return content;
 	}
 
+	function relativeDate(timestamp) {
+		const diff = Math.floor(Date.now() / 1000) - timestamp;
+		if (diff < 60) return "just now";
+		if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+		if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+		if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+		return new Date(timestamp * 1000).toLocaleDateString();
+	}
+
 	async function adminDelete() {
 		adminDeleteButton.disabled = true;
 		try {
@@ -345,7 +354,7 @@
 			{#await addFancyElements(post.content, postEmotes) then content}
 				{@html content}
 			{/await}
-			<i class="server-date"><FormattedDate date={post.date} /></i>
+			<i class="server-date">{relativeDate(post.date)}</i>
 		</p>
 	</Container>
 {:else}
@@ -756,10 +765,12 @@
 		font-size: 0.85em;
 		opacity: 0.75;
 		margin: 0;
+		text-align: center;
 	}
 	.server-date {
 		font-size: 0.75em;
 		margin-left: 0.5em;
+		font-style: normal;
 	}
 	.post-sticker {
 		max-width: 12em;
