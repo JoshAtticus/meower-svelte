@@ -25,6 +25,13 @@ export const lastTyped = writable(0);
 // Relationships
 export const relationships = writable({});
 
+// Friends and friend requests
+export const friends = writable({
+	friends: [],
+	incoming: [],
+	outgoing: [],
+});
+
 // Chats
 export const chats = writable([]);
 export const chat = writable({

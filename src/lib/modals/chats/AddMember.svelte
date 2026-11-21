@@ -1,7 +1,7 @@
 <script>
 	import Modal from "../../Modal.svelte";
 
-	import {authHeader, chat} from "../../stores.js";
+	import {authHeader, chat, friends} from "../../stores.js";
 	import {apiUrl} from "../../urls.js";
 	import * as modals from "../../modals.js";
 
@@ -92,8 +92,14 @@
 				maxlength="20"
 				disabled={loading}
 				bind:value={username}
+				list="friend-list"
 				use:focus
 			/>
+			<datalist id="friend-list">
+				{#each $friends.friends as friend}
+					<option value={friend} />
+				{/each}
+			</datalist>
 			{#if error}
 				<p style="color: crimson;">{error}</p>
 			{:else}

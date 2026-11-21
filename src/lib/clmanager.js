@@ -10,6 +10,7 @@ import Cloudlink from "./cloudlink.js";
 import {
 	screen,
 	relationships,
+	friends,
 	chats,
 	ulist,
 	user,
@@ -215,6 +216,10 @@ let inboxMessageEvent = null;
  */
 let relationshipUpdateEvent = null;
 /**
+ * @type any
+ */
+let friendsUpdateEvent = null;
+/**
  * A variable used to keep track of user config updates.
  * @type any
  */
@@ -283,6 +288,10 @@ export async function connect() {
 	if (relationshipUpdateEvent) {
 		link.off(relationshipUpdateEvent);
 		relationshipUpdateEvent = null;
+	}
+	if (friendsUpdateEvent) {
+		link.off(friendsUpdateEvent);
+		friendsUpdateEvent = null;
 	}
 	if (configUpdateEvent) {
 		link.off(configUpdateEvent);
@@ -421,6 +430,8 @@ export async function connect() {
 			}
 			relationships.set(_relationships);
 
+			await updateFriends();
+
 			// get and set chats
 			await tick();
 			const resp = await fetch(`${apiUrl}chats?autoget=1`, {
@@ -445,6 +456,11 @@ export async function connect() {
 		if (cmd.val.mode === "update_relationship") {
 			_relationships[cmd.val.payload.username] = cmd.val.payload.state;
 			relationships.set(_relationships);
+		}
+	});
+	friendsUpdateEvent = link.on("direct", async cmd => {
+		if (cmd.val.mode === "update_friends") {
+			await updateFriends();
 		}
 	});
 	configUpdateEvent = link.on("direct", cmd => {
@@ -600,6 +616,26 @@ export async function meowerRequest(data) {
 			}
 		);
 	});
+}
+
+/**
+ * Sends a request to update the user's settings.
+ *
+ * @returns {Promise<Response>}
+ */
+/**
+ * Refreshes the friends store from the REST API.
+ *
+ * @returns {Promise<void>}
+ */
+export async function updateFriends() {
+	if (!_user.name) return;
+	const resp = await fetch(`${apiUrl}me/friends`, {
+		headers: _authHeader,
+	});
+	if (resp.ok) {
+		friends.set(await resp.json());
+	}
 }
 
 /**
