@@ -349,14 +349,16 @@
 </script>
 
 {#if post.user === "Server" && !adminView}
-	<Container>
-		<p class="server-post">
-			{#await addFancyElements(post.content, postEmotes) then content}
-				{@html content}
-			{/await}
-			<i class="server-date">{relativeDate(post.date)}</i>
-		</p>
-	</Container>
+	<div class="server-wrap">
+		<Container>
+			<p class="server-post">
+				{#await addFancyElements(post.content, postEmotes) then content}
+					{@html content.replace(/<\/?p>/g, "")}
+				{/await}
+				<i class="server-date">{relativeDate(post.date)}</i>
+			</p>
+		</Container>
+	</div>
 {:else}
 <Container>
 	<div class="post-header">
@@ -760,6 +762,9 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25em;
+	}
+	.server-wrap :global(> div) {
+		padding: 0.3em 0.6em;
 	}
 	.server-post {
 		font-size: 0.85em;
