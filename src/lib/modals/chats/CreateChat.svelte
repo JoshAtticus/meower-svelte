@@ -17,6 +17,20 @@
 		["emojis", "Emojis & Stickers"],
 		["other", "Other"],
 	];
+	const PURPOSE_INFO = {
+		friends:
+			"For close friends and family. Everyone can send messages, invite people, customise the chat's name, icon and colour, add emojis and stickers, and pin messages.",
+		public:
+			"For open conversations. Everyone can send messages, delete their own messages and invite people.",
+		private:
+			"For a set group of people. Same as Public Discussion, but invites start turned off, so only you and senior roles can add people.",
+		announcements:
+			"For one-way updates. Members can read but can't send messages until you give them a role that allows it.",
+		emojis:
+			"For collecting a chat's emojis and stickers. Members can't send messages until you give them a role that allows it.",
+		other:
+			"The standard setup. Everyone can send messages, delete their own messages and invite people.",
+	};
 	let purpose = "other";
 </script>
 
@@ -86,7 +100,11 @@
 					>
 				{/each}
 			</div>
-			<br />
+			<p class="purpose-info">{PURPOSE_INFO[purpose]}</p>
+			<p class="purpose-note">
+				The purpose only sets up the chat's starting roles. You can
+				change any of it later in Group Chat Settings.
+			</p>
 			<div class="modal-buttons">
 				<button
 					type="button"
@@ -117,6 +135,15 @@
 		background-color: transparent;
 		color: var(--foreground);
 		border: solid 2px var(--orange);
+	}
+	.purpose-info {
+		margin: 0.6em 0 0.2em;
+		font-size: 0.9em;
+	}
+	.purpose-note {
+		margin: 0 0 1em;
+		font-size: 0.8em;
+		opacity: 0.65;
 	}
 	.purpose-option.selected {
 		background-color: var(--orange);
