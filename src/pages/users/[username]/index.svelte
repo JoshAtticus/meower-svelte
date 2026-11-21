@@ -3,13 +3,12 @@
 	import ProfileView from "../../../lib/ProfileView.svelte";
 	import Loading from "../../../lib/Loading.svelte";
 	import Container from "../../../lib/Container.svelte";
-	import ChangePFPModal from "../../../lib/modals/ChangePFP.svelte";
+	import EditProfileModal from "../../../lib/modals/EditProfile.svelte";
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
 	import RemoveFriendModal from "../../../lib/modals/RemoveFriend.svelte";
 
 	import {relationships, friends, user} from "../../../lib/stores.js";
-	import {userRestrictions, isRestricted} from "../../../lib/bitField.js";
 	import {apiUrl, encodeApiURLParams} from "../../../lib/urls.js";
 	import * as modals from "../../../lib/modals.js";
 	import * as clm from "../../../lib/clmanager.js";
@@ -59,21 +58,7 @@
 		>
 		<ProfileView profile={data} canDoActions={true} />
 
-		{#if $user.name == data._id}
-			<Container>
-				<h3>Quote</h3>
-				<input
-					type="text"
-					class="modal-input white"
-					style="font-style: italic"
-					placeholder="Write something..."
-					maxlength="360"
-					disabled={isRestricted(userRestrictions.EDITING_QUOTE)}
-					bind:value={$user.quote}
-					on:change={() => clm.updateProfile({quote: $user.quote})}
-				/>
-			</Container>
-		{:else if data.quote}
+		{#if data.quote}
 			<Container>
 				<h3>Quote</h3>
 				<p>"<i>{data.quote}</i>"</p>
@@ -83,9 +68,9 @@
 		{#if $user.name === data._id}
 			<button
 				class="long"
-				title="Change Profile Picture"
-				on:click={() => modals.showModal(ChangePFPModal)}
-				>Change Profile Picture</button
+				title="Edit Profile"
+				on:click={() => modals.showModal(EditProfileModal)}
+				>Edit Profile</button
 			>
 		{/if}
 
