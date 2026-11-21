@@ -42,11 +42,13 @@
 	import PagedList from "./PagedList.svelte";
 	import Container from "./Container.svelte";
 	import Post from "./Post.svelte";
+	import PFP from "./PFP.svelte";
 	import TypingIndicator from "./TypingIndicator.svelte";
 	import ProfileView from "./ProfileView.svelte";
 	import * as clm from "./clmanager.js";
 	import {apiUrl, encodeApiURLParams, uploadsUrl} from "./urls.js";
 	import {chatEmotes, loadEmotes} from "./emotes.js";
+	import {profileCache} from "./loadProfile.js";
 
 	import {createEventDispatcher} from "svelte";
 	const dispatch = createEventDispatcher();
@@ -348,19 +350,30 @@
 		{#if pendingReplies.length}
 			<div class="pending-replies">
 				{#each pendingReplies as reply, i}
-					<button
-						class="pending-reply"
-						title="Remove reply"
-						on:click={() =>
-							(pendingReplies = pendingReplies.filter(
-								(_, j) => j !== i
-							))}
-					>
-						Replying to <b>@{reply.user}</b>:
-						{(reply.content || "").length > 50
-							? reply.content.slice(0, 50) + "…"
-							: reply.content}
-					</button>
+					<div class="pending-reply">
+						<PFP
+							icon={($profileCache[reply.user] || {}).pfp_data ||
+								-1}
+							avatar={($profileCache[reply.user] || {}).avatar}
+							avatarColor={($profileCache[reply.user] || {})
+								.avatar_color}
+							alt="{reply.user}'s profile picture"
+							size={0.45}
+						/>
+						<span class="pending-reply-label"
+							>Replying to <b>{reply.user}</b></span
+						>
+						<span class="pending-reply-text">{reply.content}</span>
+						<button
+							type="button"
+							class="circle close"
+							title="Cancel reply"
+							on:click={() =>
+								(pendingReplies = pendingReplies.filter(
+									(_, j) => j !== i
+								))}
+						/>
+					</div>
 				{/each}
 			</div>
 		{/if}
@@ -724,13 +737,34 @@
 		margin-bottom: 0.4em;
 	}
 	.pending-reply {
-		text-align: left;
-		background: none;
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.3em 0.3em 0.3em 0.5em;
+		background-color: var(--background);
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		font-size: 0.9em;
+	}
+	.pending-reply-label {
+		flex-shrink: 0;
+	}
+	.pending-reply-text {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		opacity: 0.8;
+	}
+	.pending-reply button.circle {
+		flex-shrink: 0;
+		width: 1.6em;
+		height: 1.6em;
+		min-width: 1.6em;
+		min-height: 1.6em;
+		margin: 0;
 		border: none;
-		border-left: solid 3px var(--orange);
-		padding: 0.15em 0.5em;
-		font-size: 0.85em;
-		opacity: 0.85;
 	}
 
 	.pending-stickers {
