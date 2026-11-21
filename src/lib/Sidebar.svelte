@@ -435,8 +435,25 @@
 		border-radius: 1em 1em 0 0;
 		animation: sheet-up 0.25s ease;
 	}
-	.popup.sheet button {
+	/* same rows as the other action sheets */
+	:global(main) .popup.sheet > button {
 		width: 100%;
+		min-height: 2.9em;
+		margin: 0;
+		padding: 0 0.9em;
+		gap: 0.8em;
+		border: none;
+		border-radius: 5px;
+		box-shadow: none;
+		font-size: 1em;
+		color: white;
+	}
+	:global(main) .popup.sheet > button > img {
+		width: 1.3em;
+		height: 1.3em;
+	}
+	:global(main) .popup.sheet {
+		gap: 0.35em;
 	}
 	@keyframes sheet-up {
 		from {
