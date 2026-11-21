@@ -154,6 +154,15 @@
 
 	let renameErrors = {};
 
+	let idCopied = false;
+	async function copyChatId() {
+		try {
+			await navigator.clipboard.writeText($chat._id);
+			idCopied = true;
+			setTimeout(() => (idCopied = false), 2000);
+		} catch {}
+	}
+
 	async function renameEmote(type, emote, name) {
 		name = name.trim();
 		if (name === emote.name) return;
@@ -337,6 +346,14 @@
 					>
 				</div>
 			</form>
+
+			<div class="chat-id-row">
+				<b>Chat ID</b>
+				<code class="chat-id-value">{$chat._id}</code>
+				<button type="button" on:click={copyChatId}
+					>{idCopied ? "Copied!" : "Copy"}</button
+				>
+			</div>
 		{:else}
 			{@const type = tab}
 			<div class="emote-upload">
@@ -474,6 +491,23 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4em;
+	}
+
+	.chat-id-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+		margin-top: 1em;
+		padding-top: 0.75em;
+		border-top: solid 2px var(--orange);
+	}
+	.chat-id-value {
+		flex: 1;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		opacity: 0.8;
 	}
 
 	.emote-upload {

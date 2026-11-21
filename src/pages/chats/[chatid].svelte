@@ -212,7 +212,9 @@
 				<h1 class="chat-name">
 					<ChatIcon chat={$chat} size={0.7} />
 					{$chat.nickname}
-					<span class="chat-id">(<code>{$params.chatid}</code>)</span>
+					{#if $params.admin}
+						<span class="chat-id">(<code>{$params.chatid}</code>)</span>
+					{/if}
 				</h1>
 				{#if $params.admin && $chat.deleted}
 					<p style="margin-bottom: 0; color: crimson;">
