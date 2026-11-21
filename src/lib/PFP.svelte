@@ -35,7 +35,7 @@
 		class:pfp={!raw}
 		class:raw-pfp={raw}
 		class:custom-avatar={!!avatar}
-		style:background-color={avatarColor ? `#${avatarColor}` : null}
+		style:border-color={avatarColor ? `#${avatarColor}` : null}
 	>
 		<img
 			{alt}
@@ -96,6 +96,9 @@
 		color: black;
 	}
 
+	.custom-avatar {
+		padding: 0;
+	}
 	.pfp.custom-avatar,
 	.raw-pfp.custom-avatar {
 		overflow: hidden;

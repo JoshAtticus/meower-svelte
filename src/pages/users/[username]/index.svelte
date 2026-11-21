@@ -3,26 +3,18 @@
 	import ProfileView from "../../../lib/ProfileView.svelte";
 	import Loading from "../../../lib/Loading.svelte";
 	import Container from "../../../lib/Container.svelte";
-	import PFP from "../../../lib/PFP.svelte";
-
-	import BasicModal from "../../../lib/modals/Basic.svelte";
+	import ChangePFPModal from "../../../lib/modals/ChangePFP.svelte";
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
 	import RemoveFriendModal from "../../../lib/modals/RemoveFriend.svelte";
 
-	import {relationships, friends, user, authHeader} from "../../../lib/stores.js";
+	import {relationships, friends, user} from "../../../lib/stores.js";
 	import {userRestrictions, isRestricted} from "../../../lib/bitField.js";
-	import {profileCache} from "../../../lib/loadProfile.js";
-	import {apiUrl, uploadsUrl, encodeApiURLParams} from "../../../lib/urls.js";
+	import {apiUrl, encodeApiURLParams} from "../../../lib/urls.js";
 	import * as modals from "../../../lib/modals.js";
 	import * as clm from "../../../lib/clmanager.js";
 
 	import {params, goto} from "@roxi/routify";
-
-	const PFP_COUNT = 34;
-
-	const pfps = new Array(PFP_COUNT).fill().map((_, i) => i + 1);
-	let pfpSwitcher = false;
 
 	async function loadProfile() {
 		let path = `users/${$params.username}`;
@@ -35,42 +27,6 @@
 		return json;
 	}
 
-	let pfpOverflow = false;
-	let pfpUpload, uploadingPfp;
-
-	async function uploadPfp() {
-		const file = pfpUpload.files[0];
-		if (!file) return;
-		uploadingPfp = true;
-		try {
-			const form = new FormData();
-			form.append("file", file);
-			const resp = await fetch(`${uploadsUrl}icons`, {
-				method: "POST",
-				headers: {Authorization: $authHeader.token},
-				body: form,
-			});
-			if (!resp.ok) {
-				throw new Error(
-					"Response code is not OK; code is " + resp.status
-				);
-			}
-			const uploaded = await resp.json();
-			if ($profileCache[$user.name]) delete $profileCache[$user.name];
-			await clm.updateProfile({avatar: uploaded.id});
-		} catch (e) {
-			modals.showModal(BasicModal, {
-				title: "Failed to upload profile picture",
-				desc: `${e}`,
-			});
-		} finally {
-			uploadingPfp = false;
-		}
-	}
-	$: {
-		const pfp = $user.pfp_data;
-		pfpOverflow = pfp < 0 || pfp > PFP_COUNT;
-	}
 </script>
 
 <div>
@@ -79,6 +35,15 @@
 			<Loading />
 		</div>
 	{:then data}
+		<div
+			style:--orange={/^[0-9a-fA-F]{6}$/.test(
+				(data._id === $user.name
+					? $user.avatar_color
+					: data.avatar_color) || ""
+			)
+				? `#${data._id === $user.name ? $user.avatar_color : data.avatar_color}`
+				: null}
+		>
 		<ProfileView profile={data} canDoActions={true} />
 
 		{#if $user.name == data._id}
@@ -102,92 +67,13 @@
 			</Container>
 		{/if}
 
-		{#if pfpSwitcher}
-			<Container>
-				<h2>Profile Picture</h2>
-				<div id="pfp-list">
-					{#if pfpOverflow && $user.pfp_data < 0}
-						<button
-							on:click={() => (pfpSwitcher = false)}
-							class="pfp selected"
-							><PFP
-								online={false}
-								icon={$user.pfp_data}
-								alt="Profile picture {$user.pfp_data}"
-							/></button
-						>
-					{/if}
-					{#each pfps as pfp}
-						<button
-							on:click={() => {
-								if ($profileCache[$user.name])
-									delete $profileCache[$user.name];
-								clm.updateProfile({pfp_data: pfp});
-								pfpSwitcher = false;
-							}}
-							class="pfp"
-							class:selected={$user.pfp_data === pfp}
-							><PFP
-								online={false}
-								icon={pfp}
-								alt="Profile picture {pfp}"
-							/></button
-						>
-					{/each}
-					{#if pfpOverflow && $user.pfp_data > 0}
-						<button
-							on:click={() => (pfpSwitcher = false)}
-							class="pfp selected"
-							><PFP
-								online={false}
-								icon={$user.pfp_data}
-								alt="Profile picture {$user.pfp_data}"
-							/></button
-						>
-					{/if}
-				</div>
-			</Container>
-		{:else if $user.name === data._id}
+		{#if $user.name === data._id}
 			<button
 				class="long"
 				title="Change Profile Picture"
-				on:click={() => (pfpSwitcher = true)}
+				on:click={() => modals.showModal(ChangePFPModal)}
 				>Change Profile Picture</button
 			>
-			<Container>
-				<h3>Custom Profile Picture</h3>
-				<input
-					type="file"
-					accept="image/*"
-					bind:this={pfpUpload}
-					on:change={uploadPfp}
-					disabled={uploadingPfp}
-				/>
-				{#if $user.avatar}
-					<button
-						class="long"
-						on:click={() => {
-							if ($profileCache[$user.name])
-								delete $profileCache[$user.name];
-							clm.updateProfile({avatar: ""});
-						}}>Remove Custom Picture</button
-					>
-				{/if}
-			</Container>
-			<Container>
-				<h3>Profile Color</h3>
-				<div class="color-picker">
-					<input
-						type="color"
-						value={`#${$user.avatar_color || "000000"}`}
-						on:change={e =>
-							clm.updateProfile({
-								avatar_color: e.target.value.substring(1),
-							})}
-					/>
-					<span>#{$user.avatar_color || "000000"}</span>
-				</div>
-			</Container>
 		{/if}
 
 		<button
@@ -241,6 +127,7 @@
 				>{$relationships[data._id] === 2 ? "Unb" : "B"}lock User</button
 			>
 		{/if}
+		</div>
 	{:catch}
 		<ProfileView username={$params.username} />
 	{/await}
@@ -265,44 +152,6 @@
 		width: 100%;
 		margin: 0;
 		margin-bottom: 0.2em;
-	}
-
-	.pfp {
-		padding: 0.2em;
-		margin: 0.2em;
-		border-radius: 1.45em;
-		display: inline-block;
-		background: none;
-		border: none;
-	}
-	:global(main.input-hover) .pfp:hover,
-	:global(main.input-touch) .pfp:active {
-		background-color: var(--orange-light);
-	}
-	/* cst todo: fix shadow appearing when activating then unhovering because i gtg*/
-	:global(:root main.input-hover) .pfp:active {
-		background-color: var(--orange-dark);
-	}
-	:global(main) .pfp.selected {
-		background-color: var(--orange);
-	}
-	#pfp-list {
-		display: flex;
-		flex-wrap: wrap;
-	}
-
-	.color-picker {
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-	}
-	.color-picker input[type="color"] {
-		width: 3em;
-		height: 2em;
-		padding: 0;
-		border: none;
-		background: none;
-		cursor: pointer;
 	}
 
 </style>
