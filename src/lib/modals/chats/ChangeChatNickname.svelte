@@ -585,6 +585,7 @@
 	.emote-name {
 		flex: 1;
 		min-width: 0;
+		margin: 0;
 		font-family: monospace;
 	}
 	.emote-name.invalid {
