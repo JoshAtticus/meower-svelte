@@ -389,6 +389,31 @@ main.input-touch button.circle:not(:disabled):active {
 	transform: scale(1.2);
 }
 
+button.circle:focus-visible,
+input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--foreground);
+	outline-offset: 2px;
+}
+
+/* larger tap targets on touch devices */
+main.input-touch button.circle,
+main.input-touch input[type="checkbox"] {
+	width: 2em;
+	height: 2em;
+	background-size: 1.5em;
+}
+
+/* respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
 input[type="checkbox"]:checked {
 	background-image: url("./on.svg");
 }

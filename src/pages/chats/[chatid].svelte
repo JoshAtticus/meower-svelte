@@ -152,6 +152,7 @@
 						{#if $params.admin}
 							<button
 								class="circle admin"
+								title="Moderate chat"
 								disabled={!$chat._id}
 								on:click={() =>
 									modals.showModal(ModerateChatModal)}
@@ -160,6 +161,7 @@
 						{#if $chat.owner === $user.name || ($params.admin && hasPermission(adminPermissions.EDIT_CHATS))}
 							<button
 								class="circle settings"
+								title="Change chat nickname"
 								on:click={() => {
 									if (
 										isRestricted(
@@ -190,6 +192,7 @@
 						{/if}
 						<button
 							class="circle members"
+							title="Toggle member list"
 							on:click={() => (showMembers = !showMembers)}
 						/>
 					</div>

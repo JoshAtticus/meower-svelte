@@ -378,6 +378,7 @@
 					{#if !editing && hasPermission(adminPermissions.VIEW_POSTS)}
 						<button
 							class="circle admin"
+							title="Moderate post"
 							on:click={() =>
 								modals.showModal(ModeratePostModal, {
 									postid: post.post_id,
@@ -389,6 +390,7 @@
 							{#if !bridged}
 								<button
 									class="circle pen"
+									title="Edit post"
 									on:click={async () => {
 										error = "";
 										editing = true;
@@ -408,6 +410,7 @@
 						{/if}
 						<button
 							class="circle reply"
+							title="Reply"
 							on:click={() => {
 								let existingText = input.value;
 
@@ -429,6 +432,7 @@
 							{#if !bridged}
 								<button
 									class="circle trash"
+									title="Delete post"
 									bind:this={deleteButton}
 									on:click={async () => {
 										if (shiftHeld) {
@@ -473,6 +477,7 @@
 						{:else}
 							<button
 								class="circle report"
+								title="Report post"
 								on:click={() =>
 									modals.showModal(ReportPostModal, {post})}
 							/>
