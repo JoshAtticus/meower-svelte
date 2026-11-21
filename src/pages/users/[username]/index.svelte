@@ -58,10 +58,10 @@
 		>
 		<ProfileView profile={data} canDoActions={true} />
 
-		{#if data.quote}
+		{#if data._id === $user.name ? $user.quote : data.quote}
 			<Container>
 				<h3>Quote</h3>
-				<p>"<i>{data.quote}</i>"</p>
+				<p>"<i>{data._id === $user.name ? $user.quote : data.quote}</i>"</p>
 			</Container>
 		{/if}
 

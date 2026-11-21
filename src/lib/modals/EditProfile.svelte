@@ -18,6 +18,7 @@
 	let tab = (modalData && modalData.tab) || "picture";
 
 	let fileInput, uploading;
+	let quote = $user.quote || "";
 
 	function clearCache() {
 		if ($profileCache[$user.name]) delete $profileCache[$user.name];
@@ -138,9 +139,16 @@
 				placeholder="Write something..."
 				maxlength="360"
 				disabled={isRestricted(userRestrictions.EDITING_QUOTE)}
-				bind:value={$user.quote}
-				on:change={() => clm.updateProfile({quote: $user.quote})}
+				bind:value={quote}
 			/>
+			<div class="quote-controls">
+				<button
+					disabled={isRestricted(userRestrictions.EDITING_QUOTE) ||
+						quote === ($user.quote || "")}
+					on:click={() => clm.updateProfile({quote})}
+					>Save</button
+				>
+			</div>
 		{:else if tab === "colour"}
 			<div class="color-picker">
 				<label
@@ -236,6 +244,12 @@
 	}
 	.pfp-option.selected {
 		background-color: var(--orange);
+	}
+
+	.quote-controls {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 0.6em;
 	}
 
 	.color-picker {
