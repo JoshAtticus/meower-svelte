@@ -84,7 +84,8 @@
 			] || errorIcon}
 			on:error={handleError}
 			class:loading={icon === -1}
-			draggable={false}
+			class:meowy={id === -4 && !avatar}
+			draggable="false"
 			width="auto"
 			height="100%"
 		/>
@@ -130,6 +131,11 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+	img.meowy {
+		width: 80%;
+		height: 80%;
+		margin: auto;
 	}
 
 	.loading {
