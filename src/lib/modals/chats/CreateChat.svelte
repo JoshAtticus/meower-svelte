@@ -8,6 +8,16 @@
 	import {goto, focus} from "@roxi/routify";
 
 	let nickname, loading, error;
+
+	const PURPOSES = [
+		["friends", "Friends & Family"],
+		["public", "Public Discussion"],
+		["private", "Private Discussion"],
+		["announcements", "Announcements"],
+		["emojis", "Emojis & Stickers"],
+		["other", "Other"],
+	];
+	let purpose = "other";
 </script>
 
 <Modal on:close={modals.closeLastModal}>
@@ -24,7 +34,7 @@
 							"Content-Type": "application/json",
 							...$authHeader,
 						},
-						body: JSON.stringify({nickname}),
+						body: JSON.stringify({nickname, purpose}),
 					});
 					if (!resp.ok) {
 						if (resp.status === 429) {
@@ -63,7 +73,19 @@
 				disabled={loading}
 				bind:value={nickname}
 				use:focus
-			/><br />
+			/>
+			<p class="purpose-label"><b>Purpose</b></p>
+			<div class="purpose-grid">
+				{#each PURPOSES as [value, label]}
+					<button
+						type="button"
+						class="purpose-option"
+						class:selected={purpose === value}
+						disabled={loading}
+						on:click={() => (purpose = value)}>{label}</button
+					>
+				{/each}
+			</div>
 			<br />
 			<div class="modal-buttons">
 				<button
@@ -78,3 +100,27 @@
 		</form>
 	</div>
 </Modal>
+
+<style>
+	.purpose-label {
+		margin: 0.75em 0 0.4em;
+	}
+	.purpose-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.4em;
+	}
+	.purpose-option {
+		margin: 0;
+		padding: 0.5em 0.4em;
+		font-size: 0.9em;
+		background-color: transparent;
+		color: var(--foreground);
+		border: solid 2px var(--orange);
+	}
+	.purpose-option.selected {
+		background-color: var(--orange);
+		color: white;
+		font-weight: bold;
+	}
+</style>
