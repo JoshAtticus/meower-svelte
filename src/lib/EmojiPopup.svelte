@@ -18,6 +18,11 @@
 	export let onEmoji; // (name)
 	export let onUnicode; // (char)
 	export let onSticker; // (id)
+	export let onClose; // () - called after a pick unless shift is held
+
+	function done(event) {
+		if (!(event && event.shiftKey) && onClose) onClose();
+	}
 
 	const dispatch = createEventDispatcher();
 
@@ -68,19 +73,22 @@
 		loadEmotes(c._id);
 	}
 
-	function pickUnicode(e) {
+	function pickUnicode(e, ev) {
 		recordEmote({t: "u", v: e.char, name: e.keywords[0] || ""});
 		onUnicode && onUnicode(e.char);
+		done(ev);
 	}
-	function pickEmoji(e, chatId) {
+	function pickEmoji(e, chatId, ev) {
 		recordEmote({t: "e", id: e._id, name: e.name, chatId});
 		onEmoji && onEmoji(e.name);
+		done(ev);
 	}
-	function pickSticker(e, chatId) {
+	function pickSticker(e, chatId, ev) {
 		recordEmote({t: "s", id: e._id, name: e.name, chatId});
 		onSticker && onSticker(e._id);
+		done(ev);
 	}
-	function pickRecent(e) {
+	function pickRecent(e, ev) {
 		if (e.t === "u") {
 			onUnicode && onUnicode(e.v);
 		} else if (e.t === "e") {
@@ -89,6 +97,7 @@
 			onSticker && onSticker(e.id);
 		}
 		recordEmote(e);
+		done(ev);
 	}
 
 	function onScroll() {
@@ -142,13 +151,13 @@
 						<button type="button"
 							class="option unicode"
 							title={e.name}
-							on:click={() => pickRecent(e)}>{e.v}</button
+							on:click={ev => pickRecent(e, ev)}>{e.v}</button
 						>
 					{:else if e.t === "e"}
 						<button type="button"
 							class="option"
 							title=":{e.name}:"
-							on:click={() => pickRecent(e)}
+							on:click={ev => pickRecent(e, ev)}
 						>
 							<img
 								src="{uploadsUrl}emojis/{e.id}"
@@ -159,7 +168,7 @@
 						<button type="button"
 							class="option sticker-option"
 							title={e.name}
-							on:click={() => pickRecent(e)}
+							on:click={ev => pickRecent(e, ev)}
 						>
 							<img
 								class="sticker"
@@ -176,7 +185,7 @@
 					<button type="button"
 						class="option unicode"
 						title={e.keywords[0] || ""}
-						on:click={() => pickUnicode(e)}>{e.char}</button
+						on:click={ev => pickUnicode(e, ev)}>{e.char}</button
 					>
 				{:else}
 					<p class="empty">No emoji found.</p>
@@ -188,7 +197,7 @@
 						<button type="button"
 							class="option"
 							title=":{e.name}:"
-							on:click={() => pickEmoji(e, sectionChat._id)}
+							on:click={ev => pickEmoji(e, sectionChat._id, ev)}
 						>
 							<img
 								src="{uploadsUrl}emojis/{e._id}"
@@ -203,8 +212,7 @@
 						<button type="button"
 							class="option sticker-option"
 							title={e.name}
-							on:click={() =>
-								pickSticker(e, sectionChat._id)}
+							on:click={ev => pickSticker(e, sectionChat._id, ev)}
 						>
 							<img
 								class="sticker"

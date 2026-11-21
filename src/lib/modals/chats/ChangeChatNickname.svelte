@@ -19,6 +19,26 @@
 	let fileInput, uploading;
 	let emoteFileInput;
 	let emoteName = "";
+	let emoteFile = null;
+	let emotePreview = "";
+
+	$: emoteNameValid = /^[A-Za-z0-9_-]{1,32}$/.test(emoteName);
+
+	function chooseEmoteFile() {
+		const file = emoteFileInput.files[0];
+		if (!file) return;
+		if (emotePreview) URL.revokeObjectURL(emotePreview);
+		emoteFile = file;
+		emotePreview = URL.createObjectURL(file);
+	}
+
+	function clearEmoteFile() {
+		if (emotePreview) URL.revokeObjectURL(emotePreview);
+		emoteFile = null;
+		emotePreview = "";
+		emoteName = "";
+		if (emoteFileInput) emoteFileInput.value = "";
+	}
 	let emoteUploading = false;
 
 	$: emotes = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
@@ -81,8 +101,8 @@
 	}
 
 	async function uploadEmote(type) {
-		const file = emoteFileInput.files[0];
-		if (!file) return;
+		const file = emoteFile;
+		if (!file || !emoteNameValid) return;
 		emoteUploading = true;
 		try {
 			const form = new FormData();
@@ -109,7 +129,7 @@
 						"Content-Type": "application/json",
 						...$authHeader,
 					},
-					body: JSON.stringify({name: emoteName || undefined}),
+					body: JSON.stringify({name: emoteName}),
 				}
 			);
 			if (!claim.ok) {
@@ -119,8 +139,7 @@
 						"Response code is not OK; code is " + claim.status
 				);
 			}
-			emoteName = "";
-			emoteFileInput.value = "";
+			clearEmoteFile();
 			await refreshEmotes($chat._id);
 			$chat[type] = emotes[type];
 		} catch (e) {
@@ -130,6 +149,44 @@
 			});
 		} finally {
 			emoteUploading = false;
+		}
+	}
+
+	let renameErrors = {};
+
+	async function renameEmote(type, emote, name) {
+		name = name.trim();
+		if (name === emote.name) return;
+		if (!/^[A-Za-z0-9_-]{1,32}$/.test(name)) {
+			renameErrors = {...renameErrors, [emote._id]: true};
+			return;
+		}
+		try {
+			const resp = await fetch(
+				`${apiUrl}chats/${$chat._id}/${type}/${emote._id}`,
+				{
+					method: "PATCH",
+					headers: {
+						"Content-Type": "application/json",
+						...$authHeader,
+					},
+					body: JSON.stringify({name}),
+				}
+			);
+			if (!resp.ok) {
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			delete renameErrors[emote._id];
+			renameErrors = renameErrors;
+			await refreshEmotes($chat._id);
+			$chat[type] = emotes[type];
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: `Failed to rename ${type.slice(0, -1)}`,
+				desc: `${e}`,
+			});
 		}
 	}
 
@@ -284,46 +341,97 @@
 			{@const type = tab}
 			<div class="emote-upload">
 				<input
-					type="text"
-					class="modal-input white"
-					placeholder="Name (optional)"
-					maxlength="32"
-					bind:value={emoteName}
-				/>
-				<input
 					type="file"
 					accept="image/*"
 					bind:this={emoteFileInput}
+					on:change={chooseEmoteFile}
 					disabled={emoteUploading}
 					hidden
 				/>
 				<button
+					type="button"
+					class="emote-preview"
+					class:empty={!emotePreview}
+					class:sticker={type === "stickers"}
+					title={emotePreview ? "Choose a different image" : "Choose image"}
 					disabled={emoteUploading}
 					on:click={() => emoteFileInput.click()}
 				>
-					Choose image
+					{#if emotePreview}
+						<img src={emotePreview} alt="Selected file" />
+					{:else}
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							><line x1="12" y1="5" x2="12" y2="19" /><line
+								x1="5"
+								y1="12"
+								x2="19"
+								y2="12"
+							/></svg
+						>
+					{/if}
 				</button>
+				<div class="emote-fields">
+					<input
+						type="text"
+						class="modal-input white"
+						class:invalid={emoteName && !emoteNameValid}
+						placeholder="Name"
+						maxlength="32"
+						disabled={emoteUploading}
+						bind:value={emoteName}
+					/>
+				</div>
 				<button
-					disabled={emoteUploading}
+					type="button"
+					disabled={emoteUploading || !emoteFile || !emoteNameValid}
 					on:click={() => uploadEmote(type)}
 				>
 					{emoteUploading ? "Uploading..." : "Add"}
 				</button>
 			</div>
 			<div class="emote-list">
-				{#each emotes[type] as emote}
+				{#each emotes[type] as emote (emote._id)}
 					<div class="emote-row">
 						<img
 							src="{uploadsUrl}{type}/{emote._id}"
 							alt={emote.name}
 							class="emote-img"
+							class:sticker={type === "stickers"}
 						/>
-						<span class="emote-name">:{emote.name}:</span>
+						<input
+							type="text"
+							class="modal-input white emote-name"
+							class:invalid={renameErrors[emote._id]}
+							maxlength="32"
+							value={emote.name}
+							title="Rename"
+							on:input={() => {
+								if (renameErrors[emote._id]) {
+									delete renameErrors[emote._id];
+									renameErrors = renameErrors;
+								}
+							}}
+							on:keydown={e => {
+								if (e.key === "Enter") e.target.blur();
+								if (e.key === "Escape") {
+									e.target.value = emote.name;
+									e.target.blur();
+								}
+							}}
+							on:blur={e => renameEmote(type, emote, e.target.value)}
+						/>
 						<button
-							class="emote-delete"
+							type="button"
+							class="circle trash"
+							title="Delete {type.slice(0, -1)}"
 							on:click={() => deleteEmote(type, emote._id)}
-							>Delete</button
-						>
+						/>
 					</div>
 				{:else}
 					<p class="emote-empty">
@@ -370,12 +478,53 @@
 
 	.emote-upload {
 		display: flex;
-		gap: 0.5em;
+		align-items: center;
+		gap: 0.6em;
 		margin-bottom: 0.75em;
 	}
-	.emote-upload input {
+	.emote-preview {
+		width: 3.2em;
+		height: 3.2em;
+		flex-shrink: 0;
+		padding: 0.2em;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--background) !important;
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		color: var(--orange);
+		overflow: hidden;
+	}
+	.emote-preview.sticker {
+		width: 4.4em;
+		height: 4.4em;
+	}
+	.emote-preview.empty {
+		border-style: dashed;
+	}
+	.emote-preview img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	.emote-preview svg {
+		width: 1.4em;
+		height: 1.4em;
+	}
+	.emote-fields {
 		flex: 1;
 		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2em;
+	}
+	.emote-fields input {
+		width: 100%;
+		box-sizing: border-box;
+	}
+	.emote-fields input.invalid {
+		border-color: crimson;
 	}
 	.emote-list {
 		max-height: 16em;
@@ -393,13 +542,24 @@
 		width: 2em;
 		height: 2em;
 		object-fit: contain;
+		flex-shrink: 0;
+	}
+	.emote-img.sticker {
+		width: 3em;
+		height: 3em;
 	}
 	.emote-name {
 		flex: 1;
+		min-width: 0;
 		font-family: monospace;
 	}
-	.emote-delete {
-		padding: 0.15em 0.6em;
+	.emote-name.invalid {
+		border-color: crimson;
+	}
+	.emote-row button.circle {
+		flex-shrink: 0;
+		margin: 0;
+		border: none;
 	}
 	.emote-empty {
 		text-align: center;

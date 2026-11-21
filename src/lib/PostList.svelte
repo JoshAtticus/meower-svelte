@@ -101,7 +101,6 @@
 	// Elements
 	let postInput, submitBtn;
 
-	let pendingStickers = [];
 	let pendingReplies = [];
 	let showEmojiPopup = false;
 	$: chatEmoteData = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
@@ -377,25 +376,6 @@
 				{/each}
 			</div>
 		{/if}
-		{#if pendingStickers.length}
-			<div class="pending-stickers">
-				{#each pendingStickers as stickerId, i}
-					<button
-						class="pending-sticker"
-						title="Remove sticker"
-						on:click={() =>
-							(pendingStickers = pendingStickers.filter(
-								(_, j) => j !== i
-							))}
-					>
-						<img
-							src="{uploadsUrl}stickers/{stickerId}"
-							alt="Sticker"
-						/>
-					</button>
-				{/each}
-			</div>
-		{/if}
 		<div class="composer">
 		<form
 				class="createpost"
@@ -405,7 +385,7 @@
 					const input = e.target.elements.input;
 					// @ts-ignore
 					const content = e.target.elements.input.value.trim();
-					if (!content && !pendingStickers.length) {
+					if (!content) {
 						return;
 					}
 	
@@ -446,10 +426,9 @@
 						// normal post
 						sendPost(
 							content,
-							pendingStickers,
+							[],
 							pendingReplies.map(r => r.post_id)
 						);
-						pendingStickers = [];
 						pendingReplies = [];
 					}
 	
@@ -554,13 +533,14 @@
 						postInput.focus();
 					}}
 					onSticker={id => {
-						if (
-							pendingStickers.length < 10 &&
-							!pendingStickers.includes(id)
-						) {
-							pendingStickers = [...pendingStickers, id];
-						}
+						sendPost(
+							"",
+							[id],
+							pendingReplies.map(r => r.post_id)
+						);
+						pendingReplies = [];
 					}}
+					onClose={() => (showEmojiPopup = false)}
 				/>
 			{/if}
 		</div>
@@ -767,22 +747,6 @@
 		border: none;
 	}
 
-	.pending-stickers {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.4em;
-		margin-bottom: 0.4em;
-	}
-	.pending-sticker {
-		padding: 0;
-		background: none;
-		border: none;
-	}
-	.pending-sticker img {
-		width: 4em;
-		height: 4em;
-		object-fit: contain;
-	}
 
 	.settings-controls {
 		position: absolute;

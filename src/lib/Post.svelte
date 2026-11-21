@@ -66,6 +66,29 @@
 	};
 	$: if (post.post_origin) loadEmotes(post.post_origin);
 
+	// 1-5 emojis (unicode or this chat's custom ones) and nothing else
+	function isJumbo(content, emotes) {
+		if (!content || content.length > 200) return false;
+		const names = new Set((emotes.emojis || []).map(e => e.name));
+		let count = 0;
+		const rest = content.replace(/:([a-zA-Z0-9_-]{1,32}):/g, (m, name) => {
+			if (!names.has(name)) return m;
+			count++;
+			return "";
+		});
+		const segmenter = new Intl.Segmenter(undefined, {
+			granularity: "grapheme",
+		});
+		for (const {segment} of segmenter.segment(rest)) {
+			if (/^\s+$/.test(segment)) continue;
+			if (!/\p{Extended_Pictographic}|\p{Regional_Indicator}/u.test(segment))
+				return false;
+			count++;
+		}
+		return count >= 1 && count <= 5;
+	}
+	$: jumbo = isJumbo(post.content, postEmotes);
+
 	let adminDeleteButton, adminRestoreButton;
 
 	$: canPin =
@@ -695,6 +718,7 @@
 		{/each}
 		<p
 			class="post-content"
+			class:jumbo
 			style="border-left-color: #4b5563; {post.pending
 				? 'opacity: 0.5;'
 				: ''}"
@@ -829,6 +853,12 @@
 	.post-sticker {
 		max-width: 12em;
 		max-height: 12em;
+	}
+	.post-content.jumbo :global(img.emoji),
+	.post-content.jumbo :global(img.custom-emoji) {
+		width: auto;
+		height: 3em;
+		vertical-align: middle;
 	}
 	.post-content :global(img.custom-emoji) {
 		height: 1.4em;
