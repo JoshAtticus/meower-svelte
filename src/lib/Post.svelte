@@ -33,7 +33,7 @@
 	import {default as loadProfile, profileCache} from "../lib/loadProfile.js";
 
 	// @ts-ignore
-	import {autoresize} from "svelte-textarea-autoresize";
+	import {richInput} from "./richInput.js";
 	import MarkdownIt from "markdown-it";
 	import hljs from "highlight.js/lib/common";
 	import "highlight.js/styles/github-dark.css";
@@ -60,7 +60,16 @@
 	let images = [];
 
 	let editing = false;
-	let editContentInput, editSaveButton;
+	let editContentInput, editSaveButton, editEmojiButton;
+	let editPopupAnchor = null;
+	function openEditEmojiPopup() {
+		const rect = editEmojiButton.getBoundingClientRect();
+		const right = Math.max(8, window.innerWidth - rect.right);
+		editPopupAnchor =
+			window.innerHeight - rect.bottom > 380
+				? {top: rect.bottom + 4, right}
+				: {bottom: window.innerHeight - rect.top + 4, right};
+	}
 
 	let deleteButton;
 	let pinButton;
@@ -596,7 +605,7 @@
 										await tick();
 										editContentInput.value = post.content;
 										editContentInput.focus();
-										autoresize(editContentInput);
+										editContentInput.caretToEnd();
 									}}
 								/>
 							{:else}
@@ -758,24 +767,43 @@
 		</div>
 	</div>
 	{#if editing}
-		<textarea
-			type="text"
-			class="white"
-			name="input"
-			autocomplete="off"
-			maxlength="4000"
-			rows="1"
-			bind:this={editContentInput}
-			use:autoresize
-			on:keydown={event => {
-				if (event.key == "Enter" && !shiftHeld && !$mobile) {
-					event.preventDefault();
-					if (!editSaveButton.disabled) editSaveButton.click();
-				} else if (event.key == "Escape") {
-					editing = false;
-				}
-			}}
-		/>
+		<div class="edit-row">
+			<div
+				class="edit-input"
+				role="textbox"
+				aria-multiline="true"
+				tabindex="0"
+				use:richInput={{uploadsUrl}}
+				bind:this={editContentInput}
+				on:keydown={event => {
+					if (event.key == "Enter" && !shiftHeld && !$mobile) {
+						event.preventDefault();
+						if (!editSaveButton.disabled) editSaveButton.click();
+					} else if (event.key == "Escape") {
+						editing = false;
+					}
+				}}
+			/>
+			<button
+				type="button"
+				class="circle react"
+				title="Emoji"
+				bind:this={editEmojiButton}
+				on:click={openEditEmojiPopup}
+			/>
+		</div>
+		{#if editPopupAnchor}
+			<div class="react-overlay" on:click={() => (editPopupAnchor = null)} />
+			<EmojiPopup
+				chatId={post.post_origin}
+				anchor={editPopupAnchor}
+				onUnicode={ch => editContentInput.insert(ch)}
+				onEmoji={(name, emote) =>
+					emote && editContentInput.insert(`<:${emote._id}>`)}
+				onSticker={null}
+				onClose={() => (editPopupAnchor = null)}
+			/>
+		{/if}
 		<div style="display: flex; justify-content: space-between;">
 			<button on:click={() => (editing = false)}>Cancel</button>
 			<button
@@ -990,6 +1018,44 @@
 		font-size: 150%;
 	}
 
+	.edit-row {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.4em;
+		margin-bottom: 0.4em;
+	}
+	.edit-input {
+		flex-grow: 1;
+		min-width: 0;
+		min-height: 2.6em;
+		max-height: 300px;
+		overflow-y: auto;
+		box-sizing: border-box;
+		padding: 0.5em 0.8em;
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		background-color: var(--background);
+		color: var(--foreground);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+		outline: none;
+		line-height: 1.4;
+		cursor: text;
+	}
+	.edit-input:focus {
+		border-radius: 2px;
+	}
+	.edit-input :global(img.composer-emoji) {
+		width: 1.35em;
+		height: 1.35em;
+		object-fit: contain;
+		vertical-align: -0.3em;
+		margin: 0 0.05em;
+	}
+	.edit-row button.circle {
+		flex-shrink: 0;
+		margin-top: 0.3em;
+	}
 	.reactions {
 		display: flex;
 		flex-wrap: wrap;

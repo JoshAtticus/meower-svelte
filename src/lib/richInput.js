@@ -116,6 +116,7 @@ export function richInput(node, {uploadsUrl, disabled = false} = {}) {
 		},
 	});
 	node.insert = insert;
+	node.caretToEnd = placeCaretAtEnd;
 	node.disabled = disabled;
 	node.classList.add("empty");
 
