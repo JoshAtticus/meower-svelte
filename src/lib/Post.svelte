@@ -597,7 +597,8 @@
 			bind:this={editContentInput}
 			use:autoresize
 			on:keydown={event => {
-				if (event.key == "Enter" && !shiftHeld && !$mobile) {
+				const isMobile = $mobile || window.matchMedia?.("(pointer: coarse)")?.matches;
+				if (event.key == "Enter" && !shiftHeld && !isMobile) {
 					event.preventDefault();
 					if (!editSaveButton.disabled) editSaveButton.click();
 				} else if (event.key == "Escape") {

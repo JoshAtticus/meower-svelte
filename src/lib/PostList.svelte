@@ -412,7 +412,8 @@
 					}
 				}}
 				on:keydown={event => {
-					if (event.key == "Enter" && !shiftHeld && !$mobile) {
+					const isMobile = $mobile || window.matchMedia?.("(pointer: coarse)")?.matches;
+					if (event.key == "Enter" && !shiftHeld && !isMobile) {
 						event.preventDefault();
 						if (!submitBtn.disabled) submitBtn.click();
 					}
