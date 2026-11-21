@@ -11,7 +11,6 @@
 
 	const PURPOSES = [
 		["friends", "Friends & Family"],
-		["public", "Public Discussion"],
 		["private", "Private Discussion"],
 		["announcements", "Announcements"],
 		["emojis", "Emojis & Stickers"],
@@ -20,16 +19,14 @@
 	const PURPOSE_INFO = {
 		friends:
 			"For close friends and family. Everyone can send messages, invite people, customise the chat's name, icon and colour, add emojis and stickers, and pin messages.",
-		public:
-			"For open conversations. Everyone can send messages, delete their own messages and invite people.",
 		private:
-			"For a set group of people. Same as Public Discussion, but invites start turned off, so only you and senior roles can add people.",
+			"For you and people you trust. Only you and roles you give permission can invite people.",
 		announcements:
-			"For one-way updates. Members can read but can't send messages until you give them a role that allows it.",
+			"Share news & updates with others. Others can't send messages by default.",
 		emojis:
-			"For collecting a chat's emojis and stickers. Members can't send messages until you give them a role that allows it.",
+			"Just for sharing emojis and stickers. Others can't send messages by default.",
 		other:
-			"The standard setup. Everyone can send messages, delete their own messages and invite people.",
+			"Everyone can send messages, delete their own messages and invite people. Perfect for most chats!",
 	};
 	let purpose = "other";
 </script>
@@ -101,10 +98,8 @@
 				{/each}
 			</div>
 			<p class="purpose-info">{PURPOSE_INFO[purpose]}</p>
-			<p class="purpose-note">
-				The purpose only sets up the chat's starting roles. You can
-				change any of it later in Group Chat Settings.
-			</p>
+			<br>
+			<p class="purpose-note">You can always change these settings later.</p>
 			<div class="modal-buttons">
 				<button
 					type="button"
