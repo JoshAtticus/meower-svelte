@@ -371,6 +371,7 @@
 
 	// --- Reactions ---------------------------------------------------------
 	let reactButton;
+	let actionsOpen = false;
 	let reactPopupAnchor = null;
 	let reactorTitles = {};
 
@@ -475,7 +476,25 @@
 <Container>
 	<div class="post-header">
 		{#if buttons}
-			<div class="settings-controls">
+			{#if $mobile && !post.pending}
+				<button
+					class="circle more mobile-more"
+					title="More"
+					on:click={() => (actionsOpen = true)}
+				/>
+				{#if actionsOpen}
+					<div class="sheet-overlay" on:click={() => (actionsOpen = false)} />
+				{/if}
+			{/if}
+			<div
+				class="settings-controls"
+				class:action-sheet={$mobile && !post.pending}
+				class:open={actionsOpen}
+				on:click={() => {
+					// any action closes the sheet
+					if ($mobile) setTimeout(() => (actionsOpen = false));
+				}}
+			>
 				{#if post.pending}
 					{#if error}
 						<button
@@ -950,20 +969,66 @@
 		margin: 0;
 		margin-left: 0.125em;
 	}
-	/* On narrow screens the actions get their own row under the header
-	   instead of covering the profile picture and name */
-	:global(main.layout-mobile) .post-header .settings-controls {
-		position: static;
-		order: 10;
-		width: 100%;
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.2em;
-		margin-top: 0.3em;
+	/* Mobile: smaller header that leaves room for the more button */
+	:global(main.layout-mobile) .post-header {
+		padding-right: 2.2em;
 	}
-	:global(main.layout-mobile) .post-header .settings-controls button.circle {
+	:global(main.layout-mobile) .pfp :global(.pfp-container) {
+		--size: 0.8 !important;
+	}
+	:global(main.layout-mobile) .creator h2 {
+		font-size: 150%;
+	}
+	/* Mobile: one "more" button opens the actions as a bottom sheet */
+	.mobile-more {
+		position: absolute;
+		top: 0.25em;
+		right: 0.25em;
+		border: none;
 		margin: 0;
+	}
+	.sheet-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10002;
+		background: rgba(0, 0, 0, 0.5);
+	}
+	.settings-controls.action-sheet {
+		position: fixed;
+		top: auto;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10003;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35em;
+		padding: 0.75em 0.75em calc(0.75em + env(safe-area-inset-bottom));
+		background-color: var(--background);
+		border: solid 2px var(--orange);
+		border-bottom: none;
+		border-radius: 1em 1em 0 0;
+		transform: translateY(105%);
+		transition: transform 0.25s ease;
+	}
+	.settings-controls.action-sheet.open {
+		transform: translateY(0);
+	}
+	.settings-controls.action-sheet button.circle {
+		width: 100%;
+		height: auto;
+		min-height: 2.9em;
+		margin: 0;
+		border-radius: 5px;
+		background-position: 0.9em center;
+		background-size: 1.3em;
+		padding-left: 3em;
+		text-align: left;
+		color: white;
+		font-size: 1em;
+	}
+	.settings-controls.action-sheet button.circle::after {
+		content: attr(title);
 	}
 
 	.reactions {

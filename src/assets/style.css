@@ -524,3 +524,8 @@ button.react {
 	background-image: url("./emoji.svg");
 	background-size: 55%;
 }
+
+button.more {
+	background-image: url("./more.svg");
+	background-size: 55%;
+}

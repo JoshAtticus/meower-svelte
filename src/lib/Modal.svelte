@@ -1,6 +1,7 @@
 <script>
 	import {createEventDispatcher, onDestroy} from "svelte";
-	import {scale, fade} from "svelte/transition";
+	import {scale, fade, fly} from "svelte/transition";
+	import {mobile} from "./responsiveness.js";
 	import {expoOut} from "svelte/easing";
 
 	const dispatch = createEventDispatcher();
@@ -9,6 +10,12 @@
 	export let showClose = false;
 
 	let modal;
+
+	// Slide up from the bottom on mobile, pop in on desktop
+	const appear = (node, opts) =>
+		$mobile
+			? fly(node, {y: 400, duration: 250, easing: expoOut})
+			: scale(node, {start: 0.8, duration: 200, easing: expoOut});
 
 	const handle_keydown = e => {
 		if (e.key === "Escape") {
@@ -57,7 +64,8 @@
 	role="dialog"
 	aria-modal="true"
 	bind:this={modal}
-	transition:scale={{start: 0.8, duration: 200, easing: expoOut}}
+	class:sheet={$mobile}
+	transition:appear
 >
 	<div class="settings-controls">
 		{#if showClose}
@@ -95,5 +103,20 @@
 		background-color: var(--background);
 		border: solid 2px var(--orange);
 		border-radius: 5px;
+	}
+
+	/* Mobile: bottom sheet */
+	.modal.sheet {
+		top: auto;
+		bottom: 0;
+		left: 0;
+		transform: none;
+		width: 100%;
+		max-width: none;
+		max-height: 85vh;
+		box-sizing: border-box;
+		border-radius: 1em 1em 0 0;
+		border-bottom: none;
+		padding-bottom: calc(1em + env(safe-area-inset-bottom));
 	}
 </style>
