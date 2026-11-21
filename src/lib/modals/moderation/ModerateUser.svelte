@@ -1,5 +1,11 @@
+<script context="module">
+	// Survives this modal remounting after a confirmation closes
+	const restoreStatuses = {};
+</script>
+
 <script>
 	import Modal from "../../Modal.svelte";
+	import ConfirmActionModal from "../ConfirmAction.svelte";
 	import Container from "../../Container.svelte";
 	import Loading from "../../Loading.svelte";
 	import FormattedDate from "../../FormattedDate.svelte";
@@ -124,6 +130,22 @@
 			banSaveError = e;
 			banSaving = false;
 		}
+	}
+
+	let restoreStatus = restoreStatuses[modalData.username] || "";
+	async function restorePassword() {
+		const resp = await fetch(
+			`${apiUrl}admin/users/${user._id}/restore-password`,
+			{method: "POST", headers: $authHeader}
+		);
+		if (resp.status === 404) {
+			throw new Error("This account has no previous password to restore.");
+		}
+		if (!resp.ok) {
+			throw new Error("Response code is not OK; code is " + resp.status);
+		}
+		restoreStatus = restoreStatuses[username] =
+			"Previous password restored. They've been signed out everywhere.";
 	}
 
 	async function kick() {
@@ -510,6 +532,20 @@
 						Kick
 					</button>
 				{/if}
+				{#if !system && !deleted && hasPermission(adminPermissions.SYSADMIN)}
+					<button
+						class="action-button"
+						on:click={() =>
+							modals.showModal(ConfirmActionModal, {
+								title: "Restore Previous Password",
+								desc: `Revert @${username}'s password to the one they had before their last change? They'll be signed out everywhere and notified.`,
+								confirmLabel: "Restore",
+								onConfirm: restorePassword,
+							})}
+					>
+						Restore previous password
+					</button>
+				{/if}
 				{#if !system && !deleted && hasPermission(adminPermissions.CLEAR_USER_QUOTES)}
 					<button
 						class="action-button"
@@ -549,6 +585,10 @@
 				{#if kickStatus}
 					<br />
 					<b>{kickStatus}</b>
+				{/if}
+				{#if restoreStatus}
+					<br />
+					<b>{restoreStatus}</b>
 				{/if}
 
 				<br /><br />
