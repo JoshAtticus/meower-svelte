@@ -235,6 +235,7 @@
 				stickers: post.stickers,
 				reply_to: post.reply_to,
 				reactions: post.reactions || [],
+				emojis: post.emojis || [],
 				date: post.t.e,
 				edited_at: post.edited_at,
 				pinned: post.pinned,
@@ -368,6 +369,7 @@
 							stickers: post.stickers,
 							reply_to: post.reply_to,
 							reactions: post.reactions || [],
+							emojis: post.emojis || [],
 							date: post.t.e,
 							edited_at: post.edited_at,
 							pinned: post.pinned,
@@ -389,6 +391,7 @@
 						stickers: cmd.val.stickers,
 						reply_to: cmd.val.reply_to,
 						reactions: cmd.val.reactions || [],
+						emojis: cmd.val.emojis || [],
 						date: cmd.val.t.e,
 						edited_at: cmd.val.edited_at,
 						pinned: cmd.val.pinned,
@@ -627,8 +630,8 @@
 				/>
 				<EmojiPopup
 					chatId={$chat._id}
-					onEmoji={name => {
-						postInput.value += `:${name}:`;
+					onEmoji={(name, emote) => {
+						postInput.value += `<:${emote._id}>`;
 						postInput.focus();
 					}}
 					onUnicode={ch => {

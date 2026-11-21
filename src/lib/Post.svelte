@@ -73,13 +73,11 @@
 	};
 	$: if (post.post_origin) loadEmotes(post.post_origin);
 
-	// 1-5 emojis (unicode or this chat's custom ones) and nothing else
-	function isJumbo(content, emotes) {
+	// 1-5 emojis (unicode or custom <:id> ones) and nothing else
+	function isJumbo(content) {
 		if (!content || content.length > 200) return false;
-		const names = new Set((emotes.emojis || []).map(e => e.name));
 		let count = 0;
-		const rest = content.replace(/:([a-zA-Z0-9_-]{1,32}):/g, (m, name) => {
-			if (!names.has(name)) return m;
+		const rest = content.replace(/<:[a-zA-Z0-9]{24}>/g, () => {
 			count++;
 			return "";
 		});
@@ -94,7 +92,7 @@
 		}
 		return count >= 1 && count <= 5;
 	}
-	$: jumbo = isJumbo(post.content, postEmotes);
+	$: jumbo = isJumbo(post.content);
 
 	let adminDeleteButton, adminRestoreButton;
 
@@ -306,18 +304,19 @@
 
 	// Takes already-escaped text from a markdown text token, never rendered
 	// HTML, so emoji markup can't land inside an attribute value.
+	// Custom emojis are written <:EMOJI_ID>; the server sends their details
+	// with the post (post.emojis), so they work outside their own chat too.
 	function renderTextEmojis(escapedText, emotes) {
-		if (emotes && emotes.emojis && emotes.emojis.length) {
-			escapedText = escapedText.replaceAll(
-				/:([a-zA-Z0-9_-]{1,32}):/g,
-				(match, name) => {
-					const emote = emotes.emojis.find(e => e.name === name);
-					return emote
-						? `<img class="custom-emoji" src="${uploadsUrl}emojis/${encodeURIComponent(emote._id)}" alt=":${name}:">`
-						: match;
-				}
-			);
-		}
+		escapedText = escapedText.replaceAll(
+			/&lt;:([a-zA-Z0-9]{24})&gt;/g,
+			(match, id) => {
+				const known =
+					(post.emojis || []).find(e => (e._id || e) === id) ||
+					((emotes && emotes.emojis) || []).find(e => e._id === id);
+				const name = known && known.name ? `:${known.name.replace(/[^a-zA-Z0-9_-]/g, "")}:` : "emoji";
+				return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}">`;
+			}
+		);
 
 		return twemoji.parse(escapedText, {
 			folder: "svg",

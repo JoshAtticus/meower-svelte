@@ -195,8 +195,10 @@
 			if (!claim.ok) {
 				const json = await claim.json().catch(() => ({}));
 				throw new Error(
-					json.type ||
-						"Response code is not OK; code is " + claim.status
+					json.type === "nameTaken"
+						? "That name is already used in this chat."
+						: json.type ||
+								"Response code is not OK; code is " + claim.status
 				);
 			}
 			clearEmoteFile();
@@ -243,8 +245,11 @@
 				}
 			);
 			if (!resp.ok) {
+				const json = await resp.json().catch(() => ({}));
 				throw new Error(
-					"Response code is not OK; code is " + resp.status
+					json.type === "nameTaken"
+						? "That name is already used in this chat."
+						: "Response code is not OK; code is " + resp.status
 				);
 			}
 			delete renameErrors[emote._id];
