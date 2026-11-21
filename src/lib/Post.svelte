@@ -339,6 +339,16 @@
 		webhook;
 </script>
 
+{#if post.user === "Server" && !adminView}
+	<Container>
+		<p class="server-post">
+			{#await addFancyElements(post.content, postEmotes) then content}
+				{@html content}
+			{/await}
+			<i class="server-date"><FormattedDate date={post.date} /></i>
+		</p>
+	</Container>
+{:else}
 <Container>
 	<div class="post-header">
 		{#if buttons}
@@ -669,11 +679,11 @@
 	{/if}
 	{#if !editing}
 		<div class="post-images">
-			{#each post.stickers || [] as stickerId}
+			{#each post.stickers || [] as sticker}
 				<img
 					class="post-sticker"
-					src="{uploadsUrl}stickers/{stickerId}"
-					alt="Sticker"
+					src="{uploadsUrl}stickers/{sticker._id || sticker}"
+					alt={sticker.name || "Sticker"}
 					draggable="false"
 				/>
 			{/each}
@@ -690,6 +700,7 @@
 		</div>
 	{/if}
 </Container>
+{/if}
 
 <style>
 	.pfp {
@@ -740,6 +751,15 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25em;
+	}
+	.server-post {
+		font-size: 0.85em;
+		opacity: 0.75;
+		margin: 0;
+	}
+	.server-date {
+		font-size: 0.75em;
+		margin-left: 0.5em;
 	}
 	.post-sticker {
 		max-width: 12em;
