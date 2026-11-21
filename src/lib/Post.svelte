@@ -3,6 +3,7 @@
 	import Container from "../lib/Container.svelte";
 	import PFP from "../lib/PFP.svelte";
 	import FormattedDate from "./FormattedDate.svelte";
+	import {relativeDate} from "./relativeDate.js";
 	import Badge from "./Badge.svelte";
 	import LiText from "./LiText.svelte";
 	import Attachment from "./Attachment.svelte";
@@ -313,16 +314,6 @@
 			ext: ".svg",
 			size: 20,
 		});
-	}
-
-	function relativeDate(timestamp) {
-		const diff = Math.floor(Date.now() / 1000) - timestamp;
-		const ago = (n, unit) => `${n} ${unit}${n === 1 ? "" : "s"} ago`;
-		if (diff < 60) return "just now";
-		if (diff < 3600) return ago(Math.floor(diff / 60), "minute");
-		if (diff < 86400) return ago(Math.floor(diff / 3600), "hour");
-		if (diff < 604800) return ago(Math.floor(diff / 86400), "day");
-		return new Date(timestamp * 1000).toLocaleDateString();
 	}
 
 	async function adminDelete() {

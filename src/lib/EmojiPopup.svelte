@@ -53,6 +53,8 @@
 	$: filteredRecents = $recentEmotes.filter(
 		e => !query || (e.name || e.v || "").toLowerCase().includes(query.toLowerCase())
 	);
+	$: recentEmojis = filteredRecents.filter(e => e.t !== "s");
+	$: recentStickers = filteredRecents.filter(e => e.t === "s");
 
 	$: sectionChat = section.startsWith("chat:")
 		? $chats.find(c => c._id === section.slice(5))
@@ -146,26 +148,36 @@
 		</div>
 		<div class="emote-grid" bind:this={gridEl} on:scroll={onScroll}>
 			{#if section === "recent"}
-				{#each filteredRecents as e}
-					{#if e.t === "u"}
-						<button type="button"
-							class="option unicode"
-							title={e.name}
-							on:click={ev => pickRecent(e, ev)}>{e.v}</button
-						>
-					{:else if e.t === "e"}
-						<button type="button"
-							class="option"
-							title=":{e.name}:"
-							on:click={ev => pickRecent(e, ev)}
-						>
-							<img
-								src="{uploadsUrl}emojis/{e.id}"
-								alt={e.name}
-							/>
-						</button>
-					{:else}
-						<button type="button"
+				{#if recentEmojis.length}
+					<p class="group-label">Emojis</p>
+					{#each recentEmojis as e}
+						{#if e.t === "u"}
+							<button
+								type="button"
+								class="option unicode"
+								title={e.name}
+								on:click={ev => pickRecent(e, ev)}>{e.v}</button
+							>
+						{:else}
+							<button
+								type="button"
+								class="option"
+								title=":{e.name}:"
+								on:click={ev => pickRecent(e, ev)}
+							>
+								<img
+									src="{uploadsUrl}emojis/{e.id}"
+									alt={e.name}
+								/>
+							</button>
+						{/if}
+					{/each}
+				{/if}
+				{#if recentStickers.length}
+					<p class="group-label">Stickers</p>
+					{#each recentStickers as e}
+						<button
+							type="button"
 							class="option sticker-option"
 							title={e.name}
 							on:click={ev => pickRecent(e, ev)}
@@ -176,10 +188,11 @@
 								alt={e.name}
 							/>
 						</button>
-					{/if}
-				{:else}
+					{/each}
+				{/if}
+				{#if !recentEmojis.length && !recentStickers.length}
 					<p class="empty">Nothing here yet.</p>
-				{/each}
+				{/if}
 			{:else if section === "unicode"}
 				{#each filtered.slice(0, visibleCount) as e}
 					<button type="button"
@@ -297,7 +310,7 @@
 		padding: 0.4em;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, 2.4em);
-		grid-auto-rows: 2.4em;
+		grid-auto-rows: auto;
 		justify-content: space-between;
 		align-content: start;
 		gap: 0.15em;
@@ -331,9 +344,8 @@
 	}
 	.option.sticker-option {
 		grid-column: span 2;
-		grid-row: span 2;
-		width: 100%;
-		height: 100%;
+		width: 4.95em;
+		height: 4.95em;
 	}
 	.option img.sticker {
 		width: 4.4em;
@@ -345,7 +357,11 @@
 		font-weight: bold;
 		text-transform: uppercase;
 		opacity: 0.6;
-		margin: 0.4em 0 0.1em;
+		margin: 0.6em 0 0;
+		line-height: 1.2;
+	}
+	.group-label:first-child {
+		margin-top: 0;
 	}
 	.empty {
 		grid-column: 1 / -1;

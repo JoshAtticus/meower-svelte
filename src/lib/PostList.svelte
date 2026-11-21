@@ -25,6 +25,7 @@
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
 	import SendFiles from "./modals/SendFiles.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import ServerPostGroup from "./ServerPostGroup.svelte";
 	import emojiIcon from "../assets/emoji.svg";
 
 	import {
@@ -103,6 +104,43 @@
 
 	let pendingReplies = [];
 	let showEmojiPopup = false;
+
+	// Collapse runs of 3+ server posts by the same person within 5 minutes
+	const GROUP_MIN = 3;
+	const GROUP_WINDOW = 5 * 60;
+	function serverActor(post) {
+		if (!post || post.user !== "Server" || !post.content) return null;
+		const m = post.content.match(/^@([A-Za-z0-9_-]{1,20})\b/);
+		return m ? m[1] : null;
+	}
+	function groupServerPosts(list) {
+		const heads = {}; // head post id -> {actor, posts}
+		const members = new Set(); // non-head post ids hidden inside a group
+		if (["home", "inbox"].includes(postOrigin)) return {heads, members};
+		let i = 0;
+		while (i < list.length) {
+			const actor = serverActor(list[i]);
+			if (!actor) {
+				i++;
+				continue;
+			}
+			let j = i + 1;
+			while (
+				j < list.length &&
+				serverActor(list[j]) === actor &&
+				list[i].date - list[j].date <= GROUP_WINDOW
+			)
+				j++;
+			if (j - i >= GROUP_MIN) {
+				const run = list.slice(i, j);
+				heads[run[0].id] = {actor, posts: run};
+				run.slice(1).forEach(p => members.add(p.id));
+			}
+			i = j;
+		}
+		return {heads, members};
+	}
+	$: serverGroups = groupServerPosts(items);
 	$: chatEmoteData = $chatEmotes[$chat._id] || {emojis: [], stickers: []};
 	$: if ($chat._id) loadEmotes($chat._id);
 
@@ -551,6 +589,14 @@
 	<PagedList maxItems={100} bind:items {loadPage} bind:this={list}>
 		<svelte:fragment slot="loaded" let:items={_items}>
 			{#each _items as post (post.id)}
+				{#if serverGroups.heads[post.id]}
+					<div class="item">
+						<ServerPostGroup
+							posts={serverGroups.heads[post.id].posts}
+							actor={serverGroups.heads[post.id].actor}
+						/>
+					</div>
+				{:else if !serverGroups.members.has(post.id)}
 				<div class="item">
 					{#if "lower_username" in post}
 						<ProfileView
@@ -647,6 +693,7 @@
 						/>
 					{/if}
 				</div>
+				{/if}
 			{/each}
 		</svelte:fragment>
 		<slot name="error" slot="error" let:error {error}>
