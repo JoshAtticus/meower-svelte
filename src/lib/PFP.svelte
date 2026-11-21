@@ -25,6 +25,29 @@
 		id = val;
 	}
 	$: setId(icon);
+
+	// retry failed avatar loads a few times before falling back
+	let imgEl;
+	let retries = 0;
+	let lastAvatar = avatar;
+	$: if (avatar !== lastAvatar) {
+		lastAvatar = avatar;
+		retries = 0;
+	}
+	function handleError() {
+		if (avatar) {
+			if (retries < 3 && imgEl) {
+				retries++;
+				setTimeout(() => {
+					imgEl.src = `${uploadsUrl}icons/${avatar}?retry=${retries}`;
+				}, retries * 500);
+			} else {
+				avatar = "";
+			}
+		} else {
+			id = -2;
+		}
+	}
 </script>
 
 <span class:pfp-container={!raw} style:--size={size}>
@@ -42,6 +65,7 @@
 		<img
 			{alt}
 			title={alt}
+			bind:this={imgEl}
 			src={avatar
 				? `${uploadsUrl}icons/${avatar}`
 				: icons[
@@ -55,13 +79,7 @@
 						: id - 1
 				}.svg`
 			] || errorIcon}
-			on:error={() => {
-				if (avatar) {
-					avatar = "";
-				} else {
-					id = -2;
-				}
-			}}
+			on:error={handleError}
 			class:loading={icon === -1}
 			draggable={false}
 			width="auto"
