@@ -7,7 +7,7 @@
 	import ModPanelModal from "./modals/moderation/ModPanel.svelte";
 	import LogoutModal from "./modals/Logout.svelte";
 
-	import {user, OOBERunning} from "../lib/stores.js";
+	import {user, friends, OOBERunning} from "../lib/stores.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import * as modals from "./modals.js";
 
@@ -15,6 +15,7 @@
 	import home from "../assets/home.svg";
 
 	import mail from "../assets/mail.svg";
+	import friendsIcon from "../assets/friends.svg";
 	import gc from "../assets/chat.svg";
 	import search from "../assets/search.svg";
 	import terminal from "../assets/terminal.svg";
@@ -66,6 +67,21 @@
 		class:new-msgs={$user.unread_inbox}
 	>
 		<img src={mail} alt="Inbox Messages" draggable={false} />
+	</button>
+	<button
+		on:click={() => {
+			if (!$user.name) {
+				modals.showModal(SignupModal);
+				return;
+			}
+			$goto("/friends");
+		}}
+		class="round"
+		title="Friends"
+		class:new-msgs={$friends.incoming.length > 0}
+		data-count={$friends.incoming.length || ""}
+	>
+		<img src={friendsIcon} alt="Friends" draggable={false} />
 	</button>
 	<button
 		on:click={() => {
@@ -276,18 +292,27 @@
 	}
 
 	.new-msgs::after {
-		content: "";
-		display: inline-block;
+		content: attr(data-count);
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-		width: 0.5em;
-		height: 0.5em;
-		border-radius: 50%;
+		min-width: 1.1em;
+		height: 1.1em;
+		padding: 0 0.15em;
+		box-sizing: border-box;
+		border-radius: 1em;
 
 		position: absolute;
-		right: 0.5em;
-		top: 0.5em;
+		right: 0.1em;
+		top: 0.1em;
 
-		background: var(--foreground-orange);
+		background: crimson;
+		color: white;
+		font-size: 0.75em;
+		font-weight: bold;
+		line-height: 1;
+		box-shadow: 0 0 0 2px var(--orange);
 	}
 
 	:global(main.input-hover) .logo-inner:hover,

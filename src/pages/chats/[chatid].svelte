@@ -33,11 +33,48 @@
 
 	let showMembers = !$mobile;
 
+	let pendingInvites = [];
+	let invitesEvent = null;
+
 	$: myBan = ($chat.bans || []).find(
 		ban => ban.username === $user.name
 	);
 
+	async function loadInvites() {
+		if (
+			$params.admin ||
+			!$chat._id ||
+			$chat._id === "livechat" ||
+			$chat.type !== 0 ||
+			!showMembers
+		) {
+			pendingInvites = [];
+			return;
+		}
+		try {
+			const resp = await fetch(
+				`${apiUrl}chats/${$chat._id}/invites`,
+				{headers: $authHeader}
+			);
+			pendingInvites = resp.ok ? (await resp.json()).autoget : [];
+		} catch (e) {
+			pendingInvites = [];
+		}
+	}
+
+	$: if (showMembers !== undefined && $chat._id && $chat.members)
+		loadInvites();
+
 	onMount(async () => {
+		invitesEvent = clm.link.on("direct", cmd => {
+			if (
+				cmd.val.mode === "chat_invites_update" &&
+				cmd.val.payload.chat_id === $chat._id
+			) {
+				loadInvites();
+			}
+		});
+
 		if ($params.chatid === "livechat") {
 			chat.set({
 				_id: "livechat",
@@ -110,6 +147,7 @@
 
 	onDestroy(() => {
 		if (chatsStoreSubscription) chatsStoreSubscription();
+		if (invitesEvent) clm.link.off(invitesEvent);
 
 		chat.set({
 			_id: "",
@@ -279,6 +317,34 @@
 						/>
 					</button>
 				{/each}
+				{#if pendingInvites.length}
+					<h3 class="invites-title">
+						Pending <span class="small"
+							>({pendingInvites.length})</span
+						>
+					</h3>
+					{#each pendingInvites as invite}
+						<div class="member-button pending-invite">
+							<Member member={invite.to} owner={false} />
+							{#if $chat.owner === $user.name}
+								<button
+									class="circle close revoke-invite"
+									title="Revoke invite"
+									on:click={async () => {
+										await fetch(
+											`${apiUrl}invites/${invite._id}`,
+											{
+												method: "DELETE",
+												headers: $authHeader,
+											}
+										);
+										loadInvites();
+									}}
+								/>
+							{/if}
+						</div>
+					{/each}
+				{/if}
 			</div>
 			<div class="top">
 				<h2 class="members-title">
@@ -342,6 +408,23 @@
 	}
 	:global(#main) .member-button.member-button:active {
 		background-color: #7776;
+	}
+	.pending-invite {
+		opacity: 0.65;
+		display: flex;
+		align-items: center;
+	}
+	.revoke-invite {
+		margin-left: auto;
+		margin-right: 0.25em;
+		flex-shrink: 0;
+		min-width: 1.6em;
+		min-height: 1.6em;
+	}
+	.invites-title {
+		margin: 0.5em 0 0.25em 0.25em;
+		font-size: 1.1em;
+		opacity: 0.8;
 	}
 	:global(#main.layout-mobile) #chat:not(.active) {
 		display: none;

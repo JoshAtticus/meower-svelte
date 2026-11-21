@@ -639,6 +639,25 @@ export async function updateFriends() {
 }
 
 /**
+ * Updates the relationship with another user and refreshes friends.
+ * state 0 = none, 1 = friend request/friend, 2 = blocked.
+ *
+ * @returns {Promise<Response>}
+ */
+export async function setRelationship(username, state) {
+	const resp = await fetch(`${apiUrl}users/${username}/relationship`, {
+		method: "PATCH",
+		headers: {
+			"Content-Type": "application/json",
+			..._authHeader,
+		},
+		body: JSON.stringify({state}),
+	});
+	await updateFriends();
+	return resp;
+}
+
+/**
  * Sends a request to update the user's settings.
  *
  * @returns {Promise<Response>}

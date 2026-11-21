@@ -4,13 +4,11 @@
 	import Loading from "../../../lib/Loading.svelte";
 	import Container from "../../../lib/Container.svelte";
 	import PFP from "../../../lib/PFP.svelte";
-	import LiText from "../../../lib/LiText.svelte";
 
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
 
 	import {relationships, friends, user} from "../../../lib/stores.js";
-	import {authHeader} from "../../../lib/stores.js";
 	import {userRestrictions, isRestricted} from "../../../lib/bitField.js";
 	import {profileCache} from "../../../lib/loadProfile.js";
 	import {apiUrl, encodeApiURLParams} from "../../../lib/urls.js";
@@ -33,18 +31,6 @@
 		}
 		const json = await resp.json();
 		return json;
-	}
-
-	async function setRelationship(username, state) {
-		await fetch(`${apiUrl}users/${username}/relationship`, {
-			method: "PATCH",
-			headers: {
-				"Content-Type": "application/json",
-				...$authHeader,
-			},
-			body: JSON.stringify({state}),
-		});
-		await clm.updateFriends();
 	}
 
 	let pfpOverflow = false;
@@ -137,50 +123,6 @@
 			>
 		{/if}
 
-		{#if $user.name && $user.name === data._id}
-			{#if $friends.incoming.length}
-				<Container>
-					<h3>Friend Requests</h3>
-					{#each $friends.incoming as username}
-						<div class="friend-row">
-							<button
-								class="friend-name"
-								on:click={() => $goto(`/users/${username}`)}
-								><LiText text={username} /></button
-							>
-							<button
-								on:click={() => setRelationship(username, 1)}
-								>Accept</button
-							>
-							<button
-								on:click={() => setRelationship(username, 0)}
-								>Decline</button
-							>
-						</div>
-					{/each}
-				</Container>
-			{/if}
-			<Container>
-				<h3>Friends</h3>
-				{#each $friends.friends as username}
-					<div class="friend-row">
-						<button
-							class="friend-name"
-							on:click={() => $goto(`/users/${username}`)}
-							><LiText text={username} /></button
-						>
-						<button
-							on:click={() => setRelationship(username, 0)}
-							>Remove</button
-						>
-					</div>
-				{:else}
-					No friends yet. Visit someone's profile to send
-					them a friend request!
-				{/each}
-			</Container>
-		{/if}
-
 		<button
 			class="long"
 			title="View Recent Posts"
@@ -192,25 +134,25 @@
 				{#if $friends.friends.includes(data._id)}
 					<button
 						class="long"
-						on:click={() => setRelationship(data._id, 0)}
+						on:click={() => clm.setRelationship(data._id, 0)}
 						>Remove Friend</button
 					>
 				{:else if $friends.outgoing.includes(data._id)}
 					<button
 						class="long"
-						on:click={() => setRelationship(data._id, 0)}
+						on:click={() => clm.setRelationship(data._id, 0)}
 						>Cancel Friend Request</button
 					>
 				{:else if $friends.incoming.includes(data._id)}
 					<button
 						class="long"
-						on:click={() => setRelationship(data._id, 1)}
+						on:click={() => clm.setRelationship(data._id, 1)}
 						>Accept Friend Request</button
 					>
 				{:else}
 					<button
 						class="long"
-						on:click={() => setRelationship(data._id, 1)}
+						on:click={() => clm.setRelationship(data._id, 1)}
 						>Send Friend Request</button
 					>
 				{/if}
@@ -280,14 +222,4 @@
 		flex-wrap: wrap;
 	}
 
-	.friend-row {
-		display: flex;
-		align-items: center;
-		gap: 0.5em;
-		margin-bottom: 0.4em;
-	}
-	.friend-name {
-		flex-grow: 1;
-		text-align: left;
-	}
 </style>
