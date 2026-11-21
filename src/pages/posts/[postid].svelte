@@ -6,9 +6,34 @@
 	import {apiUrl} from "../../lib/urls.js";
 	import {authHeader} from "../../lib/stores.js";
 
-	import {params, goto} from "@roxi/routify";
+	import {params} from "@roxi/routify";
+	import {tick} from "svelte";
+
+	const PAGE = 10;
 
 	let id = 0;
+
+	let post = null;
+	let before = []; // newer posts, closest-first (rendered reversed above)
+	let after = []; // older posts, newest-first (rendered below)
+	let hasNewer = false;
+	let hasOlder = false;
+	let loadingNewer = false;
+	let loadingOlder = false;
+	let error = null;
+	let listEl;
+
+	function scrollParent(node) {
+		for (let el = node.parentElement; el; el = el.parentElement) {
+			const oy = getComputedStyle(el).overflowY;
+			if (
+				(oy === "auto" || oy === "scroll") &&
+				el.scrollHeight > el.clientHeight
+			)
+				return el;
+		}
+		return document.scrollingElement;
+	}
 
 	function mapPost(post) {
 		return {
@@ -29,9 +54,9 @@
 		};
 	}
 
-	async function loadContext() {
+	async function fetchContext(postId) {
 		const resp = await fetch(
-			`${apiUrl}posts/${$params.postid}/context?limit=5`,
+			`${apiUrl}posts/${postId}/context?limit=${PAGE}`,
 			{headers: $authHeader}
 		);
 		if (!resp.ok) {
@@ -39,51 +64,134 @@
 				"Response code is not OK; code is " + resp.status
 			);
 		}
-		const json = await resp.json();
-		return {
-			before: json.before.map(mapPost).reverse(),
-			post: mapPost(json.post),
-			after: json.after.map(mapPost),
-		};
+		return resp.json();
+	}
+
+	async function loadInitial(postId) {
+		post = null;
+		before = [];
+		after = [];
+		error = null;
+		try {
+			const json = await fetchContext(postId);
+			post = mapPost(json.post);
+			before = json.before.map(mapPost);
+			after = json.after.map(mapPost);
+			hasNewer = json.before.length === PAGE;
+			hasOlder = json.after.length === PAGE;
+		} catch (e) {
+			error = e;
+		}
+	}
+
+	async function loadNewer() {
+		if (!before.length || loadingNewer) return;
+		loadingNewer = true;
+		const anchor = listEl && listEl.querySelector(".ctx-item");
+		const anchorTop = anchor ? anchor.getBoundingClientRect().top : 0;
+		try {
+			const json = await fetchContext(before[before.length - 1].post_id);
+			before = [...before, ...json.before.map(mapPost)];
+			hasNewer = json.before.length === PAGE;
+			loadingNewer = false;
+			await tick();
+			if (anchor) {
+				scrollParent(anchor).scrollTop +=
+					anchor.getBoundingClientRect().top - anchorTop;
+			}
+		} catch (e) {
+			console.error(e);
+		}
+		loadingNewer = false;
+	}
+
+	async function loadOlder() {
+		if (!after.length || loadingOlder) return;
+		loadingOlder = true;
+		try {
+			const json = await fetchContext(after[after.length - 1].post_id);
+			after = [...after, ...json.after.map(mapPost)];
+			hasOlder = json.after.length === PAGE;
+		} catch (e) {
+			console.error(e);
+		}
+		loadingOlder = false;
+	}
+
+	$: loadInitial($params.postid);
+
+	function scrollHere(node) {
+		requestAnimationFrame(() =>
+			node.scrollIntoView({block: "center", behavior: "smooth"})
+		);
 	}
 </script>
 
 <div>
-	{#await loadContext()}
-		<div class="fullcenter">
-			<Loading />
-		</div>
-	{:then {before, post, after}}
-		{@const originUrl =
-			post.post_origin === "home"
-				? "/home"
-				: `/chats/${post.post_origin}`}
-
-		{#if before.length}
-			<button class="context-jump" on:click={$goto(originUrl)}>
-				Jump to newer posts →
-			</button>
-			{#each before as post (post.id)}
-				<Post {post} />
-			{/each}
-		{/if}
-
-		<p class="highlight-label">Highlighted Post</p>
-		<Post {post} />
-
-		{#each after as post (post.id)}
-			<Post {post} />
-		{/each}
-		{#if after.length}
-			<button class="context-jump" on:click={$goto(originUrl)}>
-				← Jump to older posts
-			</button>
-		{/if}
-	{:catch}
+	{#if error}
 		<div class="fullcenter">
 			<p>Post not found.</p>
 		</div>
-	{/await}
+	{:else if !post}
+		<div class="fullcenter">
+			<Loading />
+		</div>
+	{:else}
+		{#if hasNewer}
+			<button
+				class="context-jump"
+				disabled={loadingNewer}
+				on:click={loadNewer}
+			>
+				<svg
+					class="jump-icon"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><polyline points="18 15 12 9 6 15" /></svg
+				>
+				{loadingNewer ? "Loading..." : "Load newer posts"}
+			</button>
+		{/if}
+		<div bind:this={listEl}>
+			{#each [...before].reverse() as p (p.id)}
+				<div class="ctx-item"><Post post={p} /></div>
+			{/each}
+
+			{#key post.post_id}
+				<div class="highlighted ctx-item" use:scrollHere>
+					<p class="highlight-label">Highlighted Post</p>
+					<Post {post} />
+				</div>
+			{/key}
+		</div>
+
+		{#each after as p (p.id)}
+			<Post post={p} />
+		{/each}
+		{#if hasOlder}
+			<button
+				class="context-jump"
+				disabled={loadingOlder}
+				on:click={loadOlder}
+			>
+				<svg
+					class="jump-icon"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					><polyline points="6 9 12 15 18 9" /></svg
+				>
+				{loadingOlder ? "Loading..." : "Load older posts"}
+			</button>
+		{/if}
+	{/if}
 </div>
 
 <style>
@@ -92,6 +200,9 @@
 		justify-content: center;
 		align-items: center;
 		height: 50%;
+	}
+	.highlighted {
+		scroll-margin: 1em;
 	}
 	.highlight-label {
 		font-size: 0.8em;
@@ -102,7 +213,13 @@
 		margin: 0.75em 0 0.3em 0.2em;
 	}
 	.context-jump {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
 		margin: 0.5em auto;
+	}
+	.jump-icon {
+		width: 1.1em;
+		height: 1.1em;
 	}
 </style>

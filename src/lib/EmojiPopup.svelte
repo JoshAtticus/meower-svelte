@@ -116,13 +116,13 @@
 				class="side-btn"
 				class:active={section === "recent"}
 				title="Recent"
-				on:click={() => (section = "recent")}>🕘</button
+				on:click={() => (section = "recent")}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg></button
 			>
 			<button type="button"
 				class="side-btn"
 				class:active={section === "unicode"}
 				title="Emoji"
-				on:click={() => (section = "unicode")}>😀</button
+				on:click={() => (section = "unicode")}><svg class="side-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" x2="9.01" y1="9" y2="9" /><line x1="15" x2="15.01" y1="9" y2="9" /></svg></button
 			>
 			{#each $chats.filter(c => c.type === 0 || c.type === 1) as c}
 				<button type="button"
@@ -272,6 +272,12 @@
 		line-height: 1;
 		opacity: 0.7;
 		flex-shrink: 0;
+	}
+	.side-icon {
+		width: 1.4em;
+		height: 1.4em;
+		display: block;
+		color: var(--foreground);
 	}
 	.side-btn.active {
 		opacity: 1;
