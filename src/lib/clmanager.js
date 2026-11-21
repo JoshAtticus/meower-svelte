@@ -18,6 +18,8 @@ import {
 	spinner,
 	intentionalDisconnect,
 	reconnecting,
+	reconnectStalled,
+	reconnectedAt,
 	disconnected,
 	disconnectReason,
 } from "./stores.js";
@@ -260,6 +262,112 @@ let pingInterval = null;
  *
  * @returns {Promise<string>} statusCode A status code.
  */
+// --- Automatic reconnection -------------------------------------------
+// Retries with backoff without reloading the page or remounting the UI, so
+// drafts and scroll position survive. After 30s the UI goes full screen.
+const RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 15000];
+const RECONNECT_STALL_MS = 30000;
+let reconnectActive = false;
+let reconnectAttempt = 0;
+let reconnectTimer = null;
+let reconnectStallTimer = null;
+
+function scheduleReconnect() {
+	clearTimeout(reconnectTimer);
+	const delay =
+		RECONNECT_DELAYS[Math.min(reconnectAttempt, RECONNECT_DELAYS.length - 1)];
+	reconnectAttempt++;
+	reconnectTimer = setTimeout(attemptReconnect, delay);
+}
+
+function safeOff(id) {
+	try {
+		link.off(id);
+	} catch {}
+}
+
+function attemptReconnect() {
+	if (!reconnectActive) return;
+	clearTimeout(reconnectTimer);
+	reconnectTimer = null;
+
+	let settled = false;
+	const settle = () => {
+		if (settled) return false;
+		settled = true;
+		safeOff(onConnected);
+		safeOff(onFailed);
+		return true;
+	};
+	const onConnected = link.on("connected", () => {
+		if (settle()) finishReconnect();
+	});
+	const onFailed = link.on("disconnected", () => {
+		if (settle()) scheduleReconnect();
+	});
+
+	try {
+		link.connect(linkUrl);
+	} catch (e) {
+		link.error("manager", "reconnect attempt failed:", e);
+		if (settle()) scheduleReconnect();
+	}
+}
+
+async function finishReconnect() {
+	link.log("manager", "connection restored");
+
+	// re-authenticate
+	if (_authHeader.username && _authHeader.token) {
+		try {
+			await meowerRequest({
+				cmd: "direct",
+				val: {
+					cmd: "authpswd",
+					val: {
+						username: _authHeader.username,
+						pswd: _authHeader.token,
+					},
+				},
+			});
+		} catch (e) {
+			console.error(e);
+			modals.showModal(LoggedOutModal);
+		}
+	}
+
+	reconnectActive = false;
+	clearTimeout(reconnectStallTimer);
+	reconnectStallTimer = null;
+	reconnecting.set(false);
+	reconnectStalled.set(false);
+	// let mounted pages fetch anything they missed (no remount)
+	reconnectedAt.set(Date.now());
+}
+
+function startReconnect() {
+	if (reconnectActive) return;
+	reconnectActive = true;
+	reconnectAttempt = 0;
+	reconnecting.set(true);
+	reconnectStalled.set(false);
+	clearTimeout(reconnectStallTimer);
+	reconnectStallTimer = setTimeout(
+		() => reconnectStalled.set(true),
+		RECONNECT_STALL_MS
+	);
+	attemptReconnect();
+}
+
+/**
+ * Skip the backoff wait and try reconnecting immediately.
+ */
+export function retryReconnectNow() {
+	if (!reconnectActive) return;
+	reconnectAttempt = 0;
+	attemptReconnect();
+}
+
 export async function connect() {
 	if (connectEvent) {
 		link.off(connectEvent);
@@ -353,56 +461,8 @@ export async function connect() {
 		});
 		if (_intentionalDisconnect) return;
 
-		const onErrorEv = link.on("error", async e => {
-			link.error("manager", "auto-reconnection failed:", e);
-			reconnecting.set(true);
-			try {
-				await link.connect(linkUrl);
-			} catch (e) {
-				link.error("manager", "connection error:", e);
-				link.off(onErrorEv);
-				modals.showModal(ConnectionFailedModal);
-			}
-		});
-		link.once("connected", async () => {
-			link.log("manager", "connection restored");
-			link.off(onErrorEv);
-
-			// re-authenticate
-			if (_authHeader.username && _authHeader.token) {
-				try {
-					await meowerRequest({
-						cmd: "direct",
-						val: {
-							cmd: "authpswd",
-							val: {
-								username: _authHeader.username,
-								pswd: _authHeader.token,
-							},
-						},
-					});
-				} catch (e) {
-					console.error(e);
-					modals.showModal(LoggedOutModal);
-				}
-			}
-
-			// refresh screen
-			screen.set("blank");
-			await tick();
-			screen.set("main");
-
-			// hide modal
-			reconnecting.set(false);
-		});
-		try {
-			link.warn("manager", "connection lost with error:", e.code);
-			await link.connect(linkUrl);
-		} catch (e) {
-			link.error("manager", "connection error:", e);
-			link.off(onErrorEv);
-			modals.showModal(ConnectionFailedModal);
-		}
+		link.warn("manager", "connection lost with error:", e.code);
+		startReconnect();
 	});
 	ulistEvent = link.on("ulist", cmd => {
 		const _ulist = cmd.val.split(";");

@@ -34,6 +34,7 @@
 		user,
 		lastTyped,
 		chat,
+		reconnectedAt,
 	} from "./stores.js";
 	import {userRestrictions, isRestricted} from "../lib/bitField.js";
 	import {shiftHeld} from "./keyDetect.js";
@@ -378,6 +379,37 @@
 
 	let destroy = () => {};
 	onDestroy(() => destroy());
+
+	// After a reconnect, fetch the newest page and merge in anything missed
+	// while offline. The list isn't remounted, so drafts and scroll survive.
+	let resyncReady = false;
+	const unsubResync = reconnectedAt.subscribe(async t => {
+		if (!resyncReady) {
+			resyncReady = true;
+			return;
+		}
+		if (!t || !fetchUrl) return;
+		try {
+			const {result} = await loadPage(1);
+			const byId = {};
+			result.forEach(p => {
+				if (p.post_id) byId[p.post_id] = p;
+			});
+			const known = new Set(items.map(p => p.post_id));
+			const fresh = result.filter(p => p.post_id && !known.has(p.post_id));
+			items = [
+				...fresh,
+				...items.map(p =>
+					p.post_id && byId[p.post_id]
+						? {...byId[p.post_id], id: p.id}
+						: p
+				),
+			];
+		} catch (e) {
+			console.error("Failed to resync posts after reconnect:", e);
+		}
+	});
+	onDestroy(unsubResync);
 </script>
 
 <div>

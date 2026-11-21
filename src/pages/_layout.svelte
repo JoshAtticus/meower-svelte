@@ -1,7 +1,6 @@
 <!-- Meower Svelte, the app itself. -->
 <script>
 	import Setup from "../lib/Setup.svelte";
-	import Modal from "../lib/Modal.svelte";
 	import OOBE from "../lib/OOBE/Main.svelte";
 	import Sidebar from "../lib/Sidebar.svelte";
 	import Spinner from "../lib/Spinner.svelte";
@@ -10,6 +9,7 @@
 		screen,
 		modalStack,
 		reconnecting,
+		reconnectStalled,
 		OOBERunning,
 		user,
 		spinner,
@@ -18,6 +18,7 @@
 	} from "../lib/stores.js";
 	import {mobile, touch} from "../lib/responsiveness.js";
 	import * as BGM from "../lib/BGM.js";
+	import {retryReconnectNow} from "../lib/clmanager.js";
 
 	import {afterPageLoad, params} from "@roxi/routify";
 	import {tick} from "svelte";
@@ -85,18 +86,7 @@
 	on:mousedown={() => BGM.canPlayNow()}
 	on:keydown={() => BGM.canPlayNow()}
 >
-	{#if $reconnecting}
-		<Modal>
-			<h2 slot="header">Reconnecting...</h2>
-			<div slot="default">
-				<p>
-					Looks like we're having some problems connecting you to
-					Meower. Give us a moment and we'll reconnect you as soon as
-					possible...
-				</p>
-			</div>
-		</Modal>
-	{:else if $modalStack.length > 0}
+	{#if $modalStack.length > 0}
 		<svelte:component
 			this={$modalStack[0].modal}
 			modalData={$modalStack[0].data}
@@ -125,14 +115,89 @@
 		</div>
 	{/if}
 
-	{#if $spinner || $reconnecting}
+	{#if $spinner && !$reconnecting}
 		<div class="spinner-container">
 			<Spinner />
 		</div>
 	{/if}
+
+	{#if $reconnecting}
+		{#if $reconnectStalled}
+			<div class="reconnect-overlay">
+				<div class="reconnect-card">
+					<Spinner />
+					<h2>Can't reach Meower</h2>
+					<p>Still trying to reconnect...</p>
+					<button on:click={retryReconnectNow}>Try now</button>
+				</div>
+			</div>
+		{:else}
+			<div class="reconnect-pill" role="status">
+				<span class="reconnect-dot" />
+				Reconnecting...
+			</div>
+		{/if}
+	{/if}
 </main>
 
 <style>
+	.reconnect-pill {
+		position: fixed;
+		left: 50%;
+		bottom: 1.25em;
+		transform: translateX(-50%);
+		z-index: 10000;
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+		padding: 0.4em 0.9em;
+		background-color: var(--background);
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		box-shadow: 0 0.2em 0.8em rgba(0, 0, 0, 0.35);
+		font-size: 0.9em;
+		pointer-events: none;
+	}
+	.reconnect-dot {
+		width: 0.6em;
+		height: 0.6em;
+		border-radius: 50%;
+		background-color: var(--orange);
+		animation: reconnect-pulse 1s ease-in-out infinite alternate;
+	}
+	@keyframes reconnect-pulse {
+		from {
+			opacity: 0.3;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	.reconnect-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10001;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.6);
+	}
+	.reconnect-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.6em;
+		padding: 1.5em 2em;
+		background-color: var(--background);
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		text-align: center;
+	}
+	.reconnect-card h2,
+	.reconnect-card p {
+		margin: 0;
+	}
+
 	.spinner-container {
 		position: fixed;
 		right: 27px;

@@ -16,6 +16,10 @@ export const modalStack = writable([]);
 // Used for the disconnected screen
 export const intentionalDisconnect = writable(false);
 export const reconnecting = writable(false);
+// true once a reconnect has been failing for over 30 seconds
+export const reconnectStalled = writable(false);
+// timestamp of the last successful reconnect; pages resync when it changes
+export const reconnectedAt = writable(0);
 export const disconnected = writable(false);
 export const disconnectReason = writable("");
 
