@@ -157,6 +157,8 @@
 			size={1}
 			alt="Open/close more options"
 			icon={$user.name ? $user.pfp_data : -3}
+			avatar={$user.name ? $user.avatar : ""}
+			avatarColor={$user.avatar_color}
 		/>
 	</button>
 </div>

@@ -22,6 +22,6 @@ export const apiUrl =
 			: "https://meower-api.joshatticus.site/");
 export const uploadsUrl =
 	localStorage.getItem("meower_uploadsurl") ||
-	(dev ? "http://127.0.0.1:3001/" : "https://uploads.meower.org/");
+	(dev ? "http://127.0.0.1:3002/" : "https://uploads.meower.org/");
 export const encodeApiURLParams =
 	localStorage.getItem("meower_encodeapi") || false;

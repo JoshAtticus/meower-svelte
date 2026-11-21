@@ -5,14 +5,15 @@
 	import Container from "../../../lib/Container.svelte";
 	import PFP from "../../../lib/PFP.svelte";
 
+	import BasicModal from "../../../lib/modals/Basic.svelte";
 	import AddMemberProfileModal from "../../../lib/modals/chats/AddMember_Profile.svelte";
 	import BlockUserModal from "../../../lib/modals/safety/BlockUser.svelte";
 	import RemoveFriendModal from "../../../lib/modals/RemoveFriend.svelte";
 
-	import {relationships, friends, user} from "../../../lib/stores.js";
+	import {relationships, friends, user, authHeader} from "../../../lib/stores.js";
 	import {userRestrictions, isRestricted} from "../../../lib/bitField.js";
 	import {profileCache} from "../../../lib/loadProfile.js";
-	import {apiUrl, encodeApiURLParams} from "../../../lib/urls.js";
+	import {apiUrl, uploadsUrl, encodeApiURLParams} from "../../../lib/urls.js";
 	import * as modals from "../../../lib/modals.js";
 	import * as clm from "../../../lib/clmanager.js";
 
@@ -35,6 +36,37 @@
 	}
 
 	let pfpOverflow = false;
+	let pfpUpload, uploadingPfp;
+
+	async function uploadPfp() {
+		const file = pfpUpload.files[0];
+		if (!file) return;
+		uploadingPfp = true;
+		try {
+			const form = new FormData();
+			form.append("file", file);
+			const resp = await fetch(`${uploadsUrl}icons`, {
+				method: "POST",
+				headers: {Authorization: $authHeader.token},
+				body: form,
+			});
+			if (!resp.ok) {
+				throw new Error(
+					"Response code is not OK; code is " + resp.status
+				);
+			}
+			const uploaded = await resp.json();
+			if ($profileCache[$user.name]) delete $profileCache[$user.name];
+			await clm.updateProfile({avatar: uploaded.id});
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: "Failed to upload profile picture",
+				desc: `${e}`,
+			});
+		} finally {
+			uploadingPfp = false;
+		}
+	}
 	$: {
 		const pfp = $user.pfp_data;
 		pfpOverflow = pfp < 0 || pfp > PFP_COUNT;
@@ -122,6 +154,40 @@
 				on:click={() => (pfpSwitcher = true)}
 				>Change Profile Picture</button
 			>
+			<Container>
+				<h3>Custom Profile Picture</h3>
+				<input
+					type="file"
+					accept="image/*"
+					bind:this={pfpUpload}
+					on:change={uploadPfp}
+					disabled={uploadingPfp}
+				/>
+				{#if $user.avatar}
+					<button
+						class="long"
+						on:click={() => {
+							if ($profileCache[$user.name])
+								delete $profileCache[$user.name];
+							clm.updateProfile({avatar: ""});
+						}}>Remove Custom Picture</button
+					>
+				{/if}
+			</Container>
+			<Container>
+				<h3>Profile Color</h3>
+				<div class="color-picker">
+					<input
+						type="color"
+						value={`#${$user.avatar_color || "000000"}`}
+						on:change={e =>
+							clm.updateProfile({
+								avatar_color: e.target.value.substring(1),
+							})}
+					/>
+					<span>#{$user.avatar_color || "000000"}</span>
+				</div>
+			</Container>
 		{/if}
 
 		<button
@@ -223,6 +289,20 @@
 	#pfp-list {
 		display: flex;
 		flex-wrap: wrap;
+	}
+
+	.color-picker {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	.color-picker input[type="color"] {
+		width: 3em;
+		height: 2em;
+		padding: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
 	}
 
 </style>

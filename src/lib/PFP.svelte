@@ -1,12 +1,15 @@
 <!-- To nobody's surprise, a profile picture! -->
 <script>
 	export let icon = -1;
+	export let avatar = "";
+	export let avatarColor = "";
 	export let alt = "Profile picture";
 	export let online = false;
 	export let size = 1;
 	export let raw = false;
 
 	import errorIcon from "../assets/avatars/icon_err.svg";
+	import {uploadsUrl} from "./urls.js";
 
 	/**
 	 * @type {*}
@@ -28,11 +31,18 @@
 	{#if online && !raw}
 		<span class="online" />
 	{/if}
-	<span class:pfp={!raw} class:raw-pfp={raw}>
+	<span
+		class:pfp={!raw}
+		class:raw-pfp={raw}
+		class:custom-avatar={!!avatar}
+		style:background-color={avatarColor ? `#${avatarColor}` : null}
+	>
 		<img
 			{alt}
 			title={alt}
-			src={icons[
+			src={avatar
+				? `${uploadsUrl}icons/${avatar}`
+				: icons[
 				`../assets/avatars/icon_${
 					id === -1
 						? 21
@@ -43,7 +53,13 @@
 						: id - 1
 				}.svg`
 			] || errorIcon}
-			on:error={() => (id = -2)}
+			on:error={() => {
+				if (avatar) {
+					avatar = "";
+				} else {
+					id = -2;
+				}
+			}}
 			class:loading={icon === -1}
 			draggable={false}
 			width="auto"
@@ -78,6 +94,16 @@
 
 		/* Always make fallback text visible */
 		color: black;
+	}
+
+	.pfp.custom-avatar,
+	.raw-pfp.custom-avatar {
+		overflow: hidden;
+	}
+	.custom-avatar img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
 	.loading {

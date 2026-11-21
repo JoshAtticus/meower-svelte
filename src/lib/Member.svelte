@@ -11,6 +11,8 @@
 	export let owner = false;
 
 	let pfp = 0;
+	let avatar = "";
+	let avatarColor = "";
 
 	let error;
 
@@ -19,7 +21,10 @@
 	 */
 	async function initPostUser() {
 		try {
-			pfp = (await loadProfile(member)).pfp_data;
+			const profile = await loadProfile(member);
+			pfp = profile.pfp_data;
+			avatar = profile.avatar;
+			avatarColor = profile.avatar_color;
 		} catch (e) {
 			error = e;
 			pfp = -2;
@@ -33,6 +38,8 @@
 		<div class="member-pfp">
 			<PFP
 				icon={pfp}
+				{avatar}
+				{avatarColor}
 				alt="{member}'s profile picture"
 				online={$ulist.includes(member)}
 				size={0.5}

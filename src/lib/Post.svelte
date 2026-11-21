@@ -511,6 +511,8 @@
 							? 101
 							: -2
 						: profile.pfp_data}
+					avatar={profile.avatar}
+					avatarColor={profile.avatar_color}
 					alt="{post.user}'s profile picture"
 					online={$ulist.includes(post.user)}
 				/>
