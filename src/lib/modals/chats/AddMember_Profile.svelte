@@ -11,36 +11,64 @@
 	let {username} = modalData;
 
 	let loading = {},
+		invited = {},
 		errors = {};
 </script>
 
 <Modal showClose={true} on:close={modals.closeLastModal}>
-	<h2 slot="header">Add Member</h2>
+	<h2 slot="header">Invite to Chat</h2>
 	<div slot="default">
 		{#each $chats.filter(_chat => _chat.type === 0) as chat (chat._id)}
 			<Container>
 				<div class="settings-controls">
 					{#if !chat.members.includes(username)}
 						<button
-							class="circle add"
+							class="circle {invited[chat._id] ? 'check' : 'add'}"
 							disabled={loading[chat._id] ||
+								invited[chat._id] ||
 								chat.members.length >= 256}
 							on:click={async () => {
 								errors[chat._id] = "";
 								loading[chat._id] = true;
 								try {
 									const resp = await fetch(
-										`${apiUrl}chats/${chat._id}/members/${username}`,
+										`${apiUrl}chats/${chat._id}/invites`,
 										{
-											method: "PUT",
-											headers: $authHeader,
+											method: "POST",
+											headers: {
+												"Content-Type":
+													"application/json",
+												...$authHeader,
+											},
+											body: JSON.stringify({username}),
 										}
 									);
 									if (!resp.ok) {
+										const json = await resp
+											.json()
+											.catch(() => null);
+										switch (json && json.type) {
+											case "chatBanned":
+												throw new Error(
+													`${username} is banned from ${chat.nickname}.`
+												);
+											case "inviteAlreadyExists":
+												throw new Error(
+													`${username} already has a pending invite.`
+												);
+											case "chatMemberAlreadyExists":
+												throw new Error(
+													`${username} is already a member of ${chat.nickname}.`
+												);
+										}
 										switch (resp.status) {
 											case 403:
 												throw new Error(
-													`Someone's privacy settings are preventing you from adding ${username} to ${chat.nickname}.`
+													`Someone's privacy settings are preventing you from inviting ${username} to ${chat.nickname}.`
+												);
+											case 404:
+												throw new Error(
+													`${username} not found.`
 												);
 											case 429:
 												throw new Error(
@@ -53,10 +81,11 @@
 												);
 										}
 									}
+									invited[chat._id] = true;
 								} catch (e) {
-									loading[chat._id] = false;
 									errors[chat._id] = e;
 								}
+								loading[chat._id] = false;
 							}}
 						/>
 					{/if}

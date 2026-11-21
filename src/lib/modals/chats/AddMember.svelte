@@ -11,26 +11,48 @@
 </script>
 
 <Modal on:close={modals.closeLastModal}>
-	<h2 slot="header">Add Member</h2>
+	<h2 slot="header">{$params.admin ? "Add Member" : "Invite Member"}</h2>
 	<div slot="default">
 		<form
 			on:submit|preventDefault={async () => {
 				loading = true;
 				try {
-					const resp = await fetch(
-						`${apiUrl}${$params.admin ? "admin/" : ""}chats/${
-							$chat._id
-						}/members/${username}`,
-						{
-							method: "PUT",
-							headers: $authHeader,
-						}
-					);
+					const resp = $params.admin
+						? await fetch(
+								`${apiUrl}admin/chats/${$chat._id}/members/${username}`,
+								{
+									method: "PUT",
+									headers: $authHeader,
+								}
+							)
+						: await fetch(`${apiUrl}chats/${$chat._id}/invites`, {
+								method: "POST",
+								headers: {
+									"Content-Type": "application/json",
+									...$authHeader,
+								},
+								body: JSON.stringify({username}),
+							});
 					if (!resp.ok) {
+						const json = await resp.json().catch(() => null);
+						switch (json && json.type) {
+							case "chatBanned":
+								throw new Error(
+									`${username} is banned from ${$chat.nickname}.`
+								);
+							case "inviteAlreadyExists":
+								throw new Error(
+									`${username} already has a pending invite.`
+								);
+							case "chatMemberAlreadyExists":
+								throw new Error(
+									`${username} is already a member of ${$chat.nickname}.`
+								);
+						}
 						switch (resp.status) {
 							case 403:
 								throw new Error(
-									`Someone's privacy settings are preventing you from adding ${username} to ${$chat.nickname}.`
+									`Someone's privacy settings are preventing you from inviting ${username} to ${$chat.nickname}.`
 								);
 							case 404:
 								throw new Error(`${username} not found.`);
@@ -85,7 +107,7 @@
 					>Cancel</button
 				>
 				<button type="submit" disabled={!username || loading}
-					>Add member</button
+					>{$params.admin ? "Add member" : "Send invite"}</button
 				>
 			</div>
 		</form>

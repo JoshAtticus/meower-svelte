@@ -33,6 +33,10 @@
 
 	let showMembers = !$mobile;
 
+	$: myBan = ($chat.bans || []).find(
+		ban => ban.username === $user.name
+	);
+
 	onMount(async () => {
 		if ($params.chatid === "livechat") {
 			chat.set({
@@ -230,6 +234,19 @@
 				/>
 			{/if}
 		{/if}
+		{#if myBan}
+			<Container>
+				<p style="margin: 0; color: crimson;">
+					<b>You have been banned from this chat.</b>
+					{#if myBan.expires}
+						The ban expires {new Date(
+							myBan.expires * 1000
+						).toLocaleString()}.
+					{/if}
+					You can still view messages, but you cannot post.
+				</p>
+			</Container>
+		{/if}
 		<PostList
 			fetchUrl={$params.chatid === "livechat"
 				? null
@@ -238,7 +255,7 @@
 				: `posts/${$params.chatid}`}
 			postOrigin={$params.admin ? "" : $params.chatid}
 			chatName={$chat.nickname}
-			canPost={$chat._id === "livechat" || !$params.admin}
+			canPost={($chat._id === "livechat" || !$params.admin) && !myBan}
 		/>
 	</div>
 	{#if showMembers && $chat._id !== "livechat" && $chat.type === 0}
