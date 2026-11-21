@@ -123,6 +123,13 @@
 				/>
 			</label>
 			<span class="color-hex">#{$user.avatar_color || "000000"}</span>
+			{#if $user.avatar_color && $user.avatar_color !== "000000"}
+				<button
+					on:click={() =>
+						clm.updateProfile({avatar_color: "000000"})}
+					>Clear</button
+				>
+			{/if}
 		</div>
 	</div>
 </Modal>

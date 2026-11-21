@@ -22,6 +22,19 @@
 	import {afterPageLoad, params} from "@roxi/routify";
 	import {tick} from "svelte";
 
+	$: profileColor =
+		$user.profile_theme &&
+		/^[0-9a-fA-F]{6}$/.test($user.avatar_color || "") &&
+		$user.avatar_color !== "000000"
+			? `#${$user.avatar_color}`
+			: null;
+	$: profileColorLight = profileColor
+		? `color-mix(in srgb, ${profileColor} 60%, white)`
+		: null;
+	$: profileColorDark = profileColor
+		? `color-mix(in srgb, ${profileColor} 70%, black)`
+		: null;
+
 	let currentPage = "";
 	let currentParams = JSON.stringify($params);
 	let remounting = false;
@@ -48,10 +61,14 @@
 
 <main
 	id="main"
-	style:--orange={$useCustomTheme ? $customTheme.orange : null}
-	style:--orange-button={$useCustomTheme ? $customTheme.orange : null}
-	style:--orange-light={$useCustomTheme ? $customTheme.orangeLight : null}
-	style:--orange-dark={$useCustomTheme ? $customTheme.orangeDark : null}
+	style:--orange={$useCustomTheme ? $customTheme.orange : profileColor}
+	style:--orange-button={$useCustomTheme ? $customTheme.orange : profileColor}
+	style:--orange-light={$useCustomTheme
+		? $customTheme.orangeLight
+		: profileColorLight}
+	style:--orange-dark={$useCustomTheme
+		? $customTheme.orangeDark
+		: profileColorDark}
 	style:--background={$useCustomTheme ? $customTheme.background : null}
 	style:--foreground={$useCustomTheme ? $customTheme.foreground : null}
 	style:--foreground-orange={$useCustomTheme

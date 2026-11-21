@@ -128,6 +128,22 @@
 	</Container>
 	<Container>
 		<div class="settings-controls">
+			<input
+				type="checkbox"
+				bind:checked={$user.profile_theme}
+				on:change={() =>
+					clm.updateProfile({
+						profile_theme: $user.profile_theme,
+					})}
+			/>
+		</div>
+
+		<h2>Profile Theme</h2>
+		Your profile color {$user.profile_theme ? "themes" : "does not theme"} the
+		entire UI, not just your profile page.
+	</Container>
+	<Container>
+		<div class="settings-controls">
 			<button
 				class="circle settings"
 				on:click={() => modals.showModal(ChangePasswordModal)}

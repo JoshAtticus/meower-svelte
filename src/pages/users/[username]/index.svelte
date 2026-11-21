@@ -44,6 +44,18 @@
 			profileColor !== "000000"
 				? `#${profileColor}`
 				: null}
+			style:--orange-button={/^[0-9a-fA-F]{6}$/.test(profileColor) &&
+			profileColor !== "000000"
+				? `#${profileColor}`
+				: null}
+			style:--orange-light={/^[0-9a-fA-F]{6}$/.test(profileColor) &&
+			profileColor !== "000000"
+				? `color-mix(in srgb, #${profileColor} 60%, white)`
+				: null}
+			style:--orange-dark={/^[0-9a-fA-F]{6}$/.test(profileColor) &&
+			profileColor !== "000000"
+				? `color-mix(in srgb, #${profileColor} 70%, black)`
+				: null}
 		>
 		<ProfileView profile={data} canDoActions={true} />
 
