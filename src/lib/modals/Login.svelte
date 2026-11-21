@@ -2,6 +2,7 @@
 	import Modal from "../Modal.svelte";
 
 	import SignupModal from "./Signup.svelte";
+	import TwoFactorModal from "./TwoFactor.svelte";
 
 	import {user} from "../stores.js";
 	import * as clm from "../clmanager.js";
@@ -52,6 +53,27 @@
 							error =
 								"That password was changed recently. Try your new password, or contact support to revert it.";
 							break;
+						case "I:016 | 2FA Required": {
+							const loginUsername = username;
+							const loginPassword = password;
+							modals.replaceLastModal(TwoFactorModal, {
+								onSubmit: async code => {
+									// the server accepts the code appended to the password
+									await clm.meowerRequest({
+										cmd: "direct",
+										val: {
+											cmd: "authpswd",
+											val: {
+												username: loginUsername,
+												pswd: loginPassword + code,
+											},
+										},
+									});
+									BGM.playBGM($user.bgm_song);
+								},
+							});
+							break;
+						}
 						case "E:018 | Account Banned":
 							break;
 						case "E:019 | Illegal characters detected":

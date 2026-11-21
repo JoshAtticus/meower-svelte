@@ -7,6 +7,7 @@
 	import {screen, setupPage as page, OOBERunning, user} from "./stores.js";
 	import unloadedProfile from "./unloadedprofile.js";
 	import * as clm from "./clmanager.js";
+	import TwoFactorModal from "./modals/TwoFactor.svelte";
 	import * as modals from "./modals.js";
 	const link = clm.link;
 	// @ts-ignore
@@ -167,6 +168,23 @@
 				case "E:126 | Password recently changed":
 					loginStatus =
 						"That password was changed recently. Try your new password, or contact support to revert it.";
+					break;
+				case "I:016 | 2FA Required":
+					loginStatus = "";
+					modals.showModal(TwoFactorModal, {
+						onSubmit: async code => {
+							// the server accepts the code appended to the password
+							await clm.meowerRequest({
+								cmd: "direct",
+								val: {
+									cmd: "authpswd",
+									val: {username: username, pswd: password + code},
+								},
+							});
+							BGM.playBGM($user.bgm_song);
+							screen.set("main");
+						},
+					});
 					break;
 				case "E:018 | Account Banned":
 					loginStatus = "";

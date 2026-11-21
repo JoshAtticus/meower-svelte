@@ -7,6 +7,7 @@
 	import SwitchBGMSFXModal from "../lib/modals/settings/SwitchBGMSFX.svelte";
 	import ChangePasswordModal from "../lib/modals/settings/ChangePassword.svelte";
 	import LogoutEverywhereModal from "../lib/modals/settings/LogoutEverywhere.svelte";
+	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
 	import DeleteAccountModal from "../lib/modals/settings/DeleteAccount.svelte";
 
 	import {user} from "../lib/stores.js";
@@ -152,6 +153,17 @@
 
 		<h2>Change Password</h2>
 		Change your account password.
+	</Container>
+	<Container>
+		<div class="settings-controls">
+			<button
+				class="circle settings"
+				on:click={() => modals.showModal(TwoFactorSettingsModal)}
+			/>
+		</div>
+
+		<h2>Two-Factor Authentication</h2>
+		Require a code from an authenticator app when you log in.
 	</Container>
 	<Container>
 		<div class="settings-controls">
