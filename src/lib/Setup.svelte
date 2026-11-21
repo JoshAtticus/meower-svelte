@@ -164,6 +164,10 @@
 						? "Session expired! Please login again."
 						: "Invalid password!";
 					break;
+				case "E:126 | Password recently changed":
+					loginStatus =
+						"That password was changed recently. Try your new password, or contact support to revert it.";
+					break;
 				case "E:018 | Account Banned":
 					loginStatus = "";
 					break;

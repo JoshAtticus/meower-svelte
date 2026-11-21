@@ -48,6 +48,10 @@
 						case "I:011 | Invalid Password":
 							error = "Invalid password!";
 							break;
+						case "E:126 | Password recently changed":
+							error =
+								"That password was changed recently. Try your new password, or contact support to revert it.";
+							break;
 						case "E:018 | Account Banned":
 							break;
 						case "E:019 | Illegal characters detected":
