@@ -11,6 +11,25 @@
 
 	let modal;
 
+	// Swipe down to dismiss (mobile sheets)
+	let dragStart = null;
+	let dragY = 0;
+	function onTouchStart(e) {
+		if (!$mobile || modal.scrollTop > 0) return;
+		dragStart = e.touches[0].clientY;
+		dragY = 0;
+	}
+	function onTouchMove(e) {
+		if (dragStart === null) return;
+		dragY = Math.max(0, e.touches[0].clientY - dragStart);
+	}
+	function onTouchEnd() {
+		if (dragStart === null) return;
+		if (dragY > 100) close();
+		dragStart = null;
+		dragY = 0;
+	}
+
 	// Slide up from the bottom on mobile, pop in on desktop
 	const appear = (node, opts) =>
 		$mobile
@@ -65,8 +84,15 @@
 	aria-modal="true"
 	bind:this={modal}
 	class:sheet={$mobile}
+	style:transform={$mobile && dragY ? `translateY(${dragY}px)` : null}
+	on:touchstart={onTouchStart}
+	on:touchmove={onTouchMove}
+	on:touchend={onTouchEnd}
 	transition:appear
 >
+	{#if $mobile}
+		<div class="sheet-handle" />
+	{/if}
 	<div class="settings-controls">
 		{#if showClose}
 			<button class="circle close" title="Close modal" on:click={close} />
@@ -118,5 +144,13 @@
 		border-radius: 1em 1em 0 0;
 		border-bottom: none;
 		padding-bottom: calc(1em + env(safe-area-inset-bottom));
+	}
+	.sheet-handle {
+		width: 2.5em;
+		height: 0.3em;
+		border-radius: 1em;
+		background-color: var(--orange);
+		opacity: 0.6;
+		margin: -0.4em auto 0.6em;
 	}
 </style>

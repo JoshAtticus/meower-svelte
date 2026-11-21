@@ -63,3 +63,14 @@ export function recordEmote(entry) {
 		return recent;
 	});
 }
+
+/**
+ * Drop a recent custom emoji/sticker (e.g. it was deleted from its chat).
+ */
+export function forgetRecent(id) {
+	recentEmotes.update(recent => {
+		recent = recent.filter(e => e.id !== id);
+		localStorage.setItem("meower_recent_emotes", JSON.stringify(recent));
+		return recent;
+	});
+}

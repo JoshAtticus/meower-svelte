@@ -205,9 +205,17 @@
 		flex-grow: 1;
 		max-width: 26em;
 	}
+	.add-friend {
+		min-width: 0;
+	}
 	.add-friend input {
 		flex-grow: 1;
-		min-width: 8em;
+		min-width: 0;
+		width: 0;
+	}
+	.add-friend button {
+		flex-shrink: 0;
+		white-space: nowrap;
 	}
 
 	.friend-row {

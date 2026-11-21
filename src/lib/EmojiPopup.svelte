@@ -8,6 +8,7 @@
 		loadEmotes,
 		recentEmotes,
 		recordEmote,
+		forgetRecent,
 	} from "./emotes.js";
 	import {uploadsUrl} from "./urls.js";
 
@@ -136,6 +137,9 @@
 	}
 </script>
 
+{#if $mobile}
+	<div class="sheet-backdrop" on:click={() => onClose && onClose()} />
+{/if}
 <div
 	class="emoji-popup"
 	class:anchored={!!anchor}
@@ -198,6 +202,7 @@
 								<img
 									src="{uploadsUrl}emojis/{e.id}"
 									alt={e.name}
+									on:error={() => forgetRecent(e.id)}
 								/>
 							</button>
 						{/if}
@@ -216,6 +221,7 @@
 								class="sticker"
 								src="{uploadsUrl}stickers/{e.id}"
 								alt={e.name}
+								on:error={() => forgetRecent(e.id)}
 							/>
 						</button>
 					{/each}
@@ -429,5 +435,31 @@
 		border-right: none;
 		border-bottom: solid 1px var(--foreground-orange);
 		padding: 0.35em 0.5em;
+	}
+	.sheet-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 10002;
+		background: rgba(0, 0, 0, 0.5);
+		animation: backdrop-in 0.2s ease;
+	}
+	.emoji-popup.sheet {
+		animation: sheet-up 0.25s ease;
+	}
+	@keyframes sheet-up {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+	@keyframes backdrop-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
 	}
 </style>
