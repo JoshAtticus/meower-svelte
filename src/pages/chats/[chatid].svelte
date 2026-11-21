@@ -57,7 +57,7 @@
 		"change_name", "change_color", "change_icon", "delete_icon",
 		"add_emotes", "edit_emotes", "delete_emotes",
 		"modify_roles", "create_roles", "delete_roles", "assign_roles",
-		"change_settings", "toggle_invites",
+		"change_settings", "toggle_invites", "ban_members",
 	];
 	$: isGroupChat = $chat.type === 0 && $chat._id !== "livechat";
 	$: canOpenSettings =

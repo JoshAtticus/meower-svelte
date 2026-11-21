@@ -8,6 +8,7 @@
 <script>
 	import Modal from "../../Modal.svelte";
 	import ChatIcon from "../../ChatIcon.svelte";
+	import Member from "../../Member.svelte";
 	import BasicModal from "../Basic.svelte";
 	import ConfirmActionModal from "../ConfirmAction.svelte";
 
@@ -51,9 +52,10 @@
 		emojis: anyPerm(EMOTE_PERMS),
 		stickers: anyPerm(EMOTE_PERMS),
 		roles: anyPerm(ROLE_PERMS),
+		bans: anyPerm(["ban_members"]),
 	});
 	const firstVisible = visible =>
-		["general", "emojis", "stickers", "roles"].find(t => visible[t]) ||
+		["general", "emojis", "stickers", "roles", "bans"].find(t => visible[t]) ||
 		"general";
 	$: tabVisible = ($chat, $user, computeTabVisible());
 	$: firstVisibleTab = firstVisible(tabVisible);
@@ -100,7 +102,7 @@
 	$: {
 		if (
 			!$params.admin &&
-			![...GENERAL_PERMS, ...EMOTE_PERMS, ...ROLE_PERMS].some(canPerm)
+			![...GENERAL_PERMS, ...EMOTE_PERMS, ...ROLE_PERMS, "ban_members"].some(canPerm)
 		) {
 			modals.closeLastModal();
 		}
@@ -377,6 +379,32 @@
 		}
 	}
 
+	$: activeBans = ($chat.bans || []).filter(
+		ban => ban.expires === null || ban.expires * 1000 > Date.now()
+	);
+	let unbanning = {};
+	async function unban(username) {
+		unbanning = {...unbanning, [username]: true};
+		try {
+			const resp = await fetch(
+				`${apiUrl}chats/${$chat._id}/bans/${username}`,
+				{method: "DELETE", headers: $authHeader}
+			);
+			if (!resp.ok) {
+				const json = await resp.json().catch(() => ({}));
+				throw new Error(friendlyRoleError(json.type, resp.status));
+			}
+			$chat.bans = ($chat.bans || []).filter(b => b.username !== username);
+		} catch (e) {
+			modals.showModal(BasicModal, {
+				title: `Failed to unban ${username}`,
+				desc: `${e.message || e}`,
+			});
+		}
+		delete unbanning[username];
+		unbanning = unbanning;
+	}
+
 	async function setRoleColors(role, colors) {
 		try {
 			await patchRole(role._id, {colors});
@@ -420,6 +448,12 @@
 				<button
 					class:active={tab === "roles"}
 					on:click={() => (tab = "roles")}>Roles</button
+				>
+			{/if}
+			{#if tabVisible.bans}
+				<button
+					class:active={tab === "bans"}
+					on:click={() => (tab = "bans")}>Bans</button
 				>
 			{/if}
 		</div>
@@ -946,6 +980,28 @@
 					</div>
 				{/each}
 			</div>
+		{:else if tab === "bans"}
+			<div class="ban-list">
+				{#each activeBans as ban (ban.username)}
+					<div class="ban-row">
+						<Member member={ban.username} owner={false} />
+						<span class="ban-expiry"
+							>{ban.expires
+								? `Until ${new Date(
+										ban.expires * 1000
+									).toLocaleString()}`
+								: "Permanent"}</span
+						>
+						<button
+							type="button"
+							disabled={unbanning[ban.username]}
+							on:click={() => unban(ban.username)}>Unban</button
+						>
+					</div>
+				{:else}
+					<p class="emote-empty">No one is banned.</p>
+				{/each}
+			</div>
 		{/if}
 	</div>
 </Modal>
@@ -1184,6 +1240,32 @@
 		font-size: 0.85em;
 		opacity: 0.6;
 	}
+	.ban-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4em;
+	}
+	.ban-row {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+	}
+	.ban-row :global(.member) {
+		flex: 1;
+		min-width: 0;
+		padding: 0;
+	}
+	.ban-expiry {
+		font-size: 0.8em;
+		opacity: 0.7;
+		flex-shrink: 0;
+	}
+	.ban-row button {
+		flex-shrink: 0;
+		margin: 0;
+		padding: 0.2em 0.8em;
+	}
+
 	.role-colors {
 		display: flex;
 		align-items: center;
