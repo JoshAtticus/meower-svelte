@@ -12,6 +12,7 @@
 	import DeletePostModal from "./modals/DeletePost.svelte";
 	import ReportPostModal from "./modals/safety/ReportPost.svelte";
 	import ModeratePostModal from "./modals/moderation/ModeratePost.svelte";
+	import SharePostModal from "./modals/SharePost.svelte";
 
 	import {authHeader, user, chat, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
@@ -22,7 +23,7 @@
 
 	import {IMAGE_HOST_WHITELIST} from "./hostWhitelist.js";
 
-	import {default as loadProfile} from "../lib/loadProfile.js";
+	import {default as loadProfile, profileCache} from "../lib/loadProfile.js";
 
 	// @ts-ignore
 	import {autoresize} from "svelte-textarea-autoresize";
@@ -54,6 +55,8 @@
 
 	let deleteButton;
 	let pinButton;
+
+	$: postProfile = $profileCache[post.user] || {};
 
 	let adminDeleteButton, adminRestoreButton;
 
@@ -355,15 +358,7 @@
 							class="circle share"
 							title="Share post"
 							on:click={() =>
-								window.open(
-									`https://shareopenly.org/share/?url=${encodeURIComponent(
-										window.location.origin +
-											"/posts/" +
-											post.post_id
-									)}`,
-									"_blank",
-									"noopener"
-								)}
+								modals.showModal(SharePostModal, {post})}
 						/>
 					{/if}
 					{#if !editing && canPin}
@@ -493,36 +488,24 @@
 				$goto(`/users/${post.user}`);
 			}}
 		>
-			{#await noPFP ? Promise.resolve(true) : loadProfile(post.user)}
-				<PFP
-					icon={-2}
-					alt="{post.user}'s profile picture"
-					online={$ulist.includes(post.user)}
-				/>
-			{:then profile}
-				<PFP
-					icon={noPFP
-						? post.user === "Server"
-							? 102
-							: post.post_origin === "inbox" &&
-							  (post.user === "Announcement" ||
-									post.user === "Notification" ||
-									post.user.startsWith("Notification to"))
-							? 101
-							: -2
-						: profile.pfp_data}
-					avatar={profile.avatar}
-					avatarColor={profile.avatar_color}
-					alt="{post.user}'s profile picture"
-					online={$ulist.includes(post.user)}
-				/>
-			{:catch}
-				<PFP
-					icon={-2}
-					alt="{post.user}'s profile picture"
-					online={$ulist.includes(post.user)}
-				/>
-			{/await}
+			<PFP
+				icon={noPFP
+					? post.user === "Server"
+						? 102
+						: post.post_origin === "inbox" &&
+						  (post.user === "Announcement" ||
+								post.user === "Notification" ||
+								post.user.startsWith("Notification to"))
+						? 101
+						: -2
+					: postProfile.temporary || !postProfile.pfp_data
+					? -2
+					: postProfile.pfp_data}
+				avatar={postProfile.avatar}
+				avatarColor={postProfile.avatar_color}
+				alt="{post.user}'s profile picture"
+				online={$ulist.includes(post.user)}
+			/>
 		</button>
 		<div class="creatordate">
 			<div class="creator">
