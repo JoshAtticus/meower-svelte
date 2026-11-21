@@ -3,7 +3,7 @@
 	import Container from "../lib/Container.svelte";
 	import PFP from "../lib/PFP.svelte";
 	import FormattedDate from "./FormattedDate.svelte";
-	import {relativeDate} from "./relativeDate.js";
+	import {relativeDate, now} from "./relativeDate.js";
 	import Badge from "./Badge.svelte";
 	import LiText from "./LiText.svelte";
 	import Attachment from "./Attachment.svelte";
@@ -467,7 +467,7 @@
 				{#await addFancyElements(post.content, postEmotes) then content}
 					{@html content.replace(/<\/?p>/g, "")}
 				{/await}
-				<i class="server-date">{relativeDate(post.date)}</i>
+				<i class="server-date">{relativeDate(post.date, $now)}</i>
 			</p>
 		</Container>
 	</div>

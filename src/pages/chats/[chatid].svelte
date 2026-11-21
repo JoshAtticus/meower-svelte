@@ -7,6 +7,7 @@
 	import ChangeChatNicknameModal from "../../lib/modals/chats/ChangeChatNickname.svelte";
 	import GCMemberModal from "../../lib/modals/chats/GCMember.svelte";
 	import ChatIcon from "../../lib/ChatIcon.svelte";
+	import FormattedDate from "../../lib/FormattedDate.svelte";
 	import ViewPinsModal from "../../lib/modals/chats/ViewPins.svelte";
 	import AddMemberModeModal from "../../lib/modals/chats/AddMember_Mode.svelte";
 	import AccountBannedModal from "../../lib/modals/safety/AccountBanned.svelte";
@@ -354,9 +355,7 @@
 				<p style="margin: 0; color: crimson;">
 					<b>You have been banned from this chat.</b>
 					{#if myBan.expires}
-						The ban expires {new Date(
-							myBan.expires * 1000
-						).toLocaleString()}.
+						The ban expires <FormattedDate date={myBan.expires} />.
 					{/if}
 					You can still view messages, but you cannot post.
 				</p>

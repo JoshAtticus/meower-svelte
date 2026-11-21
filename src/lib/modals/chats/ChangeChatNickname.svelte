@@ -9,6 +9,7 @@
 	import Modal from "../../Modal.svelte";
 	import ChatIcon from "../../ChatIcon.svelte";
 	import Member from "../../Member.svelte";
+	import FormattedDate from "../../FormattedDate.svelte";
 	import BasicModal from "../Basic.svelte";
 	import ConfirmActionModal from "../ConfirmAction.svelte";
 
@@ -985,13 +986,13 @@
 				{#each activeBans as ban (ban.username)}
 					<div class="ban-row">
 						<Member member={ban.username} owner={false} />
-						<span class="ban-expiry"
-							>{ban.expires
-								? `Until ${new Date(
-										ban.expires * 1000
-									).toLocaleString()}`
-								: "Permanent"}</span
-						>
+						<span class="ban-expiry">
+							{#if ban.expires}
+								Ends <FormattedDate date={ban.expires} />
+							{:else}
+								Permanent
+							{/if}
+						</span>
 						<button
 							type="button"
 							disabled={unbanning[ban.username]}

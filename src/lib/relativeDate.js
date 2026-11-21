@@ -1,13 +1,38 @@
+import {readable} from "svelte/store";
+
 /**
- * Human-friendly relative time, e.g. "just now", "5 minutes ago".
- * @param {number} timestamp unix seconds
+ * Current time in unix seconds, ticking every 30s so relative timestamps
+ * stay up to date. Use as `relativeDate(ts, $now)` in components.
  */
-export function relativeDate(timestamp) {
-	const diff = Math.floor(Date.now() / 1000) - timestamp;
-	const ago = (n, unit) => `${n} ${unit}${n === 1 ? "" : "s"} ago`;
-	if (diff < 60) return "just now";
-	if (diff < 3600) return ago(Math.floor(diff / 60), "minute");
-	if (diff < 86400) return ago(Math.floor(diff / 3600), "hour");
-	if (diff < 604800) return ago(Math.floor(diff / 86400), "day");
-	return new Date(timestamp * 1000).toLocaleDateString();
+export const now = readable(Math.floor(Date.now() / 1000), set => {
+	const interval = setInterval(() => set(Math.floor(Date.now() / 1000)), 30000);
+	return () => clearInterval(interval);
+});
+
+const UNITS = [
+	["year", 31536000],
+	["month", 2592000],
+	["week", 604800],
+	["day", 86400],
+	["hour", 3600],
+	["minute", 60],
+];
+
+/**
+ * Human-friendly relative time: "just now", "5 minutes ago", "in 3 hours".
+ * @param {number} timestamp unix seconds
+ * @param {number} [nowSeconds] current unix seconds (pass $now to stay live)
+ */
+export function relativeDate(timestamp, nowSeconds = Math.floor(Date.now() / 1000)) {
+	const diff = nowSeconds - timestamp;
+	const abs = Math.abs(diff);
+	if (abs < 60) return "just now";
+	for (const [unit, seconds] of UNITS) {
+		if (abs >= seconds) {
+			const n = Math.floor(abs / seconds);
+			const label = `${n} ${unit}${n === 1 ? "" : "s"}`;
+			return diff >= 0 ? `${label} ago` : `in ${label}`;
+		}
+	}
+	return "just now";
 }

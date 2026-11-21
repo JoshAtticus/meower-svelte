@@ -8,6 +8,7 @@
 -->
 <script>
 	import Container from "../../lib/Container.svelte";
+	import FormattedDate from "../../lib/FormattedDate.svelte";
 	import ChatIcon from "../../lib/ChatIcon.svelte";
 	import ProfileView from "../..//lib/ProfileView.svelte";
 
@@ -134,11 +135,7 @@
 						<b>@{invite.from}</b> invited you to join
 						<b>{invite.chat_nickname || "a group chat"}</b>
 						{#if invite.expires}
-							<i>
-								(expires {new Date(
-									invite.expires * 1000
-								).toLocaleString()})
-							</i>
+							<i>(expires <FormattedDate date={invite.expires} />)</i>
 						{/if}
 					</span>
 					<span class="invite-buttons">

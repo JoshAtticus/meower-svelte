@@ -1,5 +1,6 @@
 <script>
 	import Modal from "../../Modal.svelte";
+	import FormattedDate from "../../FormattedDate.svelte";
 
 	import {authHeader} from "../../stores.js";
 	import {apiUrl} from "../../urls.js";
@@ -156,9 +157,7 @@
 								on:blur={e => rename(auth, e.target.value)}
 							/>
 							<span class="auth-date"
-								>{new Date(
-									auth.registered_at * 1000
-								).toLocaleDateString()}</span
+								>Added <FormattedDate date={auth.registered_at} /></span
 							>
 							<button
 								type="button"
