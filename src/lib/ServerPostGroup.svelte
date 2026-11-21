@@ -27,7 +27,7 @@
 				on:click|preventDefault|stopPropagation={() =>
 					$goto(`/users/${actor}`)}>@{actor}</a
 			>
-			made multiple changes to this group chat. Click to expand
+			made {posts.length} changes to this group chat. Click to expand
 		{/if}
 		<i class="group-date">{relativeDate(posts[0].date)}</i>
 	</button>
