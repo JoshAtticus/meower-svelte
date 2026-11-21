@@ -347,6 +347,48 @@
 				</div>
 			</form>
 
+			<div class="announce-deletes">
+				<label class="announce-row">
+					<input
+						type="checkbox"
+						checked={$chat.announce_deletes || false}
+						on:change={async e => {
+							try {
+								await patchChat({
+									announce_deletes: e.target.checked,
+								});
+							} catch (e2) {
+								modals.showModal(BasicModal, {
+									title: "Failed to update chat settings",
+									desc: `${e2}`,
+								});
+							}
+						}}
+					/>
+					Announce deleted messages
+				</label>
+				<label class="announce-row">
+					<input
+						type="checkbox"
+						checked={$chat.announce_deleter || false}
+						disabled={!$chat.announce_deletes}
+						on:change={async e => {
+							try {
+								await patchChat({
+									announce_deleter: e.target.checked,
+								});
+							} catch (e2) {
+								modals.showModal(BasicModal, {
+									title: "Failed to update chat settings",
+									desc: `${e2}`,
+								});
+							}
+						}}
+					/>
+					Show who deleted them
+				</label>
+			</div>
+
 			<div class="chat-id-row">
 				<b>Chat ID</b>
 				<code class="chat-id-value">{$chat._id}</code>
@@ -491,6 +533,20 @@
 		display: flex;
 		align-items: center;
 		gap: 0.4em;
+	}
+
+	.announce-deletes {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5em;
+		margin-top: 1em;
+		padding-top: 0.75em;
+		border-top: solid 2px var(--orange);
+	}
+	.announce-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
 	}
 
 	.chat-id-row {
