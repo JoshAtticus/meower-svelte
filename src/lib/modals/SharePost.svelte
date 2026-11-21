@@ -102,7 +102,7 @@
 			</button>
 			<button
 				class="share-option"
-				style:--brand="#777"
+				style:--brand="#ff6b5c"
 				on:click={() =>
 					window.open(
 						`mailto:?body=${encodeURIComponent(link)}`,
