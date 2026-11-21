@@ -8,6 +8,7 @@
 -->
 <script>
 	import Container from "../../lib/Container.svelte";
+	import ChatIcon from "../../lib/ChatIcon.svelte";
 	import ProfileView from "../..//lib/ProfileView.svelte";
 
 	import BasicModal from "../../lib/modals/Basic.svelte";
@@ -151,7 +152,10 @@
 							/>
 						</div>
 
-						<h1>{chat.nickname}</h1>
+						<div class="chat-heading">
+							<ChatIcon {chat} />
+							<h1>{chat.nickname}</h1>
+						</div>
 						Members: {chat.members.length > 100
 							? chat.members.slice(0, 99).join(", ") + "..."
 							: chat.members.join(", ")}
@@ -184,6 +188,14 @@
 	}
 	.chat {
 		min-height: 4.5em;
+	}
+	.chat-heading {
+		display: flex;
+		align-items: center;
+		gap: 0.5em;
+	}
+	.chat-heading h1 {
+		margin: 0;
 	}
 	.settings-controls {
 		position: absolute;

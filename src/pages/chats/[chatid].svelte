@@ -5,6 +5,7 @@
 	import BasicModal from "../../lib/modals/Basic.svelte";
 	import ChangeChatNicknameModal from "../../lib/modals/chats/ChangeChatNickname.svelte";
 	import GCMemberModal from "../../lib/modals/chats/GCMember.svelte";
+	import ChatIcon from "../../lib/ChatIcon.svelte";
 	import ViewPinsModal from "../../lib/modals/chats/ViewPins.svelte";
 	import AddMemberModeModal from "../../lib/modals/chats/AddMember_Mode.svelte";
 	import AccountBannedModal from "../../lib/modals/safety/AccountBanned.svelte";
@@ -209,6 +210,7 @@
 		{#if $chat.type === 0}
 			<Container>
 				<h1 class="chat-name">
+					<ChatIcon chat={$chat} size={0.7} />
 					{$chat.nickname}
 					<span class="chat-id">(<code>{$params.chatid}</code>)</span>
 				</h1>
@@ -236,7 +238,7 @@
 						{#if $chat.owner === $user.name || ($params.admin && hasPermission(adminPermissions.EDIT_CHATS))}
 							<button
 								class="circle settings"
-								title="Change chat nickname"
+								title="Group chat settings"
 								on:click={() => {
 									if (
 										isRestricted(
@@ -556,6 +558,9 @@
 
 	.chat-name {
 		margin: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.4em;
 	}
 	.chat-id {
 		font-weight: normal;
