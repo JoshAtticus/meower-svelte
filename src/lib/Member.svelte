@@ -9,6 +9,7 @@
 
 	export let member = "";
 	export let owner = false;
+	export let role = "";
 
 	let pfp = 0;
 	let avatar = "";
@@ -45,7 +46,12 @@
 				size={0.5}
 			/>
 		</div>
-		<p class="member-name">{member}</p>
+		<div class="member-text">
+			<p class="member-name">{member}</p>
+			{#if role}
+				<p class="member-role">{role}</p>
+			{/if}
+		</div>
 
 		{#if owner}
 			<img
@@ -80,6 +86,26 @@
 		gap: 0.5em;
 		padding: 0 0.5em;
 		box-sizing: border-box;
+	}
+
+	.member-text {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+	.member-name,
+	.member-role {
+		margin: 0;
+		line-height: 1.15;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+	}
+	.member-role {
+		font-size: 0.72em;
+		opacity: 0.6;
+		overflow: hidden;
 	}
 
 	.member-name {

@@ -432,10 +432,10 @@
 						<Member
 							member={chatmember}
 							owner={chatmember === $chat.owner}
+							role={memberRole && memberRole._id !== "default"
+								? memberRole.name
+								: ""}
 						/>
-						{#if memberRole && memberRole._id !== "default"}
-							<span class="member-role">{memberRole.name}</span>
-						{/if}
 					</button>
 				{/each}
 				{#if pendingInvites.length}
@@ -541,12 +541,6 @@
 		flex-shrink: 0;
 		min-width: 1.6em;
 		min-height: 1.6em;
-	}
-	.member-role {
-		display: block;
-		margin-left: 2.6em;
-		font-size: 0.8em;
-		opacity: 0.65;
 	}
 	.dm-request {
 		margin: 0;
