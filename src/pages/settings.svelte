@@ -112,6 +112,22 @@
 	</Container>
 	<Container>
 		<div class="settings-controls">
+			<input
+				type="checkbox"
+				bind:checked={$user.hide_presence}
+				on:change={() =>
+					clm.updateProfile({
+						hide_presence: $user.hide_presence,
+					})}
+			/>
+		</div>
+
+		<h2>Appear Offline</h2>
+		You {$user.hide_presence ? "are" : "are not"} currently hidden from the
+		online users list.
+	</Container>
+	<Container>
+		<div class="settings-controls">
 			<button
 				class="circle settings"
 				on:click={() => modals.showModal(ChangePasswordModal)}
