@@ -99,7 +99,7 @@
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 		color: var(--orange);
-		margin: 0.5em 0 -0.5em 0.5em;
+		margin: 0.75em 0 0.3em 0.2em;
 	}
 	.context-jump {
 		display: block;

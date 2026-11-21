@@ -25,6 +25,7 @@
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
 	import SendFiles from "./modals/SendFiles.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import emojiIcon from "../assets/emoji.svg";
 
 	import {
 		relationships,
@@ -382,169 +383,174 @@
 				{/each}
 			</div>
 		{/if}
+		<div class="composer">
 		<form
-			class="createpost"
-			autocomplete="off"
-			on:submit|preventDefault={/** @type {SubmitEvent} */ e => {
-				// @ts-ignore
-				const input = e.target.elements.input;
-				// @ts-ignore
-				const content = e.target.elements.input.value.trim();
-				if (!content && !pendingStickers.length) {
-					return;
-				}
-
-				if (content.match(/^s\/.+\//gs)) {
-					// substitute command
-					let post = items.find(_post => _post.user === $user.name);
-					if (!post) return;
-
-					let toReplace = content.split("/")[1];
-					let replaceWith = content.replace(`s/${toReplace}/`, "");
-
-					let newContent = post.content;
-					newContent = newContent
-						.replace(toReplace, replaceWith)
-						.trim();
-
-					if (newContent) {
-						fetch(`${apiUrl}posts?id=${post.post_id}`, {
-							method: "PATCH",
-							headers: {
-								"Content-Type": "application/json",
-								...$authHeader,
-							},
-							body: JSON.stringify({
-								content: newContent,
-							}),
-						}).catch(e => {
-							console.error(e);
-							postErrors[post.id] = e;
-						});
-					} else {
-						fetch(`${apiUrl}posts?id=${post.post_id}`, {
-							method: "DELETE",
-							headers: $authHeader,
-						}).catch(e => (postErrors[post.id] = e));
-					}
-				} else {
-					// normal post
-					sendPost(
-						content,
-						pendingStickers,
-						pendingReplies.map(r => r.post_id)
-					);
-					pendingStickers = [];
-					pendingReplies = [];
-				}
-
-				input.value = "";
-				input.rows = "1";
-				input.style.height = "45px";
-			}}
-		>
-			<textarea
-				type="text"
-				class="white"
-				placeholder={userRestricted
-					? "Your account is currently restricted."
-					: recipientBlocked
-					? `You have blocked ${dmWith}.`
-					: "Write something..."}
-				name="input"
+				class="createpost"
 				autocomplete="off"
-				maxlength="4000"
-				rows="1"
-				disabled={userRestricted || recipientBlocked}
-				use:autoresize
-				on:input={() => {
-					if ($lastTyped + 2000 < +new Date()) {
-						lastTyped.set(+new Date());
-						fetch(
-							`${apiUrl}${
-								postOrigin === "home"
-									? "home"
-									: `/chats/${$chat._id}`
-							}/typing`,
-							{
-								method: "POST",
+				on:submit|preventDefault={/** @type {SubmitEvent} */ e => {
+					// @ts-ignore
+					const input = e.target.elements.input;
+					// @ts-ignore
+					const content = e.target.elements.input.value.trim();
+					if (!content && !pendingStickers.length) {
+						return;
+					}
+	
+					if (content.match(/^s\/.+\//gs)) {
+						// substitute command
+						let post = items.find(_post => _post.user === $user.name);
+						if (!post) return;
+	
+						let toReplace = content.split("/")[1];
+						let replaceWith = content.replace(`s/${toReplace}/`, "");
+	
+						let newContent = post.content;
+						newContent = newContent
+							.replace(toReplace, replaceWith)
+							.trim();
+	
+						if (newContent) {
+							fetch(`${apiUrl}posts?id=${post.post_id}`, {
+								method: "PATCH",
+								headers: {
+									"Content-Type": "application/json",
+									...$authHeader,
+								},
+								body: JSON.stringify({
+									content: newContent,
+								}),
+							}).catch(e => {
+								console.error(e);
+								postErrors[post.id] = e;
+							});
+						} else {
+							fetch(`${apiUrl}posts?id=${post.post_id}`, {
+								method: "DELETE",
 								headers: $authHeader,
-							}
+							}).catch(e => (postErrors[post.id] = e));
+						}
+					} else {
+						// normal post
+						sendPost(
+							content,
+							pendingStickers,
+							pendingReplies.map(r => r.post_id)
 						);
+						pendingStickers = [];
+						pendingReplies = [];
 					}
+	
+					input.value = "";
+					input.rows = "1";
+					input.style.height = "45px";
 				}}
-				on:keydown={event => {
-					if (event.key == "Enter" && !shiftHeld && !$mobile) {
-						event.preventDefault();
-						if (!submitBtn.disabled) submitBtn.click();
-					}
-				}}
-				bind:this={postInput}
-			/>
-			{#if userRestricted}
-				<button
-					on:click|preventDefault={() => {
-						modals.showModal(AccountBannedModal, {
-							ban: $user.ban,
-							feature: `creating ${
-								postOrigin === "home" ? "home" : "group chat"
-							} posts`,
-						});
-					}}>View details</button
-				>
-			{:else if recipientBlocked}
-				<button
-					on:click|preventDefault={() =>
-						modals.showModal(BlockUserModal, {username: dmWith})}
-					>Unblock</button
-				>
-			{:else}
-				<button
-					class="send-files"
-					title="Send files"
-					on:click|preventDefault={() => {
-						modals.closeAllModals();
-						modals.showModal(SendFiles, {postOrigin});
-					}}>+</button
-				>
-				<button
-					class="send-files"
-					title="Emotes"
-					on:click|preventDefault={() =>
-						(showEmojiPopup = !showEmojiPopup)}>:)</button
-				>
-				{#if showEmojiPopup}
-					<div
-						class="popup-overlay"
-						on:click={() => (showEmojiPopup = false)}
-					/>
-					<EmojiPopup
-						chatId={$chat._id}
-						onEmoji={name => {
-							postInput.value += `:${name}:`;
-							postInput.focus();
-						}}
-						onUnicode={ch => {
-							postInput.value += ch;
-							postInput.focus();
-						}}
-						onSticker={id => {
-							if (
-								pendingStickers.length < 10 &&
-								!pendingStickers.includes(id)
-							) {
-								pendingStickers = [...pendingStickers, id];
-							}
-						}}
-					/>
+			>
+				<textarea
+					type="text"
+					class="white"
+					placeholder={userRestricted
+						? "Your account is currently restricted."
+						: recipientBlocked
+						? `You have blocked ${dmWith}.`
+						: "Write something..."}
+					name="input"
+					autocomplete="off"
+					maxlength="4000"
+					rows="1"
+					disabled={userRestricted || recipientBlocked}
+					use:autoresize
+					on:input={() => {
+						if ($lastTyped + 2000 < +new Date()) {
+							lastTyped.set(+new Date());
+							fetch(
+								`${apiUrl}${
+									postOrigin === "home"
+										? "home"
+										: `/chats/${$chat._id}`
+								}/typing`,
+								{
+									method: "POST",
+									headers: $authHeader,
+								}
+							);
+						}
+					}}
+					on:keydown={event => {
+						if (event.key == "Enter" && !shiftHeld && !$mobile) {
+							event.preventDefault();
+							if (!submitBtn.disabled) submitBtn.click();
+						}
+					}}
+					bind:this={postInput}
+				/>
+				{#if userRestricted}
+					<button
+						on:click|preventDefault={() => {
+							modals.showModal(AccountBannedModal, {
+								ban: $user.ban,
+								feature: `creating ${
+									postOrigin === "home" ? "home" : "group chat"
+								} posts`,
+							});
+						}}>View details</button
+					>
+				{:else if recipientBlocked}
+					<button
+						on:click|preventDefault={() =>
+							modals.showModal(BlockUserModal, {username: dmWith})}
+						>Unblock</button
+					>
+				{:else}
+					<button
+						class="send-files"
+						title="Send files"
+						on:click|preventDefault={() => {
+							modals.closeAllModals();
+							modals.showModal(SendFiles, {postOrigin});
+						}}>+</button
+					>
+					<button
+						type="button"
+						class="send-files emoji-trigger"
+						class:active={showEmojiPopup}
+						title="Emoji & stickers"
+						on:click={() => (showEmojiPopup = !showEmojiPopup)}
+					>
+						<img src={emojiIcon} alt="Emoji" draggable="false" />
+					</button>
+					<button
+						bind:this={submitBtn}
+						name="submit"
+						disabled={!postInput}>Post</button
+					>
 				{/if}
-				<button
-					bind:this={submitBtn}
-					name="submit"
-					disabled={!postInput}>Post</button
-				>
+			</form>
+			{#if showEmojiPopup}
+				<div
+					class="popup-overlay"
+					on:click={() => (showEmojiPopup = false)}
+				/>
+				<EmojiPopup
+					chatId={$chat._id}
+					onEmoji={name => {
+						postInput.value += `:${name}:`;
+						postInput.focus();
+					}}
+					onUnicode={ch => {
+						postInput.value += ch;
+						postInput.focus();
+					}}
+					onSticker={id => {
+						if (
+							pendingStickers.length < 10 &&
+							!pendingStickers.includes(id)
+						) {
+							pendingStickers = [...pendingStickers, id];
+						}
+					}}
+				/>
 			{/if}
-		</form>
+		</div>
 	{/if}
 	{#if postOrigin}
 		<TypingIndicator forPage={postOrigin} />
@@ -690,8 +696,17 @@
 		font-size: 2rem;
 	}
 
-	.createpost {
+	.composer {
 		position: relative;
+	}
+	.emoji-trigger {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.emoji-trigger img {
+		width: 1.6rem;
+		height: 1.6rem;
 	}
 	.popup-overlay {
 		position: fixed;

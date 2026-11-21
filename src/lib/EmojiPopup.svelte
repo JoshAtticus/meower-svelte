@@ -28,8 +28,9 @@
 
 	let query = "";
 	// section: "recent" | "unicode" | `chat:${id}`
-	let section = chatId ? `chat:${chatId}` : "recent";
-	if (chatId) section = `chat:${chatId}`;
+	let section =
+		chatId && chatId !== "livechat" ? `chat:${chatId}` : "unicode";
+	if (section.startsWith("chat:")) loadEmotes(chatId);
 
 	let visibleCount = 120;
 	let gridEl;
@@ -111,20 +112,20 @@
 	</div>
 	<div class="popup-body">
 		<div class="sidebar">
-			<button
+			<button type="button"
 				class="side-btn"
 				class:active={section === "recent"}
 				title="Recent"
 				on:click={() => (section = "recent")}>🕘</button
 			>
-			<button
+			<button type="button"
 				class="side-btn"
 				class:active={section === "unicode"}
 				title="Emoji"
 				on:click={() => (section = "unicode")}>😀</button
 			>
 			{#each $chats.filter(c => c.type === 0 || c.type === 1) as c}
-				<button
+				<button type="button"
 					class="side-btn"
 					class:active={section === `chat:${c._id}`}
 					title={c.nickname || "DM"}
@@ -138,13 +139,13 @@
 			{#if section === "recent"}
 				{#each filteredRecents as e}
 					{#if e.t === "u"}
-						<button
+						<button type="button"
 							class="option unicode"
 							title={e.name}
 							on:click={() => pickRecent(e)}>{e.v}</button
 						>
 					{:else if e.t === "e"}
-						<button
+						<button type="button"
 							class="option"
 							title=":{e.name}:"
 							on:click={() => pickRecent(e)}
@@ -155,8 +156,8 @@
 							/>
 						</button>
 					{:else}
-						<button
-							class="option"
+						<button type="button"
+							class="option sticker-option"
 							title={e.name}
 							on:click={() => pickRecent(e)}
 						>
@@ -172,7 +173,7 @@
 				{/each}
 			{:else if section === "unicode"}
 				{#each filtered.slice(0, visibleCount) as e}
-					<button
+					<button type="button"
 						class="option unicode"
 						title={e.keywords[0] || ""}
 						on:click={() => pickUnicode(e)}>{e.char}</button
@@ -184,7 +185,7 @@
 				{#if filteredEmojis.length}
 					<p class="group-label">Emojis</p>
 					{#each filteredEmojis as e}
-						<button
+						<button type="button"
 							class="option"
 							title=":{e.name}:"
 							on:click={() => pickEmoji(e, sectionChat._id)}
@@ -199,8 +200,8 @@
 				{#if filteredStickers.length}
 					<p class="group-label">Stickers</p>
 					{#each filteredStickers as e}
-						<button
-							class="option"
+						<button type="button"
+							class="option sticker-option"
 							title={e.name}
 							on:click={() =>
 								pickSticker(e, sectionChat._id)}
@@ -224,7 +225,7 @@
 <style>
 	.emoji-popup {
 		position: absolute;
-		bottom: calc(100% + 0.5em);
+		top: calc(100% + 0.25em);
 		right: 0;
 		z-index: 100;
 
@@ -280,31 +281,52 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: 0.4em;
-		display: flex;
-		flex-wrap: wrap;
-		align-content: flex-start;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, 2.4em);
+		grid-auto-rows: 2.4em;
+		justify-content: space-between;
+		align-content: start;
 		gap: 0.15em;
 	}
 	.option {
-		padding: 0.15em;
+		width: 2.4em;
+		height: 2.4em;
+		padding: 0;
 		background: none;
 		border: none;
 		line-height: 1;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+		border-radius: 0.4em;
 	}
 	.option.unicode {
 		font-size: 1.4em;
+		width: 1.715em;
+		height: 1.715em;
+	}
+	.option.unicode,
+	.option img {
+		white-space: nowrap;
 	}
 	.option img {
 		width: 2em;
 		height: 2em;
 		object-fit: contain;
 	}
+	.option.sticker-option {
+		grid-column: span 2;
+		grid-row: span 2;
+		width: 100%;
+		height: 100%;
+	}
 	.option img.sticker {
-		width: 4em;
-		height: 4em;
+		width: 4.4em;
+		height: 4.4em;
 	}
 	.group-label {
-		width: 100%;
+		grid-column: 1 / -1;
 		font-size: 0.75em;
 		font-weight: bold;
 		text-transform: uppercase;
@@ -312,7 +334,7 @@
 		margin: 0.4em 0 0.1em;
 	}
 	.empty {
-		width: 100%;
+		grid-column: 1 / -1;
 		text-align: center;
 		opacity: 0.6;
 	}

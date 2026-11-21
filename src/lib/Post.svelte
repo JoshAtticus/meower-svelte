@@ -453,26 +453,6 @@
 								/>
 							{/if}
 						{/if}
-						<button
-							class="circle reply"
-							title="Reply"
-							on:click={() => {
-								let existingText = input.value;
-
-								const mentionRegex = /^@\w+\s*/i;
-								const mention = "@" + post.user + " ";
-
-								if (mentionRegex.test(existingText)) {
-									input.value = existingText
-										.trim()
-										.replace(mentionRegex, mention);
-								} else {
-									input.value = mention + existingText.trim();
-								}
-
-								input.focus();
-							}}
-						/>
 						{#if post.user === $user.name || (post.post_origin === $chat._id && $chat.owner === $user.name)}
 							{#if !bridged}
 								<button
@@ -684,38 +664,34 @@
 		</div>
 	{:else}
 		{#each post.reply_to || [] as reply}
-			<div
-				class="reply-quote"
-				role={reply && reply._id ? "link" : undefined}
-				on:click={() =>
-					reply && reply._id && $goto(`/posts/${reply._id}`)}
-				on:keydown={e =>
-					e.key === "Enter" &&
-					reply &&
-					reply._id &&
-					$goto(`/posts/${reply._id}`)}
-			>
-				<svg
-					class="reply-arrow"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="2"
+			{#if reply && reply._id}
+				<button
+					class="reply-box"
+					title="Go to replied post"
+					on:click={() => $goto(`/posts/${reply._id}`)}
 				>
-					<polyline points="9 17 4 12 9 7" />
-					<path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-				</svg>
-				{#if reply && reply._id}
-					<b>@{reply.u}</b>
+					<PFP
+						icon={reply.author ? reply.author.pfp_data : -1}
+						avatar={reply.author ? reply.author.avatar : ""}
+						avatarColor={reply.author
+							? reply.author.avatar_color
+							: ""}
+						alt="{reply.u}'s profile picture"
+						size={0.45}
+					/>
+					<b class="reply-user">{reply.u}</b>
 					<span class="reply-text"
-						>{(reply.p || "").length > 100
-							? reply.p.slice(0, 100) + "…"
-							: reply.p || "(no content)"}</span
+						>{reply.p ||
+							(reply.attachments && reply.attachments.length
+								? "Attachment"
+								: "Sticker")}</span
 					>
-				{:else}
+				</button>
+			{:else}
+				<div class="reply-box deleted">
 					<i>Original post was deleted</i>
-				{/if}
-			</div>
+				</div>
+			{/if}
 		{/each}
 		<p
 			class="post-content"
@@ -806,29 +782,34 @@
 		flex-wrap: wrap;
 		gap: 0.25em;
 	}
-	.reply-quote {
+	.reply-box {
 		display: flex;
-		align-items: baseline;
-		gap: 0.3em;
-		font-size: 0.85em;
-		opacity: 0.75;
-		margin: 0 0 0.25em;
-		cursor: pointer;
+		align-items: center;
+		gap: 0.5em;
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0.5em 0 0;
+		padding: 0.3em 0.5em;
+		background: none !important;
+		border: solid 2px var(--orange);
+		border-radius: 5px;
+		color: inherit;
+		font-size: 0.9em;
+		text-align: left;
 		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
-	.reply-arrow {
-		width: 0.9em;
-		height: 0.9em;
+	.reply-box.deleted {
+		opacity: 0.6;
+	}
+	.reply-user {
 		flex-shrink: 0;
-		position: relative;
-		top: 0.1em;
 	}
 	.reply-text {
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		opacity: 0.8;
 	}
 	.server-wrap :global(> div) {
 		padding: 0.3em 0.6em;

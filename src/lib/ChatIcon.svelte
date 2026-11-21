@@ -21,6 +21,7 @@
 
 <span
 	class="chat-icon"
+	class:fallback-bg={!(chat && chat.icon) || failed}
 	style:--size={size}
 	style:border-color={color}
 >
@@ -55,6 +56,9 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
+	}
+	.chat-icon.fallback-bg {
+		background-color: var(--orange);
 	}
 	img.fallback {
 		width: 60%;
