@@ -822,6 +822,23 @@
 		width: 1.6rem;
 		height: 1.6rem;
 	}
+	/* Narrow screens: slimmer buttons so the message box keeps its width */
+	:global(main.layout-mobile) .send-files {
+		padding-left: 0.45rem;
+		padding-right: 0.45rem;
+		font-size: 1.5rem;
+	}
+	:global(main.layout-mobile) .emoji-trigger img {
+		width: 1.3rem;
+		height: 1.3rem;
+	}
+	:global(main.layout-mobile) .createpost button[name="submit"] {
+		padding-left: 0.6rem;
+		padding-right: 0.6rem;
+	}
+	:global(main.layout-mobile) .createpost {
+		gap: 0.2em;
+	}
 	.popup-overlay {
 		position: fixed;
 		top: 0;

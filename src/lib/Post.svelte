@@ -950,6 +950,21 @@
 		margin: 0;
 		margin-left: 0.125em;
 	}
+	/* On narrow screens the actions get their own row under the header
+	   instead of covering the profile picture and name */
+	:global(main.layout-mobile) .post-header .settings-controls {
+		position: static;
+		order: 10;
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.2em;
+		margin-top: 0.3em;
+	}
+	:global(main.layout-mobile) .post-header .settings-controls button.circle {
+		margin: 0;
+	}
 
 	.reactions {
 		display: flex;
