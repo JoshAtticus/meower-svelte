@@ -405,7 +405,6 @@ main.input-touch button.circle,
 main.input-touch input[type="checkbox"] {
 	width: 2em;
 	height: 2em;
-	background-size: 1.5em;
 }
 
 /* respect reduced motion preferences */

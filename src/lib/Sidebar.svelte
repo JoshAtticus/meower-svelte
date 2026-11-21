@@ -9,6 +9,7 @@
 
 	import {user, friends, chats, OOBERunning} from "../lib/stores.js";
 	import {chatReads, isChatUnread} from "./unread.js";
+	import {mobile} from "./responsiveness.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import * as modals from "./modals.js";
 
@@ -165,8 +166,11 @@
 	</button>
 </div>
 {#if popupShown}
+	{#if $mobile}
+		<div class="popup-overlay" />
+	{/if}
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div on:click|stopPropagation class="popup">
+	<div on:click|stopPropagation class="popup" class:sheet={$mobile}>
 		<button
 			on:click={() => {
 				if (!$user.name) {
@@ -398,5 +402,39 @@
 		width: 1.5em;
 		height: 1.5em;
 		object-fit: contain;
+	}
+
+	/* Mobile: the profile menu is a bottom sheet */
+	.popup-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10002;
+		background: rgba(0, 0, 0, 0.5);
+	}
+	:global(main) .popup.sheet {
+		position: fixed;
+		top: auto;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 10003;
+		display: flex;
+		padding: 0.75em 0.75em calc(0.75em + env(safe-area-inset-bottom));
+		background: var(--background);
+		border: solid 2px var(--orange);
+		border-bottom: none;
+		border-radius: 1em 1em 0 0;
+		animation: sheet-up 0.25s ease;
+	}
+	.popup.sheet button {
+		width: 100%;
+	}
+	@keyframes sheet-up {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
 	}
 </style>
