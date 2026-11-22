@@ -3,10 +3,46 @@
 	import Post from "../Post.svelte";
 	import * as modals from "../modals.js";
 
+	import {apiUrl} from "../urls.js";
+	import {authHeader} from "../stores.js";
+
 	export let modalData = {};
 	const post = modalData.post;
 
-	$: link = post ? `${window.location.origin}/posts/${post.post_id}` : "";
+	let shareToken = null;
+	let tokenError = "";
+	let tokenLoading = false;
+
+	// Posts in chats need a signed share token for non-member access
+	if (post && post.post_origin !== "home") {
+		tokenLoading = true;
+		(async () => {
+			try {
+				const resp = await fetch(
+					`${apiUrl}posts/${post.post_id}/share`,
+					{headers: $authHeader}
+				);
+				const json = await resp.json().catch(() => ({}));
+				if (!resp.ok) {
+					throw new Error(
+						json.type === "missingPermission" ||
+						resp.status === 403
+							? "You can't share messages in this chat."
+							: "Couldn't get a share link."
+					);
+				}
+				shareToken = json.token;
+			} catch (e) {
+				tokenError = e.message || String(e);
+			}
+			tokenLoading = false;
+		})();
+	}
+
+	$: link = post
+		? `${window.location.origin}/posts/${post.post_id}` +
+			(shareToken ? `?s=${shareToken}` : "")
+		: "";
 
 	let copied = false;
 	let copyTimeout;
@@ -29,6 +65,11 @@
 			</div>
 		{/if}
 
+		{#if tokenLoading}
+			<p class="share-note">Getting share link…</p>
+		{:else if tokenError}
+			<p class="share-note error">{tokenError}</p>
+		{:else}
 		<div class="link-row">
 			<input
 				type="text"
@@ -39,6 +80,8 @@
 			/>
 			<button on:click={copyLink}>{copied ? "Copied!" : "Copy"}</button>
 		</div>
+		{/if}
+		{#if !tokenLoading && !tokenError}
 		<div class="share-options">
 			<button
 				class="share-option"
@@ -147,6 +190,7 @@
 				</button>
 			{/if}
 		</div>
+		{/if}
 	</div>
 </Modal>
 
@@ -154,6 +198,16 @@
 	.preview {
 		margin-bottom: 0.75em;
 		pointer-events: none;
+	}
+	.share-note {
+		font-size: 0.85em;
+		opacity: 0.7;
+		margin: 0.5em 0;
+		text-align: center;
+	}
+	.share-note.error {
+		color: crimson;
+		opacity: 1;
 	}
 	.link-row {
 		display: flex;

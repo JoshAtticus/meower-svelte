@@ -11,6 +11,10 @@
 
 	const PAGE = 10;
 
+	// signed share token for non-member access (from the share link)
+	const shareParam = new URLSearchParams(window.location.search).get("s");
+	const shareQuery = shareParam ? `&s=${encodeURIComponent(shareParam)}` : "";
+
 	let id = 0;
 
 	let post = null;
@@ -57,7 +61,7 @@
 
 	async function fetchContext(postId) {
 		const resp = await fetch(
-			`${apiUrl}posts/${postId}/context?limit=${PAGE}`,
+			`${apiUrl}posts/${postId}/context?limit=${PAGE}${shareQuery}`,
 			{headers: $authHeader}
 		);
 		if (!resp.ok) {
@@ -86,7 +90,7 @@
 			// post itself is shared — fall back to the lone post
 			try {
 				const resp = await fetch(
-					`${apiUrl}posts?id=${postId}`,
+					`${apiUrl}posts?id=${postId}${shareQuery}`,
 					{headers: $authHeader}
 				);
 				if (!resp.ok) throw new Error("not found");
