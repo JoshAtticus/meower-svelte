@@ -82,7 +82,7 @@ export function themeColors(themeId, dark, profileHex) {
 	}
 	return {
 		...accents,
-		background: dark ? "#181818" : "#ffffff",
+		background: dark ? "#202020" : "#ffffff",
 		foreground: dark ? "#eeeeff" : "#000000",
 		foregroundOrange: dark ? "#eeeeff" : "#ffffff",
 	};

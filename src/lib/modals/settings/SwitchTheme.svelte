@@ -3,6 +3,7 @@
 
 	import CustomThemeModal from "./CustomTheme.svelte";
 	import ThemePreview from "../../ThemePreview.svelte";
+	import profileIcon from "../../../assets/profile.svg";
 
 	import {user, OOBERunning} from "../../stores.js";
 	import {removeTheme} from "../../CustomTheme.js";
@@ -75,6 +76,8 @@
 							class="swatch"
 							class:selected={theme === o.id}
 							class:custom={o.id === "custom"}
+							class:profile={o.id === "profile"}
+							style:--profile-icon={`url(${profileIcon})`}
 							style:background={o.color}
 							title={o.name}
 							aria-label={o.name}
@@ -120,6 +123,8 @@
 					type="button"
 					class="swatch"
 					class:selected={theme === o.id}
+					class:profile={o.id === "profile"}
+					style:--profile-icon={`url(${profileIcon})`}
 					style:background={o.color}
 					title={o.name}
 					aria-label={o.name}
@@ -175,6 +180,13 @@
 	}
 	.swatch.custom {
 		background: conic-gradient(#ff3838, #f9a636, #57e389, #4d97ff, #a85ff5, #ff8af7, #ff3838);
+	}
+	/* the Profile circle shows a profile icon over your colour */
+	.swatch.profile {
+		background-image: var(--profile-icon) !important;
+		background-repeat: no-repeat !important;
+		background-position: center !important;
+		background-size: 50% !important;
 	}
 	.swatch.selected {
 		box-shadow: 0 0 0 3px var(--orange);
