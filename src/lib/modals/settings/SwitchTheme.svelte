@@ -20,7 +20,15 @@
 		}
 	);
 
-	let selections = ["orange", "dark-orange", "blue", "dark-blue", "custom"];
+	let selections = [
+		"orange",
+		"dark-orange",
+		"blue",
+		"dark-blue",
+		"profile",
+		"dark-profile",
+		"custom",
+	];
 
 	let error = false;
 
@@ -138,20 +146,6 @@
 					Your previous theme was invalid, so it was reset to orange.
 				</p>
 			{/if}
-			{#if $user.name}
-				<label class="profile-theme-row">
-					<span>
-						<b>Profile Theme</b><br />
-						<span class="profile-theme-sub">Use your profile colour across the whole app</span>
-					</span>
-					<input
-						type="checkbox"
-						bind:checked={$user.profile_theme}
-						on:change={() =>
-							clm.updateProfile({profile_theme: $user.profile_theme})}
-					/>
-				</label>
-			{/if}
 			<div class="modal-buttons">
 				<button on:click={modals.closeLastModal}>Close</button>
 				<button
@@ -209,22 +203,6 @@
 {/if}
 
 <style>
-	.profile-theme-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1em;
-		margin: 0.75em 0;
-		cursor: pointer;
-	}
-	.profile-theme-sub {
-		font-size: 0.85em;
-		opacity: 0.7;
-	}
-	.profile-theme-row input {
-		flex-shrink: 0;
-		margin: 0;
-	}
 	.theme-select {
 		margin-top: 1rem;
 		display: flex;

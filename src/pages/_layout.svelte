@@ -24,8 +24,9 @@
 	import {afterPageLoad, params} from "@roxi/routify";
 	import {tick} from "svelte";
 
+	// the Profile theme: your profile colour on top of the orange theme
 	$: profileColor =
-		$user.profile_theme &&
+		$user.theme === "profile" &&
 		/^[0-9a-fA-F]{6}$/.test($user.avatar_color || "") &&
 		$user.avatar_color !== "000000"
 			? `#${$user.avatar_color}`
@@ -76,7 +77,7 @@
 	style:--foreground-orange={$useCustomTheme
 		? $customTheme.foregroundOrange
 		: null}
-	class:theme-orange={$user.theme === "orange"}
+	class:theme-orange={$user.theme === "orange" || $user.theme === "profile"}
 	class:theme-blue={$user.theme === "blue"}
 	class:mode-light={!($user.mode === false)}
 	class:mode-dark={$user.mode === false}
