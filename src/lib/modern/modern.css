@@ -611,12 +611,7 @@ main.layout-modern.layout-modern .setup.setup-modern .fullcenter {
 	width: 100%;
 	height: auto;
 	margin: 0;
-	padding: 2em 1.75em;
-	background: var(--surface);
-	border: 1px solid var(--hairline);
-	border-radius: 20px;
-	box-shadow: var(--card-shadow);
-	box-sizing: border-box;
+	padding: 0;
 	overflow: visible;
 }
 main.layout-modern.layout-modern .setup.setup-modern .setup-right {
