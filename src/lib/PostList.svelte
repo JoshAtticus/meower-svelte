@@ -966,8 +966,8 @@
 	/* ---- new layout (opt-in): one composer card ---- */
 	:global(main.layout-modern) .composer-pfp {
 		display: inline-flex;
-		align-self: flex-start;
-		margin-top: 0.15em;
+		align-items: center;
+		align-self: center;
 		flex-shrink: 0;
 		border-radius: 35%;
 		overflow: hidden;

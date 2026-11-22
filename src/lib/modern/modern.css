@@ -13,16 +13,18 @@ main.layout-modern.layout-modern {
    the view starts after it, not underneath it */
 /* (the doubled .layout-modern class outranks Svelte's doubled-hash scoped
    .sidebar/.view rules) */
-main.layout-modern.layout-modern .sidebar {
+/* (.main-screen > keeps this away from e.g. EmojiPopup's .sidebar) */
+main.layout-modern.layout-modern .main-screen > .sidebar {
 	width: 232px;
 	height: auto;
 }
 @media (max-width: 1100px) and (min-width: 900px) {
-	main.layout-modern.layout-modern:not(.layout-mobile) .sidebar {
+	main.layout-modern.layout-modern:not(.layout-mobile) .main-screen
+		> .sidebar {
 		width: 72px;
 	}
 }
-main.layout-modern.layout-modern.layout-mobile .sidebar {
+main.layout-modern.layout-modern.layout-mobile .main-screen > .sidebar {
 	display: none;
 	width: 0;
 }
@@ -164,6 +166,7 @@ main.layout-modern.layout-modern .modal.sheet {
 main.layout-modern.layout-modern .settings .row,
 main.layout-modern.layout-modern .row {
 	border-radius: 12px;
+	border-bottom: none;
 }
 main.layout-modern.layout-modern .row:has(+ .row),
 main.layout-modern.layout-modern .row:hover {
@@ -178,3 +181,34 @@ main.layout-modern.layout-modern [tabindex]:focus-visible {
 	outline: 2px solid var(--orange);
 	outline-offset: 2px;
 }
+
+/* Emoji picker: classic proportions with modern surfaces */
+main.layout-modern.layout-modern .emoji-popup {
+	background-color: var(--surface);
+	border: solid 1px var(--hairline);
+	border-radius: var(--m-radius);
+}
+main.layout-modern.layout-modern .emoji-popup .search-row {
+	border-bottom-color: var(--hairline);
+}
+main.layout-modern.layout-modern .emoji-popup .search-row input {
+	background-color: var(--surface-2);
+	border: solid 1px var(--hairline);
+	border-radius: 999px;
+	color: var(--foreground);
+	padding: 0.45em 0.9em;
+	margin: 0;
+}
+main.layout-modern.layout-modern .emoji-popup .search-row input::placeholder {
+	color: var(--foreground);
+	opacity: 0.5;
+}
+main.layout-modern.layout-modern .emoji-popup .sidebar {
+	border-right-color: var(--hairline);
+	scrollbar-width: thin;
+	scrollbar-color: var(--hairline) transparent;
+}
+main.layout-modern.layout-modern .emoji-popup.sheet .sidebar {
+	border-bottom-color: var(--hairline);
+}
+

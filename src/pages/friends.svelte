@@ -252,4 +252,36 @@
 		font-weight: bold;
 		margin-bottom: 0.25em;
 	}
+
+	/* new layout: header on its own row, add-friend row below */
+	:global(main.layout-modern) .friends-header {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 0.5em;
+	}
+	:global(main.layout-modern) .add-friend {
+		max-width: none;
+		align-items: stretch;
+	}
+	:global(main.layout-modern) .add-friend input {
+		background-color: var(--surface);
+		border: solid 1px var(--hairline);
+		border-radius: 16px;
+		color: var(--foreground);
+		padding: 0.5em 0.9em;
+		margin: 0;
+	}
+	:global(main.layout-modern) .add-friend input::placeholder {
+		color: var(--foreground);
+		opacity: 0.5;
+	}
+	:global(main.layout-modern) .add-friend button {
+		border-radius: 999px;
+		padding: 0.5em 1.1em;
+		margin: 0;
+		background-color: var(--orange);
+		border: none;
+		color: var(--foreground-orange);
+		font-weight: bold;
+	}
 </style>

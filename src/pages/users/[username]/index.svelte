@@ -156,6 +156,10 @@
 	.recent-title {
 		margin: 0.75em 0 0.4em 0.2em;
 	}
+	/* new layout: align with card content below */
+	:global(main.layout-modern) .recent-title {
+		margin-left: 0.55em;
+	}
 	.fullcenter {
 		text-align: center;
 		display: flex;

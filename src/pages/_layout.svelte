@@ -115,7 +115,7 @@
 				<div class="view">
 					<slot />
 				</div>
-				{#if $modernLayout && !$mobile && !$page.path.startsWith("/chats/")}
+				{#if $modernLayout && !$mobile && !$params.chatid}
 					<div class="modern-rail">
 						<ChatsPanel />
 					</div>
@@ -395,7 +395,7 @@
 	.modern-rail {
 		display: none;
 		flex-shrink: 0;
-		padding: 0.8em 0.8em 0.8em 0;
+		padding: 0.8em 0.8em 0.8em 12px;
 		box-sizing: border-box;
 	}
 	@media (min-width: 1200px) {

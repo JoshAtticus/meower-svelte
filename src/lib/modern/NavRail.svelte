@@ -64,7 +64,12 @@
 		on:click={() => $goto("/home")}
 		aria-label="Meower home"
 	>
-		<img src={logo} alt="Meower" draggable={false} />
+		<span
+			class="brand-mark"
+			style:--logo={`url(${logo})`}
+			role="img"
+			aria-label="Meower"
+		/>
 	</button>
 
 	<div class="nav-items">
@@ -212,9 +217,20 @@
 		border: none;
 		margin-bottom: 0.4em;
 	}
-	.brand img {
+	/* wordmark follows the theme accent via a mask */
+	.brand-mark {
+		display: inline-block;
 		height: 1.5em;
-		width: auto;
+		width: 5.4em;
+		background-color: var(--orange);
+		-webkit-mask-image: var(--logo);
+		mask-image: var(--logo);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: left center;
+		mask-position: left center;
 	}
 	.nav-items {
 		display: flex;
@@ -339,13 +355,14 @@
 		border: none;
 		border-radius: 50%;
 		background: none;
+		color: var(--foreground);
 		cursor: pointer;
 		flex-shrink: 0;
 	}
 	.gear:hover {
 		background-color: var(--surface);
 	}
-	.gear img {
+	.gear .micon {
 		width: 1.1em;
 		height: 1.1em;
 	}
@@ -357,11 +374,11 @@
 			align-items: center;
 			padding: 0.8em 0.4em;
 		}
-		.brand img {
+		.brand-mark {
 			height: 1.4em;
-			width: 3.2em;
-			object-fit: cover;
-			object-position: left;
+			width: 2.8em;
+			-webkit-mask-size: auto 100%;
+			mask-size: auto 100%;
 		}
 		.nav-label,
 		.profile-name {

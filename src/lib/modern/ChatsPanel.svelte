@@ -1,9 +1,13 @@
 <!-- Right-side chats list for the new layout (wide screens) -->
 <script>
 	import ChatIcon from "../ChatIcon.svelte";
+	import PFP from "../PFP.svelte";
 
-	import {chats} from "../stores.js";
+	import {chats, user} from "../stores.js";
 	import {chatReads, isChatUnread} from "../unread.js";
+	import loadProfile, {profileCache} from "../loadProfile.js";
+
+	import liveIcon from "../../assets/chat_join.svg";
 
 	import {goto, isActive} from "@roxi/routify";
 
@@ -11,6 +15,16 @@
 		...$chats.filter(c => c.favorite),
 		...$chats.filter(c => !c.favorite),
 	];
+	$: sorted.forEach(chat => {
+		if (chat.type === 1)
+			loadProfile(
+				chat.members.filter(m => m !== $user.name)[0]
+			).catch(() => {});
+	});
+
+	function dmPartner(chat) {
+		return chat.members.filter(m => m !== $user.name)[0] || "";
+	}
 </script>
 
 <aside class="chats-panel" aria-label="Chats">
@@ -21,7 +35,9 @@
 			class:active={$isActive("./chats/:id", {id: "livechat"})}
 			on:click={() => $goto("/chats/livechat")}
 		>
-			<span class="live-icon">!</span>
+			<span class="icon-box live-icon">
+				<img src={liveIcon} alt="" draggable={false} />
+			</span>
 			<span class="panel-name">Livechat</span>
 		</button>
 		{#each sorted as chat (chat._id)}
@@ -30,13 +46,29 @@
 				class:active={$isActive("./chats/:id", {id: chat._id})}
 				on:click={() => $goto(`/chats/${chat._id}`)}
 			>
-				<ChatIcon {chat} size={0.45} />
-				<span class="panel-name"
-					>{chat.nickname ||
-						chat.members
-							.filter(m => m !== undefined)
-							.join(", ")}</span
-				>
+				{#if chat.type === 1}
+					{@const partner = dmPartner(chat)}
+					<span class="icon-box">
+						<PFP
+							icon={($profileCache[partner] || {}).pfp_data ||
+								-1}
+							avatar={($profileCache[partner] || {}).avatar}
+							avatarColor={($profileCache[partner] || {})
+								.avatar_color}
+							alt="{partner}'s profile picture"
+							size={0.37}
+						/>
+					</span>
+					<span class="panel-name">@{partner}</span>
+				{:else}
+					<ChatIcon {chat} size={0.5} />
+					<span class="panel-name"
+						>{chat.nickname ||
+							chat.members
+								.filter(m => m !== undefined)
+								.join(", ")}</span
+					>
+				{/if}
 				{#if isChatUnread(chat, $chatReads)}
 					<span class="panel-badge" aria-label="Unread" />
 				{/if}
@@ -72,6 +104,15 @@
 		flex-direction: column;
 		gap: 0.1em;
 		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: var(--hairline) transparent;
+	}
+	.panel-list::-webkit-scrollbar {
+		width: 5px;
+	}
+	.panel-list::-webkit-scrollbar-thumb {
+		background: var(--hairline);
+		border-radius: 99px;
 	}
 	.panel-chat {
 		position: relative;
@@ -95,21 +136,25 @@
 		background-color: var(--orange);
 		color: var(--foreground-orange);
 	}
-	.live-icon {
+	.icon-box {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 1.7em;
-		height: 1.7em;
+		width: 1.375em;
+		height: 1.375em;
+		flex-shrink: 0;
+	}
+	.live-icon {
 		border-radius: 35%;
 		background-color: var(--orange);
-		color: var(--foreground-orange);
-		font-weight: bold;
-		flex-shrink: 0;
+	}
+	.live-icon img {
+		width: 60%;
+		height: 60%;
+		object-fit: contain;
 	}
 	.panel-chat.active .live-icon {
 		background-color: var(--foreground-orange);
-		color: var(--orange);
 	}
 	.panel-name {
 		flex: 1;
