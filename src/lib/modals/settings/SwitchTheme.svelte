@@ -238,6 +238,7 @@
 	/* keep the picker inside narrow screens */
 	.theme-select {
 		gap: 0.5em;
+		margin-bottom: 1em;
 	}
 	.theme-select > button {
 		flex-shrink: 0;
