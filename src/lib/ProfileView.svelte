@@ -17,6 +17,7 @@
 	import PFP from "./PFP.svelte";
 	import LiText from "./LiText.svelte";
 	import FormattedDate from "./FormattedDate.svelte";
+	import Badge from "./Badge.svelte";
 
 	import BasicModal from "./modals/Basic.svelte";
 	import LeaveChatModal from "./modals/chats/LeaveChat.svelte";
@@ -239,11 +240,18 @@
 						<h2 class="profile-username">
 							{#if unread}<span class="unread-dot" />{/if}<LiText
 								text={data._id}
-							/>
+							/>{#if data.bot}
+								<Badge text="BOT" title="Bot account" />
+							{/if}
 						</h2>
 					{:else}
 						<h1 class="profile-username">
 							<LiText text={data._id} />
+							{#if data.bot}
+								<span class="profile-bot-badge"
+									><Badge text="BOT" title="Bot account" /></span
+								>
+							{/if}
 						</h1>
 					{/if}
 					<div class="profile-active">
@@ -263,6 +271,16 @@
 							Offline
 						{/if}
 					</div>
+					{#if data.bot && data.bot_owner}
+						<div class="profile-bot">
+							Bot owned by <a
+								href="/users/{data.bot_owner}"
+								on:click|preventDefault={$goto(
+									`/users/${data.bot_owner}`
+								)}>@{data.bot_owner}</a
+							>
+						</div>
+					{/if}
 				</div>
 			</div>
 		</Container>
@@ -333,5 +351,10 @@
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
+	}
+	/* keep the BOT badge badge-sized next to the big name */
+	.profile-bot-badge {
+		font-size: 0.4em;
+		vertical-align: middle;
 	}
 </style>

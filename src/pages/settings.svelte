@@ -9,6 +9,7 @@
 	import ChangePasswordModal from "../lib/modals/settings/ChangePassword.svelte";
 	import LogoutEverywhereModal from "../lib/modals/settings/LogoutEverywhere.svelte";
 	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
+	import BotsModal from "../lib/modals/settings/Bots.svelte";
 	import MyReportsModal from "../lib/modals/settings/MyReports.svelte";
 	import DeleteAccountModal from "../lib/modals/settings/DeleteAccount.svelte";
 
@@ -270,6 +271,19 @@
 					>Manage</button
 				>
 			</div>
+			{#if !$user.bot}
+				<div class="row">
+					<div class="row-text">
+						<h3>Bots</h3>
+						<span class="row-sub">Create and manage bot accounts</span>
+					</div>
+					<button
+						type="button"
+						on:click={() => modals.showModal(BotsModal)}
+						>Manage</button
+					>
+				</div>
+			{/if}
 			<div class="row">
 				<div class="row-text">
 					<h3>Logout Everywhere</h3>

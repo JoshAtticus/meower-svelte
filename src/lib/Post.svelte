@@ -722,6 +722,15 @@
 					/>
 				{/if}
 
+				{#if postProfile.bot && !webhook}
+					<Badge
+						text="BOT"
+						title={postProfile.bot_owner
+							? `Bot owned by @${postProfile.bot_owner}`
+							: "Bot account"}
+					/>
+				{/if}
+
 				<!-- disabled until proper bot badges are added
 				{#if post.isvbot && !webhook}
 					<Badge
