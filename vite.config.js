@@ -39,6 +39,12 @@ export default defineConfig(({command}) => ({
 				ws: true,
 				rewrite: path => path.replace(/^\/cloudlink/, ""),
 			},
+			// meo, served from its own local static server
+			"/meo": {
+				target: "http://127.0.0.1:8090",
+				changeOrigin: true,
+				rewrite: path => path.replace(/^\/meo/, "") || "/",
+			},
 			"/uploads": {
 				target: "http://127.0.0.1:3002",
 				changeOrigin: true,
