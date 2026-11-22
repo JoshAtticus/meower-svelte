@@ -21,6 +21,7 @@
 	let loadingNewer = false;
 	let loadingOlder = false;
 	let error = null;
+	let noContext = false; // chat doesn't share surrounding messages
 	let listEl;
 
 	function scrollParent(node) {
@@ -72,6 +73,7 @@
 		before = [];
 		after = [];
 		error = null;
+		noContext = false;
 		try {
 			const json = await fetchContext(postId);
 			post = mapPost(json.post);
@@ -80,7 +82,20 @@
 			hasNewer = json.before.length === PAGE;
 			hasOlder = json.after.length === PAGE;
 		} catch (e) {
-			error = e;
+			// context may be unavailable to non-members even when the
+			// post itself is shared — fall back to the lone post
+			try {
+				const resp = await fetch(
+					`${apiUrl}posts?id=${postId}`,
+					{headers: $authHeader}
+				);
+				if (!resp.ok) throw new Error("not found");
+				const json = await resp.json();
+				post = mapPost(json);
+				noContext = true;
+			} catch {
+				error = e;
+			}
 		}
 	}
 
@@ -137,6 +152,11 @@
 			<Loading />
 		</div>
 	{:else}
+		{#if noContext}
+			<p class="no-context">
+				This chat doesn't share the surrounding messages.
+			</p>
+		{/if}
 		{#if hasNewer}
 			<button
 				class="context-jump"
@@ -200,6 +220,12 @@
 		justify-content: center;
 		align-items: center;
 		height: 50%;
+	}
+	.no-context {
+		font-size: 0.85em;
+		opacity: 0.7;
+		text-align: center;
+		margin: 0.5em 0;
 	}
 	.highlighted {
 		scroll-margin: 1em;

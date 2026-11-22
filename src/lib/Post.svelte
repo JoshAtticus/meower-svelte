@@ -122,6 +122,11 @@
 					post.pinned ? "unpin_messages" : "pin_messages"
 				)));
 
+	$: canShare =
+		!isGroupPost ||
+		($chat.allow_sharing !== false &&
+			hasChatPerm($chat, $user.name, "share_posts"));
+
 	$: canDelete =
 		post.user === $user.name
 			? !isGroupPost ||
@@ -397,6 +402,16 @@
 		post.user !== "Server" &&
 		(!isGroupPost || hasChatPerm($chat, $user.name, "add_reactions"));
 
+	// joining a reaction someone else already added
+	$: canJoinReaction =
+		$user.name &&
+		post.post_id &&
+		!post.pending &&
+		!post.isDeleted &&
+		!adminView &&
+		post.user !== "Server" &&
+		(!isGroupPost || hasChatPerm($chat, $user.name, "react"));
+
 	function openReactPopup() {
 		const rect = reactButton.getBoundingClientRect();
 		const right = Math.max(8, window.innerWidth - rect.right);
@@ -566,7 +581,7 @@
 							on:click={openReactPopup}
 						/>
 					{/if}
-					{#if !editing && post.post_origin !== "inbox"}
+					{#if !editing && canShare && post.post_origin !== "inbox"}
 						<button
 							class="circle share"
 							title="Share post"
@@ -594,7 +609,7 @@
 						/>
 					{/if}
 					{#if input && !input.disabled && !noPFP && !editing}
-						{#if post.user === $user.name && !($chat.dm_request && $chat.dm_request.from === $user.name)}
+						{#if post.user === $user.name && !($chat.dm_request && $chat.dm_request.from === $user.name) && (!isGroupPost || hasChatPerm($chat, $user.name, "edit_messages"))}
 							{#if !bridged}
 								<button
 									class="circle pen"
@@ -929,8 +944,16 @@
 						type="button"
 						class="reaction"
 						class:mine={reaction.user_reacted}
-						disabled={!(canReact || (reaction.user_reacted && $user.name))}
-						title={reactorTitles[reaction.emoji] || ""}
+						disabled={!(
+							(reaction.user_reacted && $user.name) ||
+							canJoinReaction
+						)}
+						title={!(
+							(reaction.user_reacted && $user.name) ||
+							canJoinReaction
+						)
+							? "You can't react in this chat"
+							: reactorTitles[reaction.emoji] || ""}
 						on:mouseenter={() => loadReactors(reaction.emoji)}
 						on:click={() => toggleReaction(reaction.emoji)}
 					>

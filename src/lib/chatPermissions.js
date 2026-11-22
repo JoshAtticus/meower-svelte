@@ -12,7 +12,10 @@ export const PERMISSIONS = [
 	{key: "delete_icon", tier: 0, label: "Remove group icon"},
 	{key: "pin_messages", tier: 0, label: "Pin messages"},
 	{key: "unpin_messages", tier: 0, label: "Unpin messages"},
-	{key: "add_reactions", tier: 0, label: "Add reactions"},
+	{key: "add_reactions", tier: 0, label: "Add new reactions"},
+	{key: "share_posts", tier: 0, label: "Share messages"},
+	{key: "react", tier: 0, label: "React to existing reactions"},
+	{key: "edit_messages", tier: 0, label: "Edit own messages"},
 	{key: "delete_others_messages", tier: 1, label: "Delete others' messages"},
 	{key: "remove_members", tier: 1, label: "Remove members"},
 	{key: "ban_members", tier: 2, label: "Ban members"},
@@ -38,9 +41,10 @@ function isGroup(chat) {
 export function roleEffective(chat, role) {
 	if (!isGroup(chat) || !role) return new Set();
 	if (role.tier >= ADMIN_TIER) return new Set(PERM_KEYS);
+	if (role.tier < 0) return new Set(); // cosmetic roles grant nothing
 	const effective = new Set();
 	for (const other of chat.roles || []) {
-		if (other.tier < role.tier) {
+		if (other.tier >= 0 && other.tier < role.tier) {
 			for (const [perm, val] of Object.entries(
 				other.permissions || {}
 			)) {
@@ -62,7 +66,10 @@ export function roleEffective(chat, role) {
 export function inheritsPerm(chat, role, perm) {
 	if (!isGroup(chat) || !role) return false;
 	return (chat.roles || []).some(
-		other => other.tier < role.tier && other.permissions?.[perm] === true
+		other =>
+			other.tier >= 0 &&
+			other.tier < role.tier &&
+			other.permissions?.[perm] === true
 	);
 }
 
@@ -122,12 +129,16 @@ export function highestRole(chat, username) {
 		(chat.roles || []).map(r => [r._id, r])
 	);
 	let best = null;
+	let override = null;
 	for (const roleId of chat.member_roles?.[username] || []) {
 		const role = roles[roleId];
+		if (!role) continue;
 		// ties go to the most recently given role (member_roles is append-ordered)
-		if (role && (!best || role.tier >= best.tier)) best = role;
+		if (!best || role.tier >= best.tier) best = role;
+		if (role.display_override) override = role;
 	}
-	return best;
+	// a cosmetic override role wins over everything else
+	return override || best;
 }
 
 export function canAssignRole(chat, actor, target, role) {
@@ -157,9 +168,13 @@ export function colorsStyle(colors) {
 export function nameColorStyle(chat, username) {
 	if (!isGroup(chat)) return "";
 	const roles = Object.fromEntries((chat.roles || []).map(r => [r._id, r]));
+	// a display_override role always wins, colours or not
+	const assigned = chat.member_roles?.[username] || [];
+	const override = assigned.map(id => roles[id]).filter(r => r?.display_override).pop();
+	if (override) return colorsStyle(override.colors);
 	let best = null;
 	let bestIndex = -1;
-	(chat.member_roles?.[username] || []).forEach((roleId, index) => {
+	assigned.forEach((roleId, index) => {
 		const role = roles[roleId];
 		if (!role || !(role.colors || []).length) return;
 		if (

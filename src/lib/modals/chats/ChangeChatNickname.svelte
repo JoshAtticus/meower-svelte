@@ -282,13 +282,18 @@
 	let expandedRole = null;
 
 	$: myRank = chatRank($chat, $user.name);
-	$: creatableTiers = [0, 1, 2, 3].filter(
+	$: creatableTiers = [-1, 0, 1, 2, 3].filter(
 		t =>
+			t === -1 ||
 			isAdmin() ||
 			$user.name === $chat.owner ||
 			myRank >= ADMIN_TIER ||
 			t < myRank
 	);
+	$: settableTiers = [-1, 0, 1, 2, 3, 4].filter(
+		t => t === -1 || $user.name === $chat.owner || t < myRank
+	);
+	const tierLabel = t => (t === -1 ? "Cosmetic" : `Tier ${t}`);
 	$: sortedRoles = ($chat.roles || [])
 		.map((role, i) => ({role, i}))
 		.sort((a, b) => b.role.tier - a.role.tier || a.i - b.i)
@@ -314,6 +319,9 @@
 					"You can't manage someone ranked at or above you.",
 				permissionAboveRoleTier:
 					"That permission is above this role's tier.",
+				notCosmetic:
+					"Only cosmetic roles can override the display.",
+				tierLocked: "The Administrator role's tier can't change.",
 			}[type] || `Response code is not OK; code is ${status}`
 		);
 	}
@@ -646,6 +654,51 @@
 			</div>
 			{/if}
 
+			{#if canPerm("change_settings")}
+			<div class="announce-deletes">
+				<label class="announce-row">
+					<input
+						type="checkbox"
+						checked={$chat.allow_sharing !== false}
+						on:change={async e => {
+							try {
+								await patchChat({
+									allow_sharing: e.target.checked,
+								});
+							} catch (e2) {
+								modals.showModal(BasicModal, {
+									title: "Failed to update chat settings",
+									desc: `${e2}`,
+								});
+							}
+						}}
+					/>
+					Allow Sharing Messages
+				</label>
+				{#if $chat.allow_sharing !== false}
+					<label class="announce-row">
+						<input
+							type="checkbox"
+							checked={$chat.share_context !== false}
+							on:change={async e => {
+								try {
+									await patchChat({
+										share_context: e.target.checked,
+									});
+								} catch (e2) {
+									modals.showModal(BasicModal, {
+										title: "Failed to update chat settings",
+										desc: `${e2}`,
+									});
+								}
+							}}
+						/>
+						Also Share Message Context
+					</label>
+				{/if}
+			</div>
+			{/if}
+
 			<div class="chat-id-row">
 				<b>Chat ID</b>
 				<code class="chat-id-value">{$chat._id}</code>
@@ -785,7 +838,7 @@
 						bind:value={newRoleTier}
 					>
 						{#each creatableTiers as t}
-							<option value={t}>Tier {t}</option>
+							<option value={t}>{tierLabel(t)}</option>
 						{/each}
 					</select>
 					<button
@@ -820,7 +873,7 @@
 								<b><span style={colorsStyle(role.colors)}
 										>{role.name}</span
 									></b>
-								<span class="role-meta">Tier {role.tier}</span>
+								<span class="role-meta">{tierLabel(role.tier)}</span>
 								<span class="role-meta"
 									>{memberCount(role)} member{memberCount(
 										role
@@ -868,6 +921,35 @@
 									}}
 									on:blur={e => renameRole(role, e.target.value)}
 								/>
+								{#if role._id !== "administrator"}
+									<select
+										class="modal-input white role-tier"
+										value={role.tier}
+										disabled={!canManage}
+										title="Role tier"
+										on:change={async e => {
+											try {
+												await patchRole(role._id, {
+													tier: Number(
+														e.target.value
+													),
+												});
+											} catch (e2) {
+												roleModalError(e2);
+											}
+										}}
+									>
+										{#each settableTiers as t}
+											<option
+												value={t}
+												selected={t === role.tier}
+												>{tierLabel(t)}</option
+											>
+										{/each}
+									</select>
+								{:else}
+									<span class="role-meta">Tier 4</span>
+								{/if}
 								<div class="role-colors">
 									<b>Colour</b>
 									{#each colors.length ? colors : [null] as color, i}
@@ -927,6 +1009,30 @@
 									<p class="role-note">
 										Has every permission.
 									</p>
+								{:else if role.tier === -1}
+									<p class="role-note">
+										Cosmetic roles have no permissions.
+									</p>
+									<label class="announce-row">
+										<input
+											type="checkbox"
+											checked={role.display_override ||
+												false}
+											disabled={!canManage}
+											on:change={async e => {
+												try {
+													await patchRole(role._id, {
+														display_override:
+															e.target.checked,
+													});
+												} catch (e2) {
+													roleModalError(e2);
+												}
+											}}
+										/>
+										Show this role's name and colour instead
+										of other roles
+									</label>
 								{:else}
 									{#each Object.entries(permsForTier(role.tier)).sort(([a], [b]) => a - b) as [tier, perms]}
 										<h4 class="perm-tier">
