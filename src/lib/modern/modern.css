@@ -59,32 +59,195 @@ main.layout-modern.layout-modern .transition {
 	display: none;
 }
 
-/* The bundled icon SVGs are white-filled. Nav/tab icons are rendered as
-   masked spans (.micon, currentColor) inside the modern components; the
-   composer emoji icon is still an <img>, so filter it in light themes. */
-main.layout-modern.layout-modern.mode-light .createpost .emoji-trigger img {
-	filter: brightness(0);
-}
+/* The bundled icon SVGs are white-filled. Nav/tab/composer icons are
+   rendered as masked spans (currentColor) so they follow the theme. */
 
 /* Members panel -> same card language as the chats panel */
-main.layout-modern.layout-modern #members {
+main.layout-modern.layout-modern:not(.layout-mobile) #members {
+	display: flex;
+	flex-direction: column;
+	width: 260px;
+	height: auto;
+	align-self: flex-start;
+	position: sticky;
+	top: 0;
+	max-height: calc(100dvh - 1.6em);
+	padding: 0.7em;
 	background-color: var(--surface) !important;
 	border: solid 1px var(--hairline) !important;
 	border-radius: var(--m-radius) !important;
 	box-shadow: none !important;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #members {
-	position: sticky;
-	top: 0.8em;
-	align-self: flex-start;
-	max-height: calc(100dvh - 1.6em);
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top {
+	position: static;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	order: -1;
 }
-main.layout-modern.layout-modern #members-inner {
-	overflow-y: auto;
-	max-height: calc(100dvh - 5em);
-}
-main.layout-modern.layout-modern .members-title {
+main.layout-modern.layout-modern:not(.layout-mobile) .members-title {
+	margin: 0 0 0.4em;
+	padding-left: 0.4em;
 	font-size: 1em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) .members-title .small {
+	font-size: 0.85em;
+	font-weight: normal;
+	opacity: 0.6;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members-inner {
+	flex: 1 1 auto;
+	height: auto;
+	margin-top: 0;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: var(--hairline) transparent;
+}
+/* member rows match the chats panel rows */
+main.layout-modern.layout-modern:not(.layout-mobile) #members .member-button {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 0.45em 0.55em;
+	border: none;
+	border-radius: 12px;
+	background: none;
+	color: var(--foreground);
+	font-family: inherit;
+	font-size: 0.92em;
+	cursor: pointer;
+	text-align: left;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.member-button:hover {
+	background-color: var(--surface-2);
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .member {
+	height: auto;
+	padding: 0;
+	gap: 0.55em;
+}
+/* ~32px PFP (Member's PFP is --size .5 * 3.75em of this font-size) */
+main.layout-modern.layout-modern:not(.layout-mobile) #members .member-pfp {
+	font-size: 17px;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .member-name {
+	font-size: 1em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .member-role {
+	font-size: 0.78em;
+	opacity: 0.55;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .owner-icon {
+	height: 0.9em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .invites-title {
+	margin: 0.6em 0 0.2em 0.55em;
+	font-size: 0.85em;
+	opacity: 0.6;
+	font-weight: normal;
+}
+/* small ghost add-member button in the title row */
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	.settings-controls {
+	position: static;
+	gap: 0.25em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	button.circle {
+	width: 28px;
+	height: 28px;
+	margin: 0;
+	border: none;
+	border-radius: 50%;
+	background-color: transparent !important;
+	background-image: none !important;
+	position: relative;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	button.circle::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--foreground);
+	-webkit-mask-size: 55%;
+	mask-size: 55%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	button.circle.plus::after {
+	-webkit-mask-image: url("../../assets/plus.svg");
+	mask-image: url("../../assets/plus.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	button.circle.join::after {
+	-webkit-mask-image: url("../../assets/chat_join.svg");
+	mask-image: url("../../assets/chat_join.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members .top
+	button.circle:hover {
+	background-color: var(--surface-2) !important;
+}
+/* chat header action buttons -> smaller tonal ghost buttons */
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls {
+	gap: 0.35em;
+	top: 0.45em;
+	right: 0.45em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle {
+	width: 34px;
+	height: 34px;
+	margin: 0;
+	border: none;
+	border-radius: 50%;
+	background-color: var(--surface-2) !important;
+	background-image: none !important;
+	position: relative;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--foreground);
+	-webkit-mask-size: 55%;
+	mask-size: 55%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle:hover {
+	background-color: var(--surface) !important;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle.settings::after {
+	-webkit-mask-image: url("../../assets/settings.svg");
+	mask-image: url("../../assets/settings.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle.pin::after {
+	-webkit-mask-image: url("../../assets/pin.svg");
+	mask-image: url("../../assets/pin.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle.members::after {
+	-webkit-mask-image: url("../../assets/members.svg");
+	mask-image: url("../../assets/members.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+	button.circle.admin::after {
+	-webkit-mask-image: url("../../assets/shield.svg");
+	mask-image: url("../../assets/shield.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) .groupchat {
+	gap: 12px;
 }
 
 /* raw-mode PFPs: the span is inline by default so its --size is ignored;
@@ -132,7 +295,8 @@ main.layout-modern.layout-modern .view > * > div.container:first-child .overflow
 	font-size: 0.85em;
 	margin: 0;
 }
-/* mobile: sticky translucent top bar */
+/* mobile: sticky translucent top bar, flush with the viewport top (the
+   negative margin eats the view's top padding so nothing scrolls above it) */
 main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-child {
 	position: sticky;
 	top: 0;
@@ -146,11 +310,12 @@ main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-c
 	-webkit-backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--hairline);
 	border-radius: 0;
+	margin-top: -0.5em;
 	margin-left: -10px;
 	margin-right: -10px;
 	padding-left: calc(10px + 0.85em);
 	padding-right: calc(10px + 0.85em);
-	padding-top: 0.7em;
+	padding-top: calc(0.7em + env(safe-area-inset-top));
 	padding-bottom: 0.7em;
 }
 
@@ -212,3 +377,35 @@ main.layout-modern.layout-modern .emoji-popup.sheet .sidebar {
 	border-bottom-color: var(--hairline);
 }
 
+
+/* Shared small raw-mode avatar (.mpfp wraps <PFP raw>): rounded square,
+   white --pfp-bg, even outline (avatar_color via inline border-color,
+   else --pfp-outline), photo fills the box, built-in icons centred ~80% */
+main.layout-modern.layout-modern .mpfp {
+	display: inline-flex;
+	position: relative;
+	flex-shrink: 0;
+}
+main.layout-modern.layout-modern .mpfp .raw-pfp {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	background-color: var(--pfp-bg);
+	border: solid 2px var(--pfp-outline);
+	border-radius: calc(var(--size) * 1.25em);
+	overflow: hidden;
+}
+main.layout-modern.layout-modern .mpfp .raw-pfp img {
+	width: 80%;
+	height: 80%;
+	object-fit: contain;
+}
+main.layout-modern.layout-modern .mpfp .raw-pfp.custom-avatar {
+	padding: 0;
+}
+main.layout-modern.layout-modern .mpfp .raw-pfp.custom-avatar img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}

@@ -162,14 +162,16 @@
 					title="Account menu"
 					aria-label="Account menu"
 				>
-					<PFP
-						raw={true}
-						size={0.55}
-						alt=""
-						icon={$user.name ? $user.pfp_data : -3}
-						avatar={$user.name ? $user.avatar : ""}
-						avatarColor={$user.avatar_color}
-					/>
+					<span class="mpfp">
+						<PFP
+							raw={true}
+							size={0.55}
+							alt=""
+							icon={$user.name ? $user.pfp_data : -3}
+							avatar={$user.name ? $user.avatar : ""}
+							avatarColor={$user.avatar_color}
+						/>
+					</span>
 					<span class="nav-label profile-name"
 						>{$user.name || "Guest"}</span
 					>
@@ -361,6 +363,9 @@
 	}
 	.gear:hover {
 		background-color: var(--surface);
+	}
+	.gear:hover .micon {
+		background-color: var(--orange);
 	}
 	.gear .micon {
 		width: 1.1em;

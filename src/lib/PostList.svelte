@@ -545,7 +545,7 @@
 				}}
 			>
 				{#if $modernLayout}
-					<span class="composer-pfp">
+					<span class="composer-pfp mpfp">
 						<PFP
 							raw
 							size={0.5}
@@ -629,7 +629,12 @@
 						title="Emoji & stickers"
 						on:click={() => (showEmojiPopup = !showEmojiPopup)}
 					>
-						<img src={emojiIcon} alt="Emoji" draggable="false" />
+						<span
+							class="emoji-icon"
+							style:--icon={`url(${emojiIcon})`}
+							role="img"
+							aria-label="Emoji"
+						/>
 					</button>
 					<button
 						bind:this={submitBtn}
@@ -879,9 +884,19 @@
 		align-items: center;
 		justify-content: center;
 	}
-	.emoji-trigger img {
+	.emoji-icon {
+		display: inline-block;
 		width: 1.6rem;
 		height: 1.6rem;
+		background-color: currentColor;
+		-webkit-mask-image: var(--icon);
+		mask-image: var(--icon);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 	/* Narrow screens: slimmer buttons so the message box keeps its width */
 	:global(main.layout-mobile) .send-files {
@@ -889,7 +904,7 @@
 		padding-right: 0;
 		font-size: 1.3rem;
 	}
-	:global(main.layout-mobile) .emoji-trigger img {
+	:global(main.layout-mobile) .emoji-icon {
 		width: 1.3rem;
 		height: 1.3rem;
 	}
@@ -1025,7 +1040,7 @@
 	:global(main.layout-modern) .emoji-trigger.active {
 		background-color: var(--surface-2);
 	}
-	:global(main.layout-modern) .emoji-trigger img {
+	:global(main.layout-modern) .emoji-icon {
 		width: 1.3rem;
 		height: 1.3rem;
 	}

@@ -22,7 +22,7 @@
 				<span class="online-stack">
 					{#each $ulist.slice(0, 5) as u (u)}
 						{@const p = $profileCache[u] || {}}
-						<span class="online-pfp">
+						<span class="online-pfp mpfp">
 							<PFP
 								raw
 								size={0.45}
@@ -65,7 +65,7 @@
 	.online-pfp {
 		display: inline-flex;
 		border-radius: 35%;
-		overflow: hidden;
+		box-shadow: 0 0 0 2px var(--background);
 	}
 	.online-pfp + .online-pfp {
 		margin-left: -0.5em;

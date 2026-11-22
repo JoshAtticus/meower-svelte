@@ -81,14 +81,16 @@
 		on:click|stopPropagation={() => (menuOpen = !menuOpen)}
 		aria-label="Profile menu"
 	>
-		<PFP
-			raw={true}
-			size={0.4}
-			alt=""
-			icon={$user.name ? $user.pfp_data : -3}
-			avatar={$user.name ? $user.avatar : ""}
-			avatarColor={$user.avatar_color}
-		/>
+		<span class="mpfp tab-avatar">
+			<PFP
+				raw={true}
+				size={0.42}
+				alt=""
+				icon={$user.name ? $user.pfp_data : -3}
+				avatar={$user.name ? $user.avatar : ""}
+				avatarColor={$user.avatar_color}
+			/>
+		</span>
 		<span class="tab-label">You</span>
 	</button>
 </nav>
@@ -188,8 +190,8 @@
 	}
 	.micon {
 		display: inline-block;
-		width: 1.4em;
-		height: 1.4em;
+		width: 24px;
+		height: 24px;
 		background-color: currentColor;
 		-webkit-mask-image: var(--icon);
 		mask-image: var(--icon);
@@ -202,9 +204,13 @@
 		flex-shrink: 0;
 	}
 	.tab img {
-		width: 1.45em;
-		height: 1.45em;
+		width: 24px;
+		height: 24px;
 		object-fit: contain;
+	}
+	/* "You" avatar: same 24px box as the icons (PFP = --size * 3.75em) */
+	.tab-avatar {
+		font-size: 0.75em;
 	}
 	.tab-label {
 		font-size: 0.58em;
@@ -227,6 +233,12 @@
 		inset: 0;
 		z-index: 95;
 		background: rgba(0, 0, 0, 0.4);
+		animation: sheet-fade 0.2s ease;
+	}
+	@keyframes sheet-fade {
+		from {
+			opacity: 0;
+		}
 	}
 	.profile-sheet {
 		position: fixed;
@@ -242,6 +254,12 @@
 		background-color: var(--surface);
 		border-top: solid 1px var(--hairline);
 		border-radius: var(--m-radius) var(--m-radius) 0 0;
+		animation: sheet-up 0.25s ease;
+	}
+	@keyframes sheet-up {
+		from {
+			transform: translateY(100%);
+		}
 	}
 	.sheet-handle {
 		width: 2.5em;

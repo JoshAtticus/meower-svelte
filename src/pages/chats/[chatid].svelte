@@ -516,7 +516,13 @@
 			</div>
 			<div class="top">
 				<h2 class="members-title">
-					Members <span class="small">({$chat.members.length})</span>
+					{#if $modernLayout}
+						Members
+						<span class="small">· {$chat.members.length}</span>
+					{:else}
+						Members
+						<span class="small">({$chat.members.length})</span>
+					{/if}
 				</h2>
 				<div class="settings-controls">
 					{#if !$params.admin && canInvite}

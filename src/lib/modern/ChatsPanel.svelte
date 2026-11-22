@@ -48,7 +48,7 @@
 			>
 				{#if chat.type === 1}
 					{@const partner = dmPartner(chat)}
-					<span class="icon-box">
+					<span class="icon-box mpfp">
 						<PFP
 							icon={($profileCache[partner] || {}).pfp_data ||
 								-1}
