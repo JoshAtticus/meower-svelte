@@ -4,6 +4,7 @@
 
 <script>
 	import { uploadsUrl } from "./urls";
+	import VideoPlayer from "./VideoPlayer.svelte";
 
 	export let id;
 	export let filename;
@@ -18,27 +19,22 @@
 </script>
 
 <div class="AttachmentClass">
-	<a href={url} target="_blank" rel="noreferrer">
-		{#if mime.startsWith("image/")}
-			<img src={previewUrl} alt={filename} class="post-image" />
-		{:else if mime.startsWith("video/")}
-			<!-- svelte-ignore a11y-media-has-caption -->
-			<video
-				src={previewUrl}
-				controls
-				playsinline
-				preload="metadata"
-				class="post-image"
-			/>
-		{:else if mime.startsWith("audio/")}
-			<!-- svelte-ignore a11y-media-has-caption -->
-			<audio controls>
-				<source src={previewUrl} />
-			</audio>
-		{:else}
-			{filename}
-		{/if}
-	</a>
+	{#if mime.startsWith("video/")}
+		<VideoPlayer src={previewUrl} downloadUrl={url} {filename} />
+	{:else}
+		<a href={url} target="_blank" rel="noreferrer">
+			{#if mime.startsWith("image/")}
+				<img src={previewUrl} alt={filename} class="post-image" />
+			{:else if mime.startsWith("audio/")}
+				<!-- svelte-ignore a11y-media-has-caption -->
+				<audio controls>
+					<source src={previewUrl} />
+				</audio>
+			{:else}
+				{filename}
+			{/if}
+		</a>
+	{/if}
 </div>
 
 <style>
