@@ -15,6 +15,19 @@
 	import * as clm from "../../../lib/clmanager.js";
 
 	import {params, goto} from "@roxi/routify";
+	import {onDestroy} from "svelte";
+	import {pageAccent} from "../../../lib/pageAccent.js";
+
+	// theme the whole app (sidebar, popups) with this profile's colour
+	let profileData = null;
+	$: pageAccent.set(
+		profileData
+			? profileData._id === $user.name
+				? $user.avatar_color
+				: profileData.avatar_color
+			: null
+	);
+	onDestroy(() => pageAccent.set(null));
 
 	async function loadProfile() {
 		let path = `users/${$params.username}`;
@@ -24,6 +37,7 @@
 			throw new Error("Response code is not OK; code is " + resp.status);
 		}
 		const json = await resp.json();
+		profileData = json;
 		return json;
 	}
 

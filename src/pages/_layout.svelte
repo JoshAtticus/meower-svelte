@@ -18,7 +18,8 @@
 	} from "../lib/stores.js";
 	import {mobile, touch} from "../lib/responsiveness.js";
 	import {localLayout} from "../lib/layoutPref.js";
-	import {themeColors} from "../lib/themes.js";
+	import {themeColors, validProfileColor} from "../lib/themes.js";
+	import {pageAccent} from "../lib/pageAccent.js";
 	import * as BGM from "../lib/BGM.js";
 	import {retryReconnectNow} from "../lib/clmanager.js";
 
@@ -26,7 +27,12 @@
 	import {tick} from "svelte";
 
 	// colours for the built-in themes (custom themes set their own)
-	$: tc = themeColors($user.theme, $user.mode === false, $user.avatar_color);
+	// a page accent (e.g. the profile being viewed) overrides the theme
+	$: accentOn = validProfileColor($pageAccent);
+	$: tc = accentOn
+		? themeColors("profile", $user.mode === false, $pageAccent)
+		: themeColors($user.theme, $user.mode === false, $user.avatar_color);
+	$: custom = $useCustomTheme && !accentOn;
 
 	let currentPage = "";
 	let currentParams = JSON.stringify($params);
@@ -54,14 +60,14 @@
 
 <main
 	id="main"
-	style:--orange={$useCustomTheme ? $customTheme.orange : tc?.main}
-	style:--orange-button={$useCustomTheme ? $customTheme.orange : tc?.main}
-	style:--orange-light={$useCustomTheme ? $customTheme.orangeLight : tc?.light}
-	style:--orange-dark={$useCustomTheme ? $customTheme.orangeDark : tc?.dark}
-	style:--orange-scrollbar-back={$useCustomTheme ? null : tc?.scroll}
-	style:--background={$useCustomTheme ? $customTheme.background : tc?.background}
-	style:--foreground={$useCustomTheme ? $customTheme.foreground : tc?.foreground}
-	style:--foreground-orange={$useCustomTheme
+	style:--orange={custom ? $customTheme.orange : tc?.main}
+	style:--orange-button={custom ? $customTheme.orange : tc?.main}
+	style:--orange-light={custom ? $customTheme.orangeLight : tc?.light}
+	style:--orange-dark={custom ? $customTheme.orangeDark : tc?.dark}
+	style:--orange-scrollbar-back={custom ? null : tc?.scroll}
+	style:--background={custom ? $customTheme.background : tc?.background}
+	style:--foreground={custom ? $customTheme.foreground : tc?.foreground}
+	style:--foreground-orange={custom
 		? $customTheme.foregroundOrange
 		: tc?.foregroundOrange}
 	class:mode-light={!($user.mode === false)}
