@@ -678,3 +678,9 @@ main.layout-modern.layout-modern .setup.setup-modern button.grey {
 	color: var(--foreground);
 	border: 1px solid var(--hairline);
 }
+/* the setup screens' content column has a fixed 720px width; fit the pane */
+main.layout-modern.layout-modern .setup.setup-modern .column-ui {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
