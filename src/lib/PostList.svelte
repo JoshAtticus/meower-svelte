@@ -403,7 +403,8 @@
 					if (cmd.val.nonce) {
 						items = items.filter(post => post.nonce !== cmd.val.nonce);
 					}
-					if ($user.sfx && cmd.val.u !== $user.name)
+					// only when sound effects are explicitly on
+					if ($user.sfx === true && cmd.val.u !== $user.name)
 						playNotification();
 				}
 			});
@@ -791,8 +792,17 @@
 	.createpost {
 		top: 0;
 		display: flex;
+		align-items: stretch;
 		margin-bottom: 0.5em;
 		gap: 0.25em;
+	}
+	/* the global -0.15rem bottom margin made the buttons taller than the box */
+	.createpost > :global(*) {
+		margin: 0;
+	}
+	.createpost > :global(button) {
+		flex-shrink: 0;
+		min-width: 2.75rem;
 	}
 	.composer-input {
 		flex-grow: 1;
@@ -857,9 +867,9 @@
 	}
 	/* Narrow screens: slimmer buttons so the message box keeps its width */
 	:global(main.layout-mobile) .send-files {
-		padding-left: 0.45rem;
-		padding-right: 0.45rem;
-		font-size: 1.5rem;
+		padding-left: 0;
+		padding-right: 0;
+		font-size: 1.3rem;
 	}
 	:global(main.layout-mobile) .emoji-trigger img {
 		width: 1.3rem;
