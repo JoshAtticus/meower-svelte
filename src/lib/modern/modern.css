@@ -29,7 +29,8 @@ main.layout-modern.layout-modern.layout-mobile .main-screen > .sidebar {
 	width: 0;
 }
 main.layout-modern.layout-modern .view {
-	padding: 0.8em;
+	/* no top padding: the sticky page header must reach the scrollport top */
+	padding: 0 0.8em 0.8em;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -44,13 +45,28 @@ main.layout-modern.layout-modern .view > .groupchat {
 	max-width: 1020px;
 }
 main.layout-modern.layout-modern.layout-mobile .view {
-	padding: 0.5em 0;
+	/* no top padding: the sticky page header must reach the scrollport top,
+	   otherwise scrolled content shows in the padding strip above it */
+	padding: 0;
 	padding-bottom: calc(64px + env(safe-area-inset-bottom) + 0.8em);
 }
 main.layout-modern.layout-modern.layout-mobile .view > * {
 	padding-left: 10px;
 	padding-right: 10px;
 	max-width: none;
+	min-width: 0;
+}
+/* flex/grid children must be allowed to shrink below their content width,
+   otherwise a wide post/system row pushes the whole page past the viewport */
+main.layout-modern.layout-modern.layout-mobile #chat,
+main.layout-modern.layout-modern.layout-mobile .view > * > * {
+	min-width: 0;
+}
+main.layout-modern.layout-modern.layout-mobile .profile-header-info {
+	min-width: 0;
+}
+main.layout-modern.layout-modern.layout-mobile .profile-username {
+	overflow-wrap: anywhere;
 }
 
 /* the page-flip transition element ends at the classic sidebar width and
@@ -279,12 +295,35 @@ main.layout-modern.layout-modern div.container.warning {
 	color: white;
 }
 
-/* First container on a page acts as the page header */
-main.layout-modern.layout-modern .view > * > div.container:first-child {
-	background-color: transparent;
+/* #chat's overflow:hidden would swallow the sticky header — let it escape to .view */
+main.layout-modern.layout-modern .view > * > #chat {
+	overflow: visible;
+}
+/* First container on a page acts as the page header — sticky translucent bar,
+   flush with the scrollport top so nothing ever scrolls above it */
+main.layout-modern.layout-modern .view > * > div.container:first-child,
+main.layout-modern.layout-modern .view > * > #chat > div.container:first-child {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+	background-color: color-mix(
+		in srgb,
+		var(--background) 80%,
+		transparent
+	);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 	border-color: transparent;
+	border-bottom: 1px solid var(--hairline);
+	border-radius: 0;
 	box-shadow: none;
-	padding-top: 0.2em;
+	padding-top: 0.7em;
+	padding-bottom: 0.7em;
+	margin-bottom: 0.9em;
+}
+/* same header→content spacing on group chat pages (header lives inside #chat) */
+main.layout-modern.layout-modern .view > * > #chat > div.container:first-child {
+	margin-bottom: 0.9em;
 }
 main.layout-modern.layout-modern .view > * > div.container:first-child h1 {
 	margin: 0 0 0.1em;
@@ -297,7 +336,8 @@ main.layout-modern.layout-modern .view > * > div.container:first-child .overflow
 }
 /* mobile: sticky translucent top bar, flush with the viewport top (the
    negative margin eats the view's top padding so nothing scrolls above it) */
-main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-child {
+main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-child,
+main.layout-modern.layout-modern.layout-mobile .view > * > #chat > div.container:first-child {
 	position: sticky;
 	top: 0;
 	z-index: 50;
@@ -310,9 +350,9 @@ main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-c
 	-webkit-backdrop-filter: blur(12px);
 	border-bottom: 1px solid var(--hairline);
 	border-radius: 0;
-	margin-top: -0.5em;
 	margin-left: -10px;
 	margin-right: -10px;
+	margin-bottom: 0.9em;
 	padding-left: calc(10px + 0.85em);
 	padding-right: calc(10px + 0.85em);
 	padding-top: calc(0.7em + env(safe-area-inset-top));
@@ -408,4 +448,99 @@ main.layout-modern.layout-modern .mpfp .raw-pfp.custom-avatar img {
 	width: 100%;
 	height: 100%;
 	object-fit: cover;
+}
+
+/* Mobile group-chat app bar: compact single-line header */
+main.layout-modern.layout-modern.layout-mobile
+	.view
+	> *
+	> #chat
+	> div.container:first-child {
+	box-sizing: border-box;
+	min-height: 0;
+	padding-top: calc(0.45em + env(safe-area-inset-top));
+	padding-bottom: 0.45em;
+	padding-right: calc(5.8em + 10px);
+	overflow: hidden;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .chat-name {
+	font-size: 1.15em;
+	font-weight: bold;
+	flex-wrap: nowrap;
+	gap: 0.45em;
+	min-width: 0;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .chat-name-text {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* ~36px chat icon */
+main.layout-modern.layout-modern.layout-mobile #chat .chat-name .chat-icon {
+	width: 36px !important;
+	height: 36px !important;
+	border-radius: 12px !important;
+	border-width: 2px !important;
+	flex: 0 0 auto;
+}
+/* back chevron button */
+main.layout-modern.layout-modern.layout-mobile #chat .modern-back {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 34px;
+	padding: 0;
+	margin: 0 0 0 -0.35em;
+	border: none;
+	background: none;
+	color: var(--foreground);
+	cursor: pointer;
+	flex: 0 0 auto;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .modern-back svg {
+	display: block;
+}
+/* members + more buttons: small tonal ghost icons centred in the bar */
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-more,
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-members {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 34px;
+	height: 34px;
+	margin: 0;
+	border: none;
+	border-radius: 50%;
+	background-color: var(--surface-2) !important;
+	background-image: none !important;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-more {
+	right: 0.45em;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-members {
+	right: calc(0.45em + 40px);
+}
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-more::after,
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--foreground);
+	-webkit-mask-size: 55%;
+	mask-size: 55%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-more::after {
+	-webkit-mask-image: url("/src/assets/more.svg");
+	mask-image: url("/src/assets/more.svg");
+}
+main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
+	-webkit-mask-image: url("/src/assets/members.svg");
+	mask-image: url("/src/assets/members.svg");
 }

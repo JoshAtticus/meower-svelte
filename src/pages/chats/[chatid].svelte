@@ -253,11 +253,22 @@
 							class="modern-back"
 							title="Back to chats"
 							aria-label="Back to chats"
-							on:click={() => $goto("/chats")}>‹</button
+							on:click={() => $goto("/chats")}
+							><svg
+								viewBox="0 0 24 24"
+								width="20"
+								height="20"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2.5"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg
+							></button
 						>
 					{/if}
 					<ChatIcon chat={$chat} size={0.7} />
-					{$chat.nickname}
+					<span class="chat-name-text">{$chat.nickname}</span>
 					{#if $params.admin}
 						<span class="chat-id">(<code>{$params.chatid}</code>)</span>
 					{/if}
@@ -274,6 +285,14 @@
 				{/if}
 				{#if $chat._id !== "livechat"}
 					{#if $mobile}
+						{#if $modernLayout}
+							<button
+								class="circle members mobile-members"
+								title="Members"
+								aria-label="Members"
+								on:click={() => (showMembers = !showMembers)}
+							/>
+						{/if}
 						<button
 							class="circle more mobile-more"
 							title="More"

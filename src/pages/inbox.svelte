@@ -11,9 +11,7 @@
 
 <div class="messages">
 	<Container>
-		<h1>Inbox Messages</h1>
-		Here are your latest inbox messages. We will send announcements and important
-		messages to here!
+		<h1>Inbox</h1>
 	</Container>
 	<PostList
 		on:loaded={() => {
