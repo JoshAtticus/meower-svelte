@@ -48,28 +48,10 @@
 
 <Container>
 	<h2>The Council</h2>
-	<p>These people have the highest authority of the Meower project.</p>
+	<p>These people have the highest authority of the Meower2 project.</p>
 	<div class="contributors-list">
-		<Contributor username="MikeDEV" pfp={26} isMeower={true}>
-			Current owner of Meower
-		</Contributor>
-		<Contributor username="tnix" pfp={20} isMeower={true}>
-			Backend developer
-		</Contributor>
-		<Contributor username="silvxrcat" pfp={-3} isMeower={true}>
-			Original owner of Meower
-		</Contributor>
-		<Contributor username="CST1229" pfp={-1} isMeower={true}>
-			Frontend developer
-		</Contributor>
-		<Contributor username="zedthehedgehog" pfp={22} isMeower={true}>
-			Designer
-		</Contributor>
-		<Contributor username="DaCatBlock" pfp={23} isMeower={true}>
-			Web developer
-		</Contributor>
-		<Contributor username="Voxalice" pfp={28} isMeower={true}>
-			Musician
+		<Contributor username="JoshAtticus" pfp={29} isMeower={true}>
+			Current owner of Meower2
 		</Contributor>
 	</div>
 </Container>

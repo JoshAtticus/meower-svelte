@@ -5,34 +5,28 @@
  */
 export const THEMES = [
 	{
+		id: "red",
+		name: "Red",
+		light: {main: "#ff3838", light: "#ff6f6f", dark: "#e03030", scroll: "#e03030"},
+		dark: {main: "#ff3838", light: "#ff6f6f", dark: "#e03030", scroll: "#e03030"},
+	},
+	{
 		id: "orange",
 		name: "Orange",
 		light: {main: "#f9a636", light: "#ffce8c", dark: "#b46d34", scroll: "#a15d04"},
-		dark: {main: "#b35305", light: "#dd7f14", dark: "#ac4718", scroll: "rgb(131, 45, 5)"},
+		dark: {main: "#f9a636", light: "#ffce8c", dark: "#b46d34", scroll: "#a15d04"},
+	},
+	{
+		id: "green",
+		name: "Green",
+		light: {main: "#3eca6f", light: "#7acb8b", dark: "#1e7d50", scroll: "#26a269"},
+		dark: {main: "#3eca6f", light: "#7acb8b", dark: "#1e7d50", scroll: "#26a269"},
 	},
 	{
 		id: "blue",
 		name: "Blue",
 		light: {main: "#4d97ff", light: "#79b7ff", dark: "#3685eb", scroll: "#374eb1"},
 		dark: {main: "#4d97ff", light: "#79b7ff", dark: "#3685eb", scroll: "#374eb1"},
-	},
-	{
-		id: "green",
-		name: "Green",
-		light: {main: "#57e389", light: "#8ff0a4", dark: "#26a269", scroll: "#26a269"},
-		dark: {main: "#57e389", light: "#8ff0a4", dark: "#26a269", scroll: "#26a269"},
-	},
-	{
-		id: "magenta",
-		name: "Magenta",
-		light: {main: "#a85ff5", light: "#b97cfa", dark: "#9c59e4", scroll: "#9c59e4"},
-		dark: {main: "#a85ff5", light: "#b97cfa", dark: "#9c59e4", scroll: "#9c59e4"},
-	},
-	{
-		id: "red",
-		name: "Red",
-		light: {main: "#ff3838", light: "#ff6f6f", dark: "#e03030", scroll: "#e03030"},
-		dark: {main: "#ff3838", light: "#ff6f6f", dark: "#e03030", scroll: "#e03030"},
 	},
 	{
 		id: "pink",
@@ -45,6 +39,12 @@ export const THEMES = [
 		name: "Purple",
 		light: {main: "#731bc4", light: "#9665c4", dark: "#6016a6", scroll: "#6016a6"},
 		dark: {main: "#731bc4", light: "#9665c4", dark: "#6016a6", scroll: "#6016a6"},
+	},
+	{
+		id: "magenta",
+		name: "Magenta",
+		light: {main: "#a85ff5", light: "#b97cfa", dark: "#9c59e4", scroll: "#9c59e4"},
+		dark: {main: "#a85ff5", light: "#b97cfa", dark: "#9c59e4", scroll: "#9c59e4"},
 	},
 	{
 		id: "gray",
