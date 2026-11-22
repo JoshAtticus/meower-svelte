@@ -51,6 +51,23 @@
 	// containers that clip overflow (e.g. posts)
 	export let anchor = null;
 
+	// keep an anchored popup fully inside the window
+	let popupEl;
+	function keepOnScreen() {
+		if (!anchor || !popupEl || $mobile) return;
+		const r = popupEl.getBoundingClientRect();
+		if (r.top < 8) {
+			popupEl.style.top = "8px";
+			popupEl.style.bottom = "auto";
+			popupEl.style.maxHeight = window.innerHeight - 16 + "px";
+		} else if (r.bottom > window.innerHeight - 8) {
+			popupEl.style.top = "auto";
+			popupEl.style.bottom = "8px";
+			popupEl.style.maxHeight = window.innerHeight - 16 + "px";
+		}
+	}
+	onMount(() => requestAnimationFrame(keepOnScreen));
+
 	function done(event) {
 		if (!(event && event.shiftKey) && onClose) onClose();
 	}
@@ -172,6 +189,7 @@
 	/>
 {/if}
 <div
+	bind:this={popupEl}
 	class="emoji-popup"
 	class:anchored={!!anchor}
 	class:sheet={$mobile}
@@ -186,6 +204,14 @@
 	style:top={anchor && anchor.top != null ? anchor.top + "px" : null}
 	style:bottom={anchor && anchor.bottom != null ? anchor.bottom + "px" : null}
 	style:right={anchor ? anchor.right + "px" : null}
+	style:max-height={anchor && !$mobile
+		? Math.max(
+				200,
+				window.innerHeight -
+					(anchor.top != null ? anchor.top : anchor.bottom) -
+					8
+			) + "px"
+		: null}
 >
 	{#if $mobile}
 		<div class="sheet-handle" />

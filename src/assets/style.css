@@ -560,6 +560,14 @@ button.more {
 }
 #main .settings-controls.action-sheet.open {
 	transform: translateY(0);
+	visibility: visible;
+	transition: transform 0.25s ease, visibility 0s;
+}
+/* closed sheets are hidden outright, not just moved off-screen (iOS Safari
+   can show them through its floating toolbar) */
+#main .settings-controls.action-sheet:not(.open) {
+	visibility: hidden;
+	transition: transform 0.25s ease, visibility 0s 0.25s;
 }
 #main .settings-controls.action-sheet button.circle {
 	width: 100%;

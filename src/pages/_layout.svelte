@@ -264,6 +264,8 @@
 
 		width: 100vw;
 		height: 100vh;
+		/* the visible area only, so nothing hides behind mobile browser bars */
+		height: 100dvh;
 		overflow: hidden;
 	}
 
@@ -326,6 +328,7 @@
 		overflow: auto;
 
 		--view-height: calc(100vh - 0.66em);
+		--view-height: calc(100dvh - 0.66em);
 
 		background-color: var(--background);
 		transition: 0.25s;
@@ -339,6 +342,7 @@
 		overflow: auto;
 
 		--view-height: calc(100vh - 0.66em);
+		--view-height: calc(100dvh - 0.66em);
 
 		background-color: var(--background);
 		transition: 0.25s;
@@ -365,5 +369,6 @@
 	}
 	:global(main.layout-old) .view {
 		--view-height: calc(100vh - 3.5em - 0.66em);
+		--view-height: calc(100dvh - 3.5em - 0.66em);
 	}
 </style>
