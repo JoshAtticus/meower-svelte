@@ -597,6 +597,8 @@ main.layout-modern.layout-modern .setup {
 	box-sizing: border-box;
 }
 main.layout-modern.layout-modern .setup .fullcenter {
+	position: static;
+	transform: none;
 	background: var(--surface);
 	border: 1px solid var(--hairline);
 	border-radius: 20px;
@@ -604,6 +606,8 @@ main.layout-modern.layout-modern .setup .fullcenter {
 	max-width: 440px;
 	width: 100%;
 	height: auto;
+	max-height: 100%;
+	overflow-y: auto;
 	box-sizing: border-box;
 	box-shadow: var(--card-shadow);
 }
