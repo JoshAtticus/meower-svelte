@@ -1,23 +1,15 @@
 <!-- A small mock of the app, coloured like the given theme. -->
 <script>
-	export let theme = "orange"; // orange | blue | profile
+	import {themeColors} from "./themes.js";
+
+	export let theme = "orange"; // any id from themes.js, or "profile"
 	export let dark = false;
 	export let accent = ""; // profile colour (hex without #) for the Profile theme
 
-	// Same values as the themes in _layout.svelte
-	const ACCENTS = {
-		orange: {light: "#f9a636", dark: "#e48b26"},
-		blue: {light: "#4d97ff", dark: "#4d97ff"},
-	};
-
-	$: validAccent =
-		/^[0-9a-fA-F]{6}$/.test(accent || "") && accent !== "000000";
-	$: main =
-		theme === "profile" && validAccent
-			? `#${accent}`
-			: (ACCENTS[theme] || ACCENTS.orange)[dark ? "dark" : "light"];
-	$: bg = dark ? "#181818" : "#ffffff";
-	$: fg = dark ? "#eeeeff" : "#000000";
+	$: colors = themeColors(theme, dark, accent) || themeColors("orange", dark);
+	$: main = colors.main;
+	$: bg = colors.background;
+	$: fg = colors.foreground;
 
 	const posts = [0, 1, 2];
 </script>

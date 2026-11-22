@@ -18,25 +18,15 @@
 	} from "../lib/stores.js";
 	import {mobile, touch} from "../lib/responsiveness.js";
 	import {localLayout} from "../lib/layoutPref.js";
+	import {themeColors} from "../lib/themes.js";
 	import * as BGM from "../lib/BGM.js";
 	import {retryReconnectNow} from "../lib/clmanager.js";
 
 	import {afterPageLoad, params} from "@roxi/routify";
 	import {tick} from "svelte";
 
-	// the Profile theme: your profile colour on top of the orange theme
-	$: profileColor =
-		$user.theme === "profile" &&
-		/^[0-9a-fA-F]{6}$/.test($user.avatar_color || "") &&
-		$user.avatar_color !== "000000"
-			? `#${$user.avatar_color}`
-			: null;
-	$: profileColorLight = profileColor
-		? `color-mix(in srgb, ${profileColor} 60%, white)`
-		: null;
-	$: profileColorDark = profileColor
-		? `color-mix(in srgb, ${profileColor} 70%, black)`
-		: null;
+	// colours for the built-in themes (custom themes set their own)
+	$: tc = themeColors($user.theme, $user.mode === false, $user.avatar_color);
 
 	let currentPage = "";
 	let currentParams = JSON.stringify($params);
@@ -64,21 +54,16 @@
 
 <main
 	id="main"
-	style:--orange={$useCustomTheme ? $customTheme.orange : profileColor}
-	style:--orange-button={$useCustomTheme ? $customTheme.orange : profileColor}
-	style:--orange-light={$useCustomTheme
-		? $customTheme.orangeLight
-		: profileColorLight}
-	style:--orange-dark={$useCustomTheme
-		? $customTheme.orangeDark
-		: profileColorDark}
-	style:--background={$useCustomTheme ? $customTheme.background : null}
-	style:--foreground={$useCustomTheme ? $customTheme.foreground : null}
+	style:--orange={$useCustomTheme ? $customTheme.orange : tc?.main}
+	style:--orange-button={$useCustomTheme ? $customTheme.orange : tc?.main}
+	style:--orange-light={$useCustomTheme ? $customTheme.orangeLight : tc?.light}
+	style:--orange-dark={$useCustomTheme ? $customTheme.orangeDark : tc?.dark}
+	style:--orange-scrollbar-back={$useCustomTheme ? null : tc?.scroll}
+	style:--background={$useCustomTheme ? $customTheme.background : tc?.background}
+	style:--foreground={$useCustomTheme ? $customTheme.foreground : tc?.foreground}
 	style:--foreground-orange={$useCustomTheme
 		? $customTheme.foregroundOrange
-		: null}
-	class:theme-orange={$user.theme === "orange" || $user.theme === "profile"}
-	class:theme-blue={$user.theme === "blue"}
+		: tc?.foregroundOrange}
 	class:mode-light={!($user.mode === false)}
 	class:mode-dark={$user.mode === false}
 	class:layout-old={($localLayout || $user.layout) === "old"}
