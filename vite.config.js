@@ -25,4 +25,25 @@ export default defineConfig(({command}) => ({
 		*/
 	],
 	base: "/",
+	// When the dev server is shared (e.g. through a Cloudflare tunnel), it also
+	// forwards the API, CloudLink and uploads so one address serves everything.
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://127.0.0.1:3001",
+				changeOrigin: true,
+				rewrite: path => path.replace(/^\/api/, ""),
+			},
+			"/cloudlink": {
+				target: "ws://127.0.0.1:3000",
+				ws: true,
+				rewrite: path => path.replace(/^\/cloudlink/, ""),
+			},
+			"/uploads": {
+				target: "http://127.0.0.1:3002",
+				changeOrigin: true,
+				rewrite: path => path.replace(/^\/uploads/, ""),
+			},
+		},
+	},
 }));
