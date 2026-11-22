@@ -2,6 +2,7 @@
 	import Modal from "../../Modal.svelte";
 
 	import CustomThemeModal from "./CustomTheme.svelte";
+	import ThemePreview from "../../ThemePreview.svelte";
 
 	import {user, OOBERunning} from "../../stores.js";
 	import {removeTheme} from "../../CustomTheme.js";
@@ -9,16 +10,6 @@
 	import * as clm from "../../clmanager.js";
 
 	export let fromoobe = false;
-
-	import defaultPreview from "../../../assets/themePreviews/OrangeLight.png";
-
-	const themePreviews = import.meta.glob(
-		"../../../assets/themePreviews/*.png",
-		{
-			import: "default",
-			eager: true,
-		}
-	);
 
 	let selections = [
 		"orange",
@@ -51,14 +42,6 @@
 	let themeCaps = theme.slice(0, 1).toUpperCase() + theme.slice(1);
 	let themeName = themeCaps + darkModeStr;
 
-	/**
-	 * @type {string}
-	 */
-	// @ts-ignore
-	let currentPreviewImage =
-		themePreviews["../../../assets/themePreviews/" + themeName + ".png"] ||
-		defaultPreview;
-
 	function changeTheme() {
 		if (selection < 0) {
 			selection = selections.length - 1;
@@ -78,22 +61,12 @@
 			themeCaps = theme.slice(0, 1).toUpperCase() + theme.slice(1);
 			themeName = themeCaps + darkModeStr; // Change vars
 
-			// @ts-ignore
-			currentPreviewImage =
-				themePreviews[
-					"../../assets/themePreviews/" + themeName + ".png"
-				] || defaultPreview;
 		}
 
 		darkModeStr = darkMode ? "Dark" : "Light";
 		themeCaps = theme.slice(0, 1).toUpperCase() + theme.slice(1);
 		themeName = themeCaps + darkModeStr; // Change vars
 
-		// @ts-ignore
-		currentPreviewImage =
-			themePreviews[
-				"../../../assets/themePreviews/" + themeName + ".png"
-			] || defaultPreview;
 
 		if ($OOBERunning) {
 			removeTheme();
@@ -127,11 +100,7 @@
 						<div class="theme-name">
 							{themeCaps + " (" + darkModeStr + ")"}
 						</div>
-						<img
-							src={currentPreviewImage}
-							class="theme-preview"
-							alt={themeName}
-						/>
+						<ThemePreview {theme} dark={darkMode} accent={$user.avatar_color} />
 					{/if}
 				</div>
 				<button
@@ -181,11 +150,7 @@
 				<div class="theme-name">
 					{themeCaps + " (" + darkModeStr + ")"}
 				</div>
-				<img
-					src={currentPreviewImage}
-					class="theme-preview"
-					alt={themeName}
-				/>
+				<ThemePreview {theme} dark={darkMode} accent={$user.avatar_color} />
 			{/if}
 		</div>
 		<button
