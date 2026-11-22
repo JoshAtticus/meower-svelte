@@ -139,10 +139,17 @@
 			class="sheet-item"
 			on:click={() => {
 				menuOpen = false;
-				modals.showModal(LogoutModal);
+				// guests go straight back to the welcome screen to log in
+				if (!$user.name) $goto("/logout");
+				else modals.showModal(LogoutModal);
 			}}
 		>
-			<span class="micon" style:--icon={`url(${logout})`} /> Log out
+			<span
+				class="micon"
+				class:mirrored={!$user.name}
+				style:--icon={`url(${logout})`}
+			/>
+			{$user.name ? "Log out" : "Log in"}
 		</button>
 	</div>
 {/if}
@@ -290,5 +297,8 @@
 	.sheet-item img {
 		width: 1.4em;
 		height: 1.4em;
+	}
+	.micon.mirrored {
+		transform: scaleX(-1);
 	}
 </style>

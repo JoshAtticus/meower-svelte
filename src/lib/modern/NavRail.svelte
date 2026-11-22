@@ -147,11 +147,17 @@
 						class="nav-item"
 						on:click={() => {
 							menuOpen = false;
-							modals.showModal(LogoutModal);
+							// guests go straight back to the welcome screen to log in
+							if (!$user.name) $goto("/logout");
+							else modals.showModal(LogoutModal);
 						}}
 					>
-						<span class="micon" style:--icon={`url(${logout})`} />
-						<span class="nav-label">Log out</span>
+						<span
+							class="micon"
+							class:mirrored={!$user.name}
+							style:--icon={`url(${logout})`}
+						/>
+						<span class="nav-label">{$user.name ? "Log out" : "Log in"}</span>
 					</button>
 				</div>
 			{/if}
@@ -419,5 +425,8 @@
 			width: auto;
 			justify-content: flex-start;
 		}
+	}
+	.micon.mirrored {
+		transform: scaleX(-1);
 	}
 </style>
