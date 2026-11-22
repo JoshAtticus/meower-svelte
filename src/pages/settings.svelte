@@ -12,9 +12,11 @@
 	import BotsModal from "../lib/modals/settings/Bots.svelte";
 	import MyReportsModal from "../lib/modals/settings/MyReports.svelte";
 	import DeleteAccountModal from "../lib/modals/settings/DeleteAccount.svelte";
+	import NewLayoutTourModal from "../lib/modals/settings/NewLayoutTour.svelte";
 
 	import {user, authHeader} from "../lib/stores.js";
 	import {localLayout} from "../lib/layoutPref.js";
+	import {modernLayout} from "../lib/modernLayout.js";
 	import {apiUrl} from "../lib/urls.js";
 	import * as clm from "../lib/clmanager.js";
 	import * as modals from "../lib/modals.js";
@@ -160,12 +162,31 @@
 			</div>
 			<div class="row">
 				<div class="row-text">
+					<h3>Try new layout</h3>
+					<span class="row-sub"
+						>{$modernLayout
+							? "You're using the new layout"
+							: "Preview a redesigned Meower for mobile and desktop"}</span
+					>
+				</div>
+				<button
+					type="button"
+					on:click={() => modals.showModal(NewLayoutTourModal)}
+					>{$modernLayout ? "Manage" : "Take a look"}</button
+				>
+			</div>
+			<div class="row" class:row-disabled={$modernLayout}>
+				<div class="row-text">
 					<h3>Sidebar Layout</h3>
+					{#if $modernLayout}
+						<span class="row-sub">Not used by the new layout</span>
+					{/if}
 				</div>
 				<div class="seg">
 					{#each [["new", "Side"], ["old", "Bottom"]] as [value, label]}
 						<button
 							type="button"
+							disabled={$modernLayout}
 							class:selected={layoutNow === value}
 							on:click={() => setLayout(value)}>{label}</button
 						>
@@ -453,6 +474,9 @@
 		background-color: var(--orange);
 		color: white;
 		font-weight: bold;
+	}
+	.seg button:disabled {
+		opacity: 0.5;
 	}
 
 	.danger-button {

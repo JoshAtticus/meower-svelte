@@ -39,6 +39,7 @@
 	import {userRestrictions, isRestricted} from "../lib/bitField.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import {mobile} from "./responsiveness.js";
+	import {modernLayout} from "./modernLayout.js";
 	import {playNotification} from "./sounds.js";
 	import * as modals from "./modals.js";
 	import PagedList from "./PagedList.svelte";
@@ -543,6 +544,18 @@
 					input.value = "";
 				}}
 			>
+				{#if $modernLayout}
+					<span class="composer-pfp">
+						<PFP
+							raw
+							size={0.5}
+							icon={$user.name ? $user.pfp_data : -3}
+							avatar={$user.name ? $user.avatar : ""}
+							avatarColor={$user.avatar_color}
+							alt="Your profile picture"
+						/>
+					</span>
+				{/if}
 				<div
 					class="composer-input"
 					role="textbox"
@@ -948,5 +961,84 @@
 		border: none;
 		margin: 0;
 		margin-left: 0.125em;
+	}
+
+	/* ---- new layout (opt-in): one composer card ---- */
+	:global(main.layout-modern) .composer-pfp {
+		display: inline-flex;
+		align-self: flex-start;
+		margin-top: 0.15em;
+		flex-shrink: 0;
+		border-radius: 35%;
+		overflow: hidden;
+	}
+	:global(main.layout-modern) .createpost {
+		align-items: center;
+		gap: 0.4em;
+		padding: 0.55em 0.7em;
+		background-color: var(--surface);
+		border: solid 1px var(--hairline);
+		border-radius: 16px;
+	}
+	:global(main.layout-modern.mode-light) .createpost {
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	}
+	:global(main.layout-modern) .composer-input {
+		min-height: 1.6em;
+		padding: 0.3em 0.2em;
+		border: none;
+		border-radius: 0;
+		background: transparent;
+	}
+	:global(main.layout-modern) .composer-input:focus {
+		border-radius: 0;
+	}
+	:global(main.layout-modern) .send-files,
+	:global(main.layout-modern) .emoji-trigger {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.2em;
+		height: 2.2em;
+		min-width: 0;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: transparent;
+		color: var(--foreground);
+		font-size: 1.4rem;
+	}
+	:global(main.layout-modern.layout-mobile) .composer-pfp {
+		display: none;
+	}
+	:global(main.layout-modern.layout-mobile) .send-files,
+	:global(main.layout-modern.layout-mobile) .emoji-trigger {
+		width: 1.9em;
+		height: 1.9em;
+		font-size: 1.15rem;
+	}
+	:global(main.layout-modern.layout-mobile) .createpost button[name="submit"] {
+		padding: 0.3em 0.8em;
+	}
+	:global(main.layout-modern) .send-files:hover,
+	:global(main.layout-modern) .emoji-trigger:hover,
+	:global(main.layout-modern) .emoji-trigger.active {
+		background-color: var(--surface-2);
+	}
+	:global(main.layout-modern) .emoji-trigger img {
+		width: 1.3rem;
+		height: 1.3rem;
+	}
+	:global(main.layout-modern) .createpost button[name="submit"] {
+		min-width: 0;
+		padding: 0.35em 1.1em;
+		border: none;
+		border-radius: 999px;
+		background-color: var(--orange);
+		color: var(--foreground-orange);
+		font-weight: bold;
+	}
+	:global(main.layout-modern) .createpost button[name="submit"]:disabled {
+		opacity: 0.5;
 	}
 </style>

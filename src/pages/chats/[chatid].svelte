@@ -26,6 +26,7 @@
 	import {swipeDismiss} from "../../lib/swipeDismiss.js";
 	import * as modals from "../../lib/modals.js";
 	import {mobile} from "../../lib/responsiveness.js";
+	import {modernLayout} from "../../lib/modernLayout.js";
 	import {markChatRead} from "../../lib/unread.js";
 	import ProfileView from "../../lib/ProfileView.svelte";
 	import Member from "../../lib/Member.svelte";
@@ -247,6 +248,14 @@
 		{#if $chat.type === 0}
 			<Container>
 				<h1 class="chat-name">
+					{#if $modernLayout && $mobile}
+						<button
+							class="modern-back"
+							title="Back to chats"
+							aria-label="Back to chats"
+							on:click={() => $goto("/chats")}>‹</button
+						>
+					{/if}
 					<ChatIcon chat={$chat} size={0.7} />
 					{$chat.nickname}
 					{#if $params.admin}
@@ -691,6 +700,15 @@
 
 	.small {
 		font-size: 75%;
+	}
+	.modern-back {
+		border: none;
+		background: none;
+		color: var(--foreground);
+		font-size: 1.4em;
+		line-height: 0.8;
+		padding: 0 0.15em;
+		cursor: pointer;
 	}
 	:global(#main.layout-mobile) #members::before {
 		content: "";

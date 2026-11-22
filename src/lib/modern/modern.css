@@ -1,0 +1,180 @@
+/* New layout (opt-in via localStorage meower_modern_layout).
+   Everything here is scoped under main.layout-modern.layout-modern so the classic
+   layout is completely unaffected. */
+
+main.layout-modern.layout-modern {
+	--surface: color-mix(in srgb, var(--orange) 7%, var(--background));
+	--surface-2: color-mix(in srgb, var(--orange) 12%, var(--background));
+	--hairline: color-mix(in srgb, var(--orange) 35%, transparent);
+	--m-radius: 16px;
+}
+
+/* Layout shell — the .sidebar flex item must reserve the rail's width so
+   the view starts after it, not underneath it */
+/* (the doubled .layout-modern class outranks Svelte's doubled-hash scoped
+   .sidebar/.view rules) */
+main.layout-modern.layout-modern .sidebar {
+	width: 232px;
+	height: auto;
+}
+@media (max-width: 1100px) and (min-width: 900px) {
+	main.layout-modern.layout-modern:not(.layout-mobile) .sidebar {
+		width: 72px;
+	}
+}
+main.layout-modern.layout-modern.layout-mobile .sidebar {
+	display: none;
+	width: 0;
+}
+main.layout-modern.layout-modern .view {
+	padding: 0.8em;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+main.layout-modern.layout-modern .view > * {
+	width: 100%;
+	max-width: 760px;
+	box-sizing: border-box;
+}
+/* groupchat pages keep room for the members panel */
+main.layout-modern.layout-modern .view > .groupchat {
+	max-width: 1020px;
+}
+main.layout-modern.layout-modern.layout-mobile .view {
+	padding: 0.5em 0;
+	padding-bottom: calc(64px + env(safe-area-inset-bottom) + 0.8em);
+}
+main.layout-modern.layout-modern.layout-mobile .view > * {
+	padding-left: 10px;
+	padding-right: 10px;
+	max-width: none;
+}
+
+/* the page-flip transition element ends at the classic sidebar width and
+   would sit as a stray bar where the sidebar used to be */
+main.layout-modern.layout-modern .transition {
+	display: none;
+}
+
+/* The bundled icon SVGs are white-filled. Nav/tab icons are rendered as
+   masked spans (.micon, currentColor) inside the modern components; the
+   composer emoji icon is still an <img>, so filter it in light themes. */
+main.layout-modern.layout-modern.mode-light .createpost .emoji-trigger img {
+	filter: brightness(0);
+}
+
+/* Members panel -> same card language as the chats panel */
+main.layout-modern.layout-modern #members {
+	background-color: var(--surface) !important;
+	border: solid 1px var(--hairline) !important;
+	border-radius: var(--m-radius) !important;
+	box-shadow: none !important;
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #members {
+	position: sticky;
+	top: 0.8em;
+	align-self: flex-start;
+	max-height: calc(100dvh - 1.6em);
+}
+main.layout-modern.layout-modern #members-inner {
+	overflow-y: auto;
+	max-height: calc(100dvh - 5em);
+}
+main.layout-modern.layout-modern .members-title {
+	font-size: 1em;
+}
+
+/* raw-mode PFPs: the span is inline by default so its --size is ignored;
+   make it a block so avatars actually get their configured size */
+main.layout-modern.layout-modern .raw-pfp {
+	display: inline-block;
+}
+main.layout-modern.layout-modern .raw-pfp img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Containers -> surface cards */
+main.layout-modern.layout-modern div.container {
+	background-color: var(--surface);
+	border: solid 1px var(--hairline);
+	border-radius: var(--m-radius);
+	padding: 0.85em;
+	margin-bottom: 0.6em;
+	overflow: visible;
+}
+main.layout-modern.layout-modern.mode-light div.container {
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+main.layout-modern.layout-modern div.container.warning {
+	background-color: #eb4e33;
+	border: none;
+	color: white;
+}
+
+/* First container on a page acts as the page header */
+main.layout-modern.layout-modern .view > * > div.container:first-child {
+	background-color: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	padding-top: 0.2em;
+}
+main.layout-modern.layout-modern .view > * > div.container:first-child h1 {
+	margin: 0 0 0.1em;
+}
+main.layout-modern.layout-modern .view > * > div.container:first-child p,
+main.layout-modern.layout-modern .view > * > div.container:first-child .overflow {
+	opacity: 0.65;
+	font-size: 0.85em;
+	margin: 0;
+}
+/* mobile: sticky translucent top bar */
+main.layout-modern.layout-modern.layout-mobile .view > * > div.container:first-child {
+	position: sticky;
+	top: 0;
+	z-index: 50;
+	background-color: color-mix(
+		in srgb,
+		var(--background) 80%,
+		transparent
+	);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border-bottom: 1px solid var(--hairline);
+	border-radius: 0;
+	margin-left: -10px;
+	margin-right: -10px;
+	padding-left: calc(10px + 0.85em);
+	padding-right: calc(10px + 0.85em);
+	padding-top: 0.7em;
+	padding-bottom: 0.7em;
+}
+
+/* Modals & settings rows */
+main.layout-modern.layout-modern .modal {
+	border: solid 1px var(--hairline);
+	border-radius: var(--m-radius);
+	background-color: var(--surface);
+}
+main.layout-modern.layout-modern .modal.sheet {
+	border-radius: var(--m-radius) var(--m-radius) 0 0;
+}
+main.layout-modern.layout-modern .settings .row,
+main.layout-modern.layout-modern .row {
+	border-radius: 12px;
+}
+main.layout-modern.layout-modern .row:has(+ .row),
+main.layout-modern.layout-modern .row:hover {
+	background-color: var(--surface);
+}
+main.layout-modern.layout-modern .row {
+	padding: 0.5em 0.7em;
+}
+main.layout-modern.layout-modern button:focus-visible,
+main.layout-modern.layout-modern a:focus-visible,
+main.layout-modern.layout-modern [tabindex]:focus-visible {
+	outline: 2px solid var(--orange);
+	outline-offset: 2px;
+}

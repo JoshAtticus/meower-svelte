@@ -5,7 +5,7 @@
 	export let warning = false;
 </script>
 
-<div class={warning ? "warning" : ""}><slot /></div>
+<div class="container" class:warning><slot /></div>
 
 <style>
 	div {

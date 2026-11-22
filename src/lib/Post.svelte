@@ -1250,4 +1250,85 @@
 		margin-bottom: 0.5em;
 		width: 100%;
 	}
+
+	/* ---- new layout (opt-in) ---- */
+	/* 40px author avatar (PFP inner = --size * 3.75em of its font-size) */
+	:global(main.layout-modern .post-header .pfp-container) {
+		font-size: 10.7px;
+	}
+	/* mobile forces --size 0.8 -> 36px */
+	:global(main.layout-modern.layout-mobile .post-header .pfp-container) {
+		font-size: 12px;
+	}
+	:global(main.layout-modern) .creatordate {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5em;
+		flex-wrap: wrap;
+	}
+	:global(main.layout-modern) .creatordate .creator h2 {
+		display: inline;
+		margin: 0;
+		font-size: 1em;
+	}
+	:global(main.layout-modern) .creatordate :global(.date) {
+		font-size: 0.8em;
+		opacity: 0.6;
+	}
+	:global(main.layout-modern) .creatordate :global(.date)::before {
+		content: "· ";
+	}
+	/* floating action pill, desktop only (mobile keeps the ⋯ sheet) */
+	:global(main.layout-modern:not(.layout-mobile))
+		.post-header
+		.settings-controls {
+		position: absolute;
+		top: 0.5em;
+		right: 0.5em;
+		z-index: 5;
+		display: flex;
+		gap: 0.15em;
+		padding: 0.15em;
+		background-color: var(--surface-2);
+		border: solid 1px var(--hairline);
+		border-radius: 999px;
+		opacity: 0;
+		transform: translateY(-4px);
+		transition: opacity 0.15s, transform 0.15s;
+		pointer-events: none;
+	}
+	:global(main.layout-modern:not(.layout-mobile))
+		.post-header:hover
+		.settings-controls,
+	:global(main.layout-modern:not(.layout-mobile))
+		.settings-controls:focus-within {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+	:global(main.layout-modern:not(.layout-mobile))
+		.settings-controls
+		button.circle {
+		border: none;
+		background-color: transparent;
+	}
+	:global(main.layout-modern:not(.layout-mobile))
+		.settings-controls
+		button.circle:hover {
+		background-color: var(--surface);
+	}
+	/* pill reaction chips */
+	:global(main.layout-modern) .reaction {
+		border: solid 1px var(--hairline);
+		background-color: var(--surface-2);
+	}
+	:global(main.layout-modern) .reaction.mine {
+		background-color: var(--orange);
+	}
+	:global(main.layout-modern) .reaction .reaction-pfp {
+		border-color: var(--surface-2);
+	}
+	:global(main.layout-modern) .reaction.mine .reaction-pfp {
+		border-color: var(--orange);
+	}
 </style>

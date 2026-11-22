@@ -3,6 +3,9 @@
 	import Setup from "../lib/Setup.svelte";
 	import OOBE from "../lib/OOBE/Main.svelte";
 	import Sidebar from "../lib/Sidebar.svelte";
+	import NavRail from "../lib/modern/NavRail.svelte";
+	import TabBar from "../lib/modern/TabBar.svelte";
+	import ChatsPanel from "../lib/modern/ChatsPanel.svelte";
 	import Spinner from "../lib/Spinner.svelte";
 
 	import {
@@ -18,12 +21,13 @@
 	} from "../lib/stores.js";
 	import {mobile, touch} from "../lib/responsiveness.js";
 	import {localLayout} from "../lib/layoutPref.js";
+	import {modernLayout} from "../lib/modernLayout.js";
 	import {themeColors, validProfileColor} from "../lib/themes.js";
 	import {pageAccent} from "../lib/pageAccent.js";
 	import * as BGM from "../lib/BGM.js";
 	import {retryReconnectNow} from "../lib/clmanager.js";
 
-	import {afterPageLoad, params} from "@roxi/routify";
+	import {afterPageLoad, params, page} from "@roxi/routify";
 	import {tick} from "svelte";
 
 	// colours for the built-in themes (custom themes set their own)
@@ -72,7 +76,8 @@
 		: tc?.foregroundOrange}
 	class:mode-light={!($user.mode === false)}
 	class:mode-dark={$user.mode === false}
-	class:layout-old={($localLayout || $user.layout) === "old"}
+	class:layout-modern={$modernLayout}
+	class:layout-old={!$modernLayout && ($localLayout || $user.layout) === "old"}
 	class:layout-mobile={$mobile}
 	class:input-touch={$touch}
 	class:input-hover={!$touch}
@@ -94,7 +99,13 @@
 		<div class="main-screen">
 			<div class="transition" />
 			<div class="sidebar">
-				<Sidebar />
+				{#if $modernLayout}
+					{#if !$mobile}
+						<NavRail />
+					{/if}
+				{:else}
+					<Sidebar />
+				{/if}
 			</div>
 			{#if $OOBERunning}
 				<div class="viewnopad">
@@ -104,6 +115,14 @@
 				<div class="view">
 					<slot />
 				</div>
+				{#if $modernLayout && !$mobile && !$page.path.startsWith("/chats/")}
+					<div class="modern-rail">
+						<ChatsPanel />
+					</div>
+				{/if}
+				{#if $modernLayout && $mobile}
+					<TabBar />
+				{/if}
 			{/if}
 		</div>
 	{/if}
@@ -370,5 +389,18 @@
 	:global(main.layout-old) .view {
 		--view-height: calc(100vh - 3.5em - 0.66em);
 		--view-height: calc(100dvh - 3.5em - 0.66em);
+	}
+
+	/* new layout: right panel only on wide screens */
+	.modern-rail {
+		display: none;
+		flex-shrink: 0;
+		padding: 0.8em 0.8em 0.8em 0;
+		box-sizing: border-box;
+	}
+	@media (min-width: 1200px) {
+		:global(main.layout-modern) .modern-rail {
+			display: block;
+		}
 	}
 </style>
