@@ -48,13 +48,24 @@ main.layout-modern.layout-modern.layout-mobile .view {
 	/* no top padding: the sticky page header must reach the scrollport top,
 	   otherwise scrolled content shows in the padding strip above it */
 	padding: 0;
-	padding-bottom: calc(64px + env(safe-area-inset-bottom) + 0.8em);
+}
+/* room for the tab bar: end padding is ignored in this flex scroll
+   container, so use a spacer as its last item */
+main.layout-modern.layout-modern.layout-mobile .view::after {
+	content: "";
+	display: block;
+	flex: 0 0 calc(64px + env(safe-area-inset-bottom) + 0.8em);
+	height: calc(64px + env(safe-area-inset-bottom) + 0.8em);
 }
 main.layout-modern.layout-modern.layout-mobile .view > * {
 	padding-left: 10px;
 	padding-right: 10px;
 	max-width: none;
 	min-width: 0;
+	/* pages must grow with their content (not shrink to the screen and
+	   overflow), so the tab bar spacer after them comes after everything */
+	flex-shrink: 0;
+	height: auto;
 }
 /* flex/grid children must be allowed to shrink below their content width,
    otherwise a wide post/system row pushes the whole page past the viewport */
@@ -543,4 +554,34 @@ main.layout-modern.layout-modern.layout-mobile #chat .mobile-more::after {
 main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
 	-webkit-mask-image: url("/src/assets/members.svg");
 	mask-image: url("/src/assets/members.svg");
+}
+
+/* Chats page cards: one-line name that never runs under the buttons,
+   and a smaller member stack */
+main.layout-modern.layout-modern .chats .chat {
+	position: relative;
+}
+main.layout-modern.layout-modern .chats .chat-heading {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+	min-width: 0;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding-right: 7em;
+}
+main.layout-modern.layout-modern .chats .chat-heading h1 {
+	font-size: 1.25em;
+	margin: 0;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+main.layout-modern.layout-modern .chats .member-stack .member-pfp {
+	font-size: 0.7em;
+}
+main.layout-modern.layout-modern .chats .member-count {
+	font-size: 0.9em;
+	opacity: 0.8;
 }
