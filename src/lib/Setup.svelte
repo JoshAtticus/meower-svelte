@@ -274,17 +274,13 @@
 							screen.set("main");
 						}}>Skip</button
 					>
-					<p class="small">
-						(Several features will be unavailable while not logged
-						in.)
-					</p>
 				{:else}
 					<p class="small">
 						(You need to be logged in for this page.)
 					</p>
 				{/if}
 				<div>
-					<p class="small">Meower Svelte v{version}</p>
+					<p class="small">Meower v{version}</p>
 					<img src={meowy} alt="" height="64" />
 				</div>
 			</div>
@@ -455,6 +451,35 @@
 				<div class="buttons">
 					<button on:click={() => page.set("logo")}>Go back!</button>
 				</div>
+			</div>
+		</div>
+	{/if}
+	</div>
+	{#if $modernLayout && !$mobile}
+		<div class="setup-right" aria-hidden="true">
+			<div class="setup-art">
+				<svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg" class="setup-svg">
+					<circle cx="210" cy="210" r="175" fill="var(--orange)" opacity="0.12" />
+					<circle cx="210" cy="210" r="125" fill="var(--orange)" opacity="0.16" />
+					<!-- Floating post cards -->
+					<rect x="44" y="64" width="230" height="72" rx="16" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
+					<rect x="60" y="80" width="38" height="38" rx="12" fill="var(--orange)" opacity="0.85" />
+					<rect x="110" y="84" width="90" height="10" rx="5" fill="var(--foreground)" opacity="0.85" />
+					<rect x="110" y="102" width="142" height="8" rx="4" fill="var(--foreground)" opacity="0.35" />
+
+					<rect x="146" y="168" width="236" height="84" rx="16" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
+					<rect x="162" y="184" width="38" height="38" rx="12" fill="var(--orange)" />
+					<rect x="212" y="188" width="106" height="10" rx="5" fill="var(--foreground)" opacity="0.85" />
+					<rect x="212" y="206" width="150" height="8" rx="4" fill="var(--foreground)" opacity="0.35" />
+					<rect x="212" y="224" width="54" height="18" rx="9" fill="var(--orange)" opacity="0.25" />
+					<rect x="274" y="224" width="44" height="18" rx="9" fill="var(--orange)" />
+
+					<rect x="64" y="284" width="220" height="68" rx="16" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
+					<rect x="80" y="300" width="36" height="36" rx="11" fill="var(--orange)" opacity="0.7" />
+					<rect x="128" y="304" width="84" height="10" rx="5" fill="var(--foreground)" opacity="0.85" />
+					<rect x="128" y="322" width="132" height="8" rx="4" fill="var(--foreground)" opacity="0.35" />
+				</svg>
+				<img class="setup-meowy" src={meowy} alt="" />
 			</div>
 		</div>
 	{/if}
