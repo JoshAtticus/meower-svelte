@@ -123,9 +123,7 @@
 				)));
 
 	$: canShare =
-		!isGroupPost ||
-		($chat.allow_sharing !== false &&
-			hasChatPerm($chat, $user.name, "share_posts"));
+		!isGroupPost || hasChatPerm($chat, $user.name, "share_posts");
 
 	$: canDelete =
 		post.user === $user.name

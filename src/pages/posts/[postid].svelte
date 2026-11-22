@@ -157,7 +157,7 @@
 				This chat doesn't share the surrounding messages.
 			</p>
 		{/if}
-		{#if hasNewer}
+		{#if hasNewer && post.post_origin === "home"}
 			<button
 				class="context-jump"
 				disabled={loadingNewer}
@@ -192,7 +192,7 @@
 		{#each after as p (p.id)}
 			<Post post={p} />
 		{/each}
-		{#if hasOlder}
+		{#if hasOlder && post.post_origin === "home"}
 			<button
 				class="context-jump"
 				disabled={loadingOlder}

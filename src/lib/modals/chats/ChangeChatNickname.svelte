@@ -673,8 +673,13 @@
 							}
 						}}
 					/>
-					Allow Sharing Messages
+					Allow Sharing with Non-Members
 				</label>
+				<p class="sharing-hint">
+					Anyone with a share link can read messages in this
+					chat, even if they aren't a member. This setting
+					doesn't affect chat members.
+				</p>
 				{#if $chat.allow_sharing !== false}
 					<label class="announce-row">
 						<input
@@ -695,6 +700,10 @@
 						/>
 						Also Share Message Context
 					</label>
+					<p class="sharing-hint">
+						When this is enabled, anyone with a share link
+						can see the surrounding messages.
+					</p>
 				{/if}
 			</div>
 			{/if}
@@ -1163,6 +1172,11 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
+	}
+	.sharing-hint {
+		font-size: 0.75em;
+		opacity: 0.7;
+		margin: -0.25em 0 0.25em 1.75em;
 	}
 
 	.chat-id-row {
