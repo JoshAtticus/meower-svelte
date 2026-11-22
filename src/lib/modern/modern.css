@@ -663,6 +663,8 @@ main.layout-modern.layout-modern .setup.setup-modern input[type="password"]:focu
 }
 main.layout-modern.layout-modern .setup.setup-modern button {
 	border-radius: 999px;
+	max-width: 100%;
+	box-sizing: border-box;
 }
 main.layout-modern.layout-modern .setup.setup-modern button:not(.grey) {
 	background: var(--orange);
