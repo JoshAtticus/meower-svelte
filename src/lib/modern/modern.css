@@ -585,3 +585,54 @@ main.layout-modern.layout-modern .chats .member-count {
 	font-size: 0.9em;
 	opacity: 0.8;
 }
+
+/* Login / Signup / Welcome (Setup.svelte) & OOBE */
+main.layout-modern.layout-modern .setup {
+	background: var(--background) !important;
+	color: var(--foreground) !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1.25em;
+	box-sizing: border-box;
+}
+main.layout-modern.layout-modern .setup .fullcenter {
+	background: var(--surface);
+	border: 1px solid var(--hairline);
+	border-radius: 20px;
+	padding: 2em 1.75em;
+	max-width: 440px;
+	width: 100%;
+	height: auto;
+	box-sizing: border-box;
+	box-shadow: var(--card-shadow);
+}
+main.layout-modern.layout-modern .setup .setup-logo {
+	filter: none;
+}
+main.layout-modern.layout-modern .setup input[type="text"],
+main.layout-modern.layout-modern .setup input[type="password"] {
+	background: var(--surface-2);
+	color: var(--foreground);
+	border: 1px solid var(--hairline);
+	border-radius: 12px;
+	padding: 0.65em 0.9em;
+}
+main.layout-modern.layout-modern .setup input[type="text"]:focus,
+main.layout-modern.layout-modern .setup input[type="password"]:focus {
+	border-color: var(--orange);
+	outline: none;
+}
+main.layout-modern.layout-modern .setup button {
+	border-radius: 999px;
+}
+main.layout-modern.layout-modern .setup button:not(.grey) {
+	background: var(--orange);
+	color: var(--foreground-orange);
+	border-color: transparent;
+}
+main.layout-modern.layout-modern .setup button.grey {
+	background: var(--surface-2);
+	color: var(--foreground);
+	border: 1px solid var(--hairline);
+}
