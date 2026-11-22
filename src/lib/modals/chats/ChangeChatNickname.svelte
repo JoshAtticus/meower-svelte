@@ -679,7 +679,7 @@
 					<label class="announce-row">
 						<input
 							type="checkbox"
-							checked={$chat.share_context !== false}
+							checked={$chat.share_context === true}
 							on:change={async e => {
 								try {
 									await patchChat({
