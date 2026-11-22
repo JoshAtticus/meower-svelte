@@ -149,6 +149,9 @@
 	<div class="padding" />
 	<button
 		class="toggle-popup round"
+		style:border-color={$user.avatar_color && $user.avatar_color !== "000000"
+			? `#${$user.avatar_color}`
+			: null}
 		on:click={() => {
 			if (popupDebounce) return;
 			popupShown = !popupShown;
@@ -360,8 +363,8 @@
 	button.toggle-popup {
 		padding: 0.1em;
 		background-color: var(--pfp-bg) !important;
-		border: solid 1.5px var(--pfp-outline);
-		border-bottom-width: 5px;
+		/* same even outline as profile pictures, in your profile colour */
+		border: solid 2.5px var(--pfp-outline);
 		overflow: hidden;
 	}
 

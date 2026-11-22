@@ -107,8 +107,8 @@
 		box-sizing: border-box;
 
 		background-color: var(--pfp-bg);
-		border: solid 1.5px var(--pfp-outline);
-		border-bottom-width: 5px;
+		/* an even outline (no bottom lip) so photos look right too */
+		border: solid 2.5px var(--pfp-outline);
 		border-radius: calc(var(--size) * 1.25em);
 
 		display: flex;

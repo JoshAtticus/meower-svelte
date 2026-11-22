@@ -45,8 +45,7 @@
 		flex-shrink: 0;
 
 		background-color: var(--pfp-bg);
-		border: solid 1.5px var(--pfp-outline);
-		border-bottom-width: 4px;
+		border: solid 2.5px var(--pfp-outline);
 		border-radius: calc(var(--size) * 0.9em);
 
 		overflow: hidden;
