@@ -597,8 +597,9 @@ main.layout-modern.layout-modern .setup.setup-modern {
 	overflow-y: auto;
 }
 main.layout-modern.layout-modern .setup.setup-modern .setup-left {
-	flex: 1 1 460px;
+	flex: 1 1 420px;
 	max-width: 520px;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -663,7 +664,8 @@ main.layout-modern.layout-modern .setup.setup-modern input[type="password"]:focu
 }
 main.layout-modern.layout-modern .setup.setup-modern button {
 	border-radius: 999px;
-	max-width: 100%;
+	width: 100%;
+	max-width: 360px;
 	box-sizing: border-box;
 }
 main.layout-modern.layout-modern .setup.setup-modern button:not(.grey) {
