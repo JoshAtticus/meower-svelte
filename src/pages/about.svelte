@@ -111,6 +111,13 @@
 			<img class="inline-meowy" src={meowy} height="24" alt="Meowy" /> Original
 			creator of Meowy
 		</Contributor>
+		<Contributor
+			username="JoshAtticus"
+			url="https://github.com/JoshAtticus"
+			pfp="https://github.com/JoshAtticus.png"
+		>
+			Creator of the multicolour Meowys, originally made for BetterMeower
+		</Contributor>
 	</div>
 </Container>
 <Container>
