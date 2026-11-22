@@ -8,6 +8,20 @@ import routify from "@roxi/routify/plugins/rollup.js";
 // https://vitejs.dev/config/
 export default defineConfig(({command}) => ({
 	plugins: [
+		// /meo -> /meo/, so meo's relative asset paths resolve under /meo/
+		{
+			name: "meo-trailing-slash",
+			configureServer(server) {
+				server.middlewares.use((req, res, next) => {
+					if (req.url === "/meo" || req.url.startsWith("/meo?")) {
+						res.writeHead(301, {Location: "/meo/" + req.url.slice(4)});
+						res.end();
+						return;
+					}
+					next();
+				});
+			},
+		},
 		routify({singleBuild: command === "build"}),
 		svelte(),
 		/*
@@ -40,7 +54,7 @@ export default defineConfig(({command}) => ({
 				rewrite: path => path.replace(/^\/cloudlink/, ""),
 			},
 			// meo, served from its own local static server
-			"/meo": {
+			"^/meo/": {
 				target: "http://127.0.0.1:8090",
 				changeOrigin: true,
 				rewrite: path => path.replace(/^\/meo/, "") || "/",
