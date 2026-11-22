@@ -587,55 +587,89 @@ main.layout-modern.layout-modern .chats .member-count {
 }
 
 /* Login / Signup / Welcome (Setup.svelte) & OOBE */
-main.layout-modern.layout-modern .setup {
+main.layout-modern.layout-modern .setup.setup-modern {
 	background: var(--background) !important;
 	color: var(--foreground) !important;
 	display: flex;
+	align-items: stretch;
+	justify-content: center;
+	padding: 0;
+	overflow-y: auto;
+}
+main.layout-modern.layout-modern .setup.setup-modern .setup-left {
+	flex: 1 1 460px;
+	max-width: 520px;
+	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 1.25em;
+	padding: 2em 1.75em;
 	box-sizing: border-box;
 }
-main.layout-modern.layout-modern .setup .fullcenter {
-	position: static;
-	transform: none;
-	background: var(--surface);
-	border: 1px solid var(--hairline);
-	border-radius: 20px;
-	padding: 2em 1.75em;
-	max-width: 440px;
+main.layout-modern.layout-modern .setup.setup-modern .fullcenter {
+	display: block;
 	width: 100%;
 	height: auto;
-	max-height: 100%;
-	overflow-y: auto;
-	box-sizing: border-box;
-	box-shadow: var(--card-shadow);
+	margin: 0;
+	padding: 0;
+	overflow: visible;
 }
-main.layout-modern.layout-modern .setup .setup-logo {
+main.layout-modern.layout-modern .setup.setup-modern .setup-right {
+	flex: 1 1 420px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: var(--surface);
+	border-left: 1px solid var(--hairline);
+	padding: 2em;
+	box-sizing: border-box;
+}
+main.layout-modern.layout-modern .setup.setup-modern .setup-art {
+	position: relative;
+	width: min(420px, 100%);
+	aspect-ratio: 1;
+}
+main.layout-modern.layout-modern .setup.setup-modern .setup-svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+main.layout-modern.layout-modern .setup.setup-modern .setup-meowy {
+	position: absolute;
+	right: 14px;
+	bottom: 14px;
+	width: 84px;
+	height: auto;
+	filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.22));
+}
+main.layout-modern.layout-modern .setup.setup-modern-mobile .setup-left {
+	max-width: none;
+	padding: 1.5em 1.25em;
+}
+main.layout-modern.layout-modern .setup.setup-modern .setup-logo {
 	filter: none;
 }
-main.layout-modern.layout-modern .setup input[type="text"],
-main.layout-modern.layout-modern .setup input[type="password"] {
+main.layout-modern.layout-modern .setup.setup-modern input[type="text"],
+main.layout-modern.layout-modern .setup.setup-modern input[type="password"] {
 	background: var(--surface-2);
 	color: var(--foreground);
 	border: 1px solid var(--hairline);
 	border-radius: 12px;
 	padding: 0.65em 0.9em;
 }
-main.layout-modern.layout-modern .setup input[type="text"]:focus,
-main.layout-modern.layout-modern .setup input[type="password"]:focus {
+main.layout-modern.layout-modern .setup.setup-modern input[type="text"]:focus,
+main.layout-modern.layout-modern .setup.setup-modern input[type="password"]:focus {
 	border-color: var(--orange);
 	outline: none;
 }
-main.layout-modern.layout-modern .setup button {
+main.layout-modern.layout-modern .setup.setup-modern button {
 	border-radius: 999px;
 }
-main.layout-modern.layout-modern .setup button:not(.grey) {
+main.layout-modern.layout-modern .setup.setup-modern button:not(.grey) {
 	background: var(--orange);
 	color: var(--foreground-orange);
 	border-color: transparent;
 }
-main.layout-modern.layout-modern .setup button.grey {
+main.layout-modern.layout-modern .setup.setup-modern button.grey {
 	background: var(--surface-2);
 	color: var(--foreground);
 	border: 1px solid var(--hairline);

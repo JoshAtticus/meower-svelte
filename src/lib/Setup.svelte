@@ -5,6 +5,8 @@
 	import AccountCreationBlockedModal from "./modals/safety/AccountCreationBlocked.svelte";
 
 	import {screen, setupPage as page, OOBERunning, user} from "./stores.js";
+	import {modernLayout} from "./modernLayout.js";
+	import {mobile} from "./responsiveness.js";
 	import unloadedProfile from "./unloadedprofile.js";
 	import * as clm from "./clmanager.js";
 	import TwoFactorModal from "./modals/TwoFactor.svelte";
@@ -208,7 +210,14 @@
 	}
 </script>
 
-<div bind:this={setup} out:fade={{duration: 500}} class="setup white">
+<div
+	bind:this={setup}
+	out:fade={{duration: 500}}
+	class="setup white"
+	class:setup-modern={$modernLayout}
+	class:setup-modern-mobile={$modernLayout && $mobile}
+>
+	<div class="setup-left">
 	{#if $page === "logo"}
 		<div out:fade={{duration: 300}} class="fullcenter">
 			<div>
