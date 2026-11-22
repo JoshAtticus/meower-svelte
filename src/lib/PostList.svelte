@@ -819,6 +819,10 @@
 		content: attr(data-placeholder);
 		opacity: 0.5;
 		pointer-events: none;
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.composer-input:global(.disabled) {
 		opacity: 0.6;

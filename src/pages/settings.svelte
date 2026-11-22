@@ -13,6 +13,7 @@
 	import DeleteAccountModal from "../lib/modals/settings/DeleteAccount.svelte";
 
 	import {user, authHeader} from "../lib/stores.js";
+	import {localLayout} from "../lib/layoutPref.js";
 	import {apiUrl} from "../lib/urls.js";
 	import * as clm from "../lib/clmanager.js";
 	import * as modals from "../lib/modals.js";
@@ -33,6 +34,23 @@
 			];
 	let tab = "appearance";
 	$: if (!tabs.some(([key]) => key === tab)) tab = "appearance";
+
+	// the layout this device shows: its own choice, or the account's
+	$: layoutNow = $localLayout || $user.layout;
+	function setLayout(value) {
+		if (layoutNow === value) return;
+		if ($localLayout) localLayout.set(value);
+		else clm.updateProfile({layout: value});
+	}
+	function setLayoutSync(sync) {
+		if (sync) {
+			const value = layoutNow;
+			localLayout.set(null);
+			if ($user.layout !== value) clm.updateProfile({layout: value});
+		} else {
+			localLayout.set(layoutNow);
+		}
+	}
 
 	$: themeLabel = $user.theme.startsWith("custom:")
 		? "Custom theme"
@@ -141,16 +159,14 @@
 			</div>
 			<div class="row">
 				<div class="row-text">
-					<h3>Layout</h3>
+					<h3>Sidebar Layout</h3>
 				</div>
 				<div class="seg">
-					{#each [["new", "New"], ["old", "Old"]] as [value, label]}
+					{#each [["new", "Side"], ["old", "Bottom"]] as [value, label]}
 						<button
 							type="button"
-							class:selected={$user.layout === value}
-							on:click={() =>
-								$user.layout !== value &&
-								clm.updateProfile({layout: value})}>{label}</button
+							class:selected={layoutNow === value}
+							on:click={() => setLayout(value)}>{label}</button
 						>
 					{/each}
 				</div>
@@ -158,16 +174,13 @@
 			{#if $user.name}
 				<label class="row">
 					<div class="row-text">
-						<h3>Profile Theme</h3>
-						<span class="row-sub"
-							>Use your profile colour across the whole app</span
-						>
+						<h3>Sync Layout Between Devices</h3>
+						<span class="row-sub">Use the same sidebar layout everywhere you're logged in</span>
 					</div>
 					<input
 						type="checkbox"
-						bind:checked={$user.profile_theme}
-						on:change={() =>
-							clm.updateProfile({profile_theme: $user.profile_theme})}
+						checked={!$localLayout}
+						on:change={e => setLayoutSync(e.target.checked)}
 					/>
 				</label>
 			{/if}

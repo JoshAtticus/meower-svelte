@@ -107,7 +107,7 @@
 					on:click={() => {
 						selection -= 1;
 						changeTheme();
-					}}>{"<"}</button
+					}} aria-label="Previous theme"><svg class="theme-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button
 				>
 				<div class="theme-middle">
 					{#if theme === "custom"}
@@ -130,7 +130,7 @@
 					on:click={() => {
 						selection += 1;
 						changeTheme();
-					}}>{">"}</button
+					}} aria-label="Next theme"><svg class="theme-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button
 				>
 			</div>
 			{#if error}
@@ -138,7 +138,20 @@
 					Your previous theme was invalid, so it was reset to orange.
 				</p>
 			{/if}
-			<p class="layout-text">(Change the layout in the settings.)</p>
+			{#if $user.name}
+				<label class="profile-theme-row">
+					<span>
+						<b>Profile Theme</b><br />
+						<span class="profile-theme-sub">Use your profile colour across the whole app</span>
+					</span>
+					<input
+						type="checkbox"
+						bind:checked={$user.profile_theme}
+						on:change={() =>
+							clm.updateProfile({profile_theme: $user.profile_theme})}
+					/>
+				</label>
+			{/if}
 			<div class="modal-buttons">
 				<button on:click={modals.closeLastModal}>Close</button>
 				<button
@@ -162,7 +175,7 @@
 			on:click={() => {
 				selection -= 1;
 				changeTheme();
-			}}>{"<"}</button
+			}} aria-label="Previous theme"><svg class="theme-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6" /></svg></button
 		>
 		<div class="theme-middle">
 			{#if theme === "custom"}
@@ -185,7 +198,7 @@
 			on:click={() => {
 				selection += 1;
 				changeTheme();
-			}}>{">"}</button
+			}} aria-label="Next theme"><svg class="theme-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18l6-6-6-6" /></svg></button
 		>
 	</div>
 	{#if error}
@@ -196,6 +209,22 @@
 {/if}
 
 <style>
+	.profile-theme-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1em;
+		margin: 0.75em 0;
+		cursor: pointer;
+	}
+	.profile-theme-sub {
+		font-size: 0.85em;
+		opacity: 0.7;
+	}
+	.profile-theme-row input {
+		flex-shrink: 0;
+		margin: 0;
+	}
 	.theme-select {
 		margin-top: 1rem;
 		display: flex;
@@ -227,5 +256,34 @@
 		text-align: center;
 		margin: 0.75em 0;
 		font-size: 80%;
+	}
+	/* keep the picker inside narrow screens */
+	.theme-select {
+		gap: 0.5em;
+	}
+	.theme-select > button {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.6em;
+	}
+	.theme-arrow {
+		width: 1.2em;
+		height: 1.2em;
+	}
+	.theme-middle {
+		flex: 1;
+		min-width: 0;
+	}
+	.theme-preview {
+		display: block;
+		max-width: 100%;
+		max-height: 11em;
+		height: auto;
+		margin: 0 auto;
+	}
+	.theme-name {
+		font-size: clamp(1.4rem, 6vw, 3rem);
 	}
 </style>

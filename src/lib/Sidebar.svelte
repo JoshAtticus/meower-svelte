@@ -475,4 +475,12 @@
 		background-color: var(--orange);
 		opacity: 0.6;
 	}
+	/* bottom layout: the profile menu opens upwards */
+	:global(main.layout-old:not(.layout-mobile)) .popup:not(.sheet) {
+		top: auto;
+		bottom: 100%;
+		border-radius: 0.5em 0 0 0;
+		padding-top: 0.5em;
+		padding-bottom: 0.25em;
+	}
 </style>

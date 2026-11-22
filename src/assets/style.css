@@ -123,9 +123,6 @@ textarea {
 	min-width: 5em;
 }
 
-button + button {
-	margin-left: -0.15rem;
-}
 
 input:not(.white)::placeholder {
 	color: var(--foreground-orange);

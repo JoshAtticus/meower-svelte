@@ -17,6 +17,7 @@
 		customTheme,
 	} from "../lib/stores.js";
 	import {mobile, touch} from "../lib/responsiveness.js";
+	import {localLayout} from "../lib/layoutPref.js";
 	import * as BGM from "../lib/BGM.js";
 	import {retryReconnectNow} from "../lib/clmanager.js";
 
@@ -79,7 +80,7 @@
 	class:theme-blue={$user.theme === "blue"}
 	class:mode-light={!($user.mode === false)}
 	class:mode-dark={$user.mode === false}
-	class:layout-old={$user.layout === "old"}
+	class:layout-old={($localLayout || $user.layout) === "old"}
 	class:layout-mobile={$mobile}
 	class:input-touch={$touch}
 	class:input-hover={!$touch}
@@ -358,8 +359,13 @@
 		text-align: center;
 	}
 
+	/* bottom layout: the bar sits below the page */
 	:global(main.layout-old) .main-screen {
-		flex-direction: column;
+		flex-direction: column-reverse;
+	}
+	:global(main.layout-old) .transition {
+		top: auto;
+		bottom: 0;
 	}
 	:global(main.layout-old) .sidebar {
 		width: auto;

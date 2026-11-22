@@ -1022,7 +1022,7 @@
 		display: flex;
 		align-items: flex-start;
 		gap: 0.4em;
-		margin-bottom: 0.4em;
+		margin: 0.6em 0 0.4em;
 	}
 	.edit-input {
 		flex-grow: 1;
