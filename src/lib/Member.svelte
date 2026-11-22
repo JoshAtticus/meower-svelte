@@ -21,18 +21,23 @@
 	/**
 	 * Initialize this post's user profile - gets profile info from the cache or fetches it.
 	 */
-	async function initPostUser() {
+	async function initPostUser(name) {
+		error = null;
 		try {
-			const profile = await loadProfile(member);
+			const profile = await loadProfile(name);
+			// ignore late answers for a member this row no longer shows
+			if (name !== member) return;
 			pfp = profile.pfp_data;
 			avatar = profile.avatar;
 			avatarColor = profile.avatar_color;
 		} catch (e) {
+			if (name !== member) return;
 			error = e;
 			pfp = -2;
 		}
 	}
-	onMount(initPostUser);
+	// reload whenever the row is reused for a different member
+	$: initPostUser(member);
 </script>
 
 {#if !error}
