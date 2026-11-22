@@ -23,7 +23,6 @@
 	import BasicModal from "./modals/Basic.svelte";
 	import AccountBannedModal from "./modals/safety/AccountBanned.svelte";
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
-	import SendFiles from "./modals/SendFiles.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
 	import ServerPostGroup from "./ServerPostGroup.svelte";
 	import emojiIcon from "../assets/emoji.svg";
@@ -104,7 +103,100 @@
 	}
 
 	// Elements
-	let postInput, submitBtn;
+	let postInput, submitBtn, fileInput;
+
+	// Instant image attachments: uploaded as soon as they are picked,
+	// pasted or dropped into the composer
+	let pendingAttachments = [];
+	let attachmentId = 0;
+	let attachError = "";
+	$: uploadsInProgress = pendingAttachments.some(
+		attachment => !attachment.id && !attachment.error
+	);
+
+	function attachmentsAllowed() {
+		return !textOnly && !userRestricted && !recipientBlocked;
+	}
+
+	function addAttachments(files) {
+		if (!attachmentsAllowed()) return;
+		for (const file of files) {
+			if (pendingAttachments.length >= 10) {
+				attachError = "You can only attach up to 10 files.";
+				break;
+			}
+			if (
+				!file.type.startsWith("image/") &&
+				!file.type.startsWith("video/")
+			) {
+				attachError = "Only images and videos can be attached.";
+				continue;
+			}
+			if (file.size > 25 << 20) {
+				attachError = `${file.name} is too large! Files must be 25 MiB or smaller.`;
+				continue;
+			}
+			const attachment = {
+				key: ++attachmentId,
+				file,
+				isVideo: file.type.startsWith("video/"),
+				url: URL.createObjectURL(file),
+				progress: 0,
+				id: null,
+				error: null,
+				xhr: null,
+			};
+			pendingAttachments = [...pendingAttachments, attachment];
+			startUpload(attachment);
+		}
+	}
+
+	function startUpload(attachment) {
+		attachment.error = null;
+		attachment.progress = 0;
+		const xhr = new XMLHttpRequest();
+		attachment.xhr = xhr;
+		xhr.open("POST", `${uploadsUrl}attachments`);
+		xhr.setRequestHeader("Authorization", $authHeader.token);
+		xhr.upload.onprogress = ev => {
+			if (ev.total) {
+				attachment.progress = ev.loaded / ev.total;
+				pendingAttachments = pendingAttachments;
+			}
+		};
+		xhr.onload = () => {
+			attachment.progress = 1;
+			try {
+				const resp = JSON.parse(xhr.response);
+				if (xhr.status >= 200 && xhr.status < 300 && resp.id) {
+					attachment.id = resp.id;
+				} else {
+					attachment.error = true;
+				}
+			} catch (e) {
+				attachment.error = true;
+			}
+			pendingAttachments = pendingAttachments;
+		};
+		xhr.onerror = () => {
+			attachment.error = true;
+			pendingAttachments = pendingAttachments;
+		};
+		xhr.onabort = () => {
+			attachment.error = true;
+		};
+		const formData = new FormData();
+		formData.append("file", attachment.file);
+		xhr.send(formData);
+	}
+
+	function removeAttachment(attachment) {
+		if (attachment.xhr) attachment.xhr.abort();
+		URL.revokeObjectURL(attachment.url);
+		pendingAttachments = pendingAttachments.filter(
+			other => other.key !== attachment.key
+		);
+	}
 
 	let pendingReplies = [];
 	let showEmojiPopup = false;
@@ -263,7 +355,7 @@
 		};
 	}
 
-	function sendPost(content, stickers = [], replyTo = []) {
+	function sendPost(content, stickers = [], replyTo = [], attachments = []) {
 		/**
 		 * @type {import('src/lib/types.js').ListPost}
 		 */
@@ -273,7 +365,7 @@
 			post_origin: postOrigin,
 			user: $user.name,
 			content,
-			attachments: [],
+			attachments,
 			stickers,
 			reply_to: replyTo,
 			date: Math.floor(new Date().getTime() / 1000),
@@ -299,6 +391,9 @@
 							nonce: pendingPost.nonce,
 							stickers,
 							reply_to: replyTo,
+							attachments: attachments.map(
+								attachment => attachment.id
+							),
 						}),
 					}
 				);
@@ -312,6 +407,13 @@
 			} catch (e) {
 				reject(e);
 			}
+		});
+		postProm.then(() => {
+			// clear the tray entries that went into this post
+			const sent = new Set(attachments.map(attachment => attachment.id));
+			pendingAttachments = pendingAttachments.filter(
+				attachment => !sent.has(attachment.id)
+			);
 		});
 		postProm.catch(e => {
 			postErrors[pendingPost.id] = e;
@@ -487,14 +589,32 @@
 				{/each}
 			</div>
 		{/if}
-		<div class="composer">
+		<div
+			class="composer"
+			on:dragover|preventDefault={() => {}}
+			on:drop|preventDefault={e => addAttachments(e.dataTransfer.files)}
+		>
+		<input
+			type="file"
+			accept="image/*,video/*"
+			multiple
+			hidden
+			bind:this={fileInput}
+			on:change={e => {
+				addAttachments(e.target.files);
+				e.target.value = "";
+			}}
+		/>
 		<form
 				class="createpost"
 				autocomplete="off"
 				on:submit|preventDefault={/** @type {SubmitEvent} */ e => {
 					const input = postInput;
 					const content = postInput.value.trim();
-					if (!content) {
+					const sentAttachments = pendingAttachments.filter(
+						attachment => attachment.id
+					);
+					if (!content && !sentAttachments.length) {
 						return;
 					}
 	
@@ -536,7 +656,13 @@
 						sendPost(
 							content,
 							[],
-							pendingReplies.map(r => r.post_id)
+							pendingReplies.map(r => r.post_id),
+							sentAttachments.map(attachment => ({
+								id: attachment.id,
+								mime: attachment.file.type,
+								filename: attachment.file.name,
+								size: attachment.file.size,
+							}))
 						);
 						pendingReplies = [];
 					}
@@ -544,6 +670,75 @@
 					input.value = "";
 				}}
 			>
+				{#if pendingAttachments.length}
+					<div class="attach-tray">
+						{#each pendingAttachments as attachment (attachment.key)}
+							<div
+								class="attach-item"
+								class:uploading={!attachment.id && !attachment.error}
+								class:failed={attachment.error}
+							>
+								{#if attachment.isVideo}
+									<video
+										src={attachment.url}
+										muted
+										preload="metadata"
+									/>
+									<span class="attach-play" aria-hidden="true"
+										><svg
+											viewBox="0 0 24 24"
+											width="18"
+											height="18"
+											fill="currentColor"
+											><path d="M8 5v14l11-7z" /></svg
+										></span
+									>
+								{:else}
+									<img
+										src={attachment.url}
+										alt={attachment.file.name}
+									/>
+								{/if}
+								{#if !attachment.id && !attachment.error}
+									<span
+										class="attach-progress"
+										style:--p={attachment.progress}
+									/>
+								{:else if attachment.error}
+									<button
+										class="attach-retry"
+										title="Retry upload"
+										aria-label="Retry upload"
+										on:click|preventDefault={() =>
+											startUpload(attachment)}
+										>Retry</button
+									>
+								{/if}
+								<button
+									class="attach-remove"
+									title="Remove attachment"
+									aria-label="Remove attachment"
+									on:click|preventDefault={() =>
+										removeAttachment(attachment)}
+									><svg
+										viewBox="0 0 24 24"
+										width="12"
+										height="12"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="3"
+										stroke-linecap="round"
+										aria-hidden="true"
+										><path d="M5 5l14 14M19 5L5 19" /></svg
+									></button
+								>
+							</div>
+						{/each}
+					</div>
+				{/if}
+				{#if attachError}
+					<p class="attach-error">{attachError}</p>
+				{/if}
 				{#if $modernLayout}
 					<span class="composer-pfp mpfp">
 						<PFP
@@ -569,6 +764,7 @@
 					use:richInput={{
 						uploadsUrl,
 						disabled: userRestricted || recipientBlocked,
+						onFiles: files => addAttachments(files),
 					}}
 					on:input={() => {
 						if ($lastTyped + 2000 < +new Date()) {
@@ -615,11 +811,9 @@
 					{#if !textOnly}
 						<button
 							class="send-files"
-							title="Send files"
-							on:click|preventDefault={() => {
-								modals.closeAllModals();
-								modals.showModal(SendFiles, {postOrigin});
-							}}>+</button
+							title="Attach images"
+							on:click|preventDefault={() => fileInput.click()}
+							>+</button
 						>
 					{/if}
 					<button
@@ -639,7 +833,9 @@
 					<button
 						bind:this={submitBtn}
 						name="submit"
-						disabled={!postInput}>Post</button
+						disabled={!postInput || uploadsInProgress}
+						title={uploadsInProgress ? "Waiting for uploads…" : ""}
+						>Post</button
 					>
 				{/if}
 			</form>
@@ -815,6 +1011,7 @@
 	.createpost {
 		top: 0;
 		display: flex;
+		flex-wrap: wrap;
 		align-items: stretch;
 		margin-bottom: 0.5em;
 		gap: 0.25em;
@@ -1055,5 +1252,125 @@
 	}
 	:global(main.layout-modern) .createpost button[name="submit"]:disabled {
 		opacity: 0.5;
+	}
+
+	/* Attachment tray (instant image uploads) */
+	.attach-tray {
+		flex: 0 0 100%;
+		display: flex;
+		gap: 0.5em;
+		overflow-x: auto;
+		padding: 0.25em 0.5em;
+		scrollbar-width: thin;
+	}
+	.attach-item {
+		position: relative;
+		flex: 0 0 auto;
+		width: 64px;
+		height: 64px;
+		border-radius: 8px;
+		border: solid 2px var(--orange);
+		overflow: visible;
+	}
+	.attach-item img,
+	.attach-item video {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 6px;
+		display: block;
+	}
+	.attach-play {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: white;
+		text-shadow: 0 0 4px rgba(0, 0, 0, 0.7);
+		pointer-events: none;
+	}
+	.attach-item.uploading img,
+	.attach-item.uploading video {
+		opacity: 0.55;
+	}
+	.attach-progress {
+		position: absolute;
+		inset: -2px;
+		border-radius: 50%;
+		background: conic-gradient(
+			var(--orange) calc(var(--p) * 1turn),
+			transparent 0
+		);
+		-webkit-mask: radial-gradient(
+			farthest-side,
+			transparent calc(100% - 5px),
+			#000 calc(100% - 4px)
+		);
+		mask: radial-gradient(
+			farthest-side,
+			transparent calc(100% - 5px),
+			#000 calc(100% - 4px)
+		);
+		pointer-events: none;
+	}
+	.attach-item.failed img,
+	.attach-item.failed video {
+		opacity: 0.35;
+	}
+	.attach-retry {
+		position: absolute;
+		inset: 0;
+		margin: auto;
+		height: fit-content;
+		width: fit-content;
+		font-size: 0.6em;
+		padding: 0.3em 0.5em;
+		border: none;
+		border-radius: 1em;
+		background-color: var(--orange);
+		color: var(--foreground-orange);
+		cursor: pointer;
+	}
+	.attach-remove {
+		position: absolute;
+		top: -6px;
+		right: -6px;
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: none;
+		border-radius: 50%;
+		background-color: var(--orange);
+		color: var(--foreground-orange);
+		cursor: pointer;
+	}
+	.attach-error {
+		flex: 0 0 100%;
+		margin: 0.2em 0.5em;
+		font-size: 0.85em;
+		color: crimson;
+	}
+	:global(main.layout-modern) .attach-tray {
+		padding: 0.6em 0.85em 0;
+	}
+	:global(main.layout-modern) .attach-item {
+		border: solid 1px var(--hairline);
+		border-radius: 12px;
+		background-color: var(--surface-2);
+	}
+	:global(main.layout-modern) .attach-item img {
+		border-radius: 11px;
+	}
+	:global(main.layout-modern) .attach-remove {
+		background-color: var(--surface-2);
+		color: var(--foreground);
+		border: solid 1px var(--hairline);
+	}
+	:global(main.layout-modern) .attach-error {
+		margin: 0.3em 1em 0;
 	}
 </style>

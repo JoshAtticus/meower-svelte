@@ -9,7 +9,7 @@
  */
 const EMOJI_RE = /<:([a-zA-Z0-9]{24})>/g;
 
-export function richInput(node, {uploadsUrl, disabled = false} = {}) {
+export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} = {}) {
 	let lastRange = null;
 
 	function emojiImg(id) {
@@ -129,7 +129,13 @@ export function richInput(node, {uploadsUrl, disabled = false} = {}) {
 	};
 	const onPaste = e => {
 		e.preventDefault();
-		insert(e.clipboardData.getData("text/plain"));
+		if (onFiles && e.clipboardData?.files?.length) {
+			onFiles([...e.clipboardData.files]);
+		}
+		const text = e.clipboardData.getData("text/plain");
+		if (text || !(onFiles && e.clipboardData?.files?.length)) {
+			insert(text);
+		}
 	};
 	const rememberRange = () => {
 		const sel = window.getSelection();
@@ -147,6 +153,7 @@ export function richInput(node, {uploadsUrl, disabled = false} = {}) {
 		update(opts) {
 			uploadsUrl = opts.uploadsUrl;
 			node.disabled = !!opts.disabled;
+			if ("onFiles" in opts) onFiles = opts.onFiles;
 		},
 		destroy() {
 			node.removeEventListener("input", onInput);

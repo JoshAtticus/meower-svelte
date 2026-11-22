@@ -23,7 +23,13 @@
 			<img src={previewUrl} alt={filename} class="post-image" />
 		{:else if mime.startsWith("video/")}
 			<!-- svelte-ignore a11y-media-has-caption -->
-			<video src={previewUrl} controls class="post-image" />
+			<video
+				src={previewUrl}
+				controls
+				playsinline
+				preload="metadata"
+				class="post-image"
+			/>
 		{:else if mime.startsWith("audio/")}
 			<!-- svelte-ignore a11y-media-has-caption -->
 			<audio controls>
