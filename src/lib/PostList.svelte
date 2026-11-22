@@ -343,12 +343,17 @@
 							if (!(mine && existing.user_reacted === adding)) {
 								existing.count += adding ? 1 : -1;
 								if (mine) existing.user_reacted = adding;
+								existing.users = adding
+									? [username, ...(existing.users || [])
+										.filter(u => u !== username)].slice(0, 3)
+									: (existing.users || [])
+										.filter(u => u !== username);
 							}
 							reactions = reactions.filter(r => r.count > 0);
 						} else if (adding && !mine) {
-							reactions.push({emoji, count: 1, user_reacted: false});
+							reactions.push({emoji, count: 1, user_reacted: false, users: [username]});
 						} else if (adding && mine) {
-							reactions.push({emoji, count: 1, user_reacted: true});
+							reactions.push({emoji, count: 1, user_reacted: true, users: [username]});
 						}
 						items[index] = {...items[index], reactions};
 					}

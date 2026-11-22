@@ -400,6 +400,11 @@
 		post.user !== "Server" &&
 		(!isGroupPost || hasChatPerm($chat, $user.name, "add_reactions"));
 
+	// load profiles for the reaction avatar stacks
+	$: (post?.reactions || []).forEach(r =>
+		(r.users || []).forEach(u => u && loadProfile(u))
+	);
+
 	// joining a reaction someone else already added
 	$: canJoinReaction =
 		$user.name &&
@@ -428,8 +433,12 @@
 		if (existing) {
 			existing.count += adding ? 1 : -1;
 			existing.user_reacted = adding;
+			existing.users = adding
+				? [$user.name, ...(existing.users || [])
+					.filter(u => u !== $user.name)].slice(0, 3)
+				: (existing.users || []).filter(u => u !== $user.name);
 		} else {
-			reactions.push({emoji, count: 1, user_reacted: true});
+			reactions.push({emoji, count: 1, user_reacted: true, users: [$user.name]});
 		}
 		const previous = post.reactions;
 		post.reactions = reactions.filter(r => r.count > 0);
@@ -970,6 +979,25 @@
 								})}</span
 							>
 						{/if}
+						{#if reaction.users && reaction.users.length}
+							<span class="reaction-pfps">
+								{#each reaction.users.slice(0, 3) as reactor (reactor)}
+									{@const reactorProfile = $profileCache[reactor] || {}}
+									<span class="reaction-pfp">
+										<PFP
+											raw
+											icon={reactorProfile.error
+												? -2
+												: reactorProfile.pfp_data ?? -1}
+											avatar={reactorProfile.avatar}
+											avatarColor={reactorProfile.avatar_color}
+											alt="{reactor}'s profile picture"
+											size={0.4}
+										/>
+									</span>
+								{/each}
+							</span>
+						{/if}
 						<span class="reaction-count">{reaction.count}</span>
 					</button>
 				{/each}
@@ -1116,6 +1144,34 @@
 		display: inline-block;
 		vertical-align: middle;
 		object-fit: contain;
+	}
+	.reaction-pfps {
+		display: inline-flex;
+		align-items: center;
+	}
+	.reaction-pfp {
+		width: 1.4em;
+		height: 1.4em;
+		flex: 0 0 auto;
+		border-radius: 35%;
+		overflow: hidden;
+		/* white like other profile pictures, ringed in the chip colour */
+		background: var(--pfp-bg, #fff);
+		border: solid 2px var(--background);
+		box-sizing: border-box;
+	}
+	.reaction-pfp :global(span),
+	.reaction-pfp :global(img) {
+		width: 100% !important;
+		height: 100% !important;
+		display: block;
+		object-fit: cover;
+	}
+	.reaction-pfp + .reaction-pfp {
+		margin-left: -0.55em;
+	}
+	.reaction.mine .reaction-pfp {
+		border-color: var(--orange);
 	}
 	.reaction-count {
 		font-weight: bold;
