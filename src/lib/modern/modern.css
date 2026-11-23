@@ -573,8 +573,8 @@ main.layout-modern.layout-modern.layout-mobile #chat .modern-back svg {
 	display: block;
 }
 /* members + more buttons: small tonal ghost icons centred in the bar */
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-more,
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-members {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-more,
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-members {
 	position: absolute;
 	top: 50%;
 	transform: translateY(-50%);
@@ -586,14 +586,14 @@ main.layout-modern.layout-modern.layout-mobile #chat .mobile-members {
 	background-color: var(--surface-2) !important;
 	background-image: none !important;
 }
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-more {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-more {
 	right: 0.45em;
 }
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-members {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-members {
 	right: calc(0.45em + 40px);
 }
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-more::after,
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-more::after,
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-members::after {
 	content: "";
 	position: absolute;
 	inset: 0;
@@ -605,11 +605,11 @@ main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
 	-webkit-mask-position: center;
 	mask-position: center;
 }
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-more::after {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-more::after {
 	-webkit-mask-image: url("/src/assets/more.svg");
 	mask-image: url("/src/assets/more.svg");
 }
-main.layout-modern.layout-modern.layout-mobile #chat .mobile-members::after {
+main.layout-modern.layout-modern.layout-mobile #chat > .container .mobile-members::after {
 	-webkit-mask-image: url("/src/assets/members.svg");
 	mask-image: url("/src/assets/members.svg");
 }

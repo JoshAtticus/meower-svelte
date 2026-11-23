@@ -14,13 +14,32 @@
 	// Swipe down to dismiss (mobile sheets)
 	let dragStart = null;
 	let dragY = 0;
+	// true if the touch is inside something that can scroll vertically and is
+	// not at its top: pulling down there scrolls it, it must not dismiss
+	function insideScrolledArea(el) {
+		while (el && el !== modal.parentElement) {
+			if (el.scrollHeight > el.clientHeight + 1 && el.scrollTop > 0) {
+				const oy = getComputedStyle(el).overflowY;
+				if (oy === "auto" || oy === "scroll") return true;
+			}
+			el = el.parentElement;
+		}
+		return false;
+	}
 	function onTouchStart(e) {
-		if (!$mobile || modal.scrollTop > 0) return;
+		dragStart = null;
+		if (!$mobile || insideScrolledArea(e.target)) return;
 		dragStart = e.touches[0].clientY;
 		dragY = 0;
 	}
 	function onTouchMove(e) {
 		if (dragStart === null) return;
+		// content scrolled meanwhile (or the finger went back up): not a dismiss
+		if (insideScrolledArea(e.target)) {
+			dragStart = null;
+			dragY = 0;
+			return;
+		}
 		dragY = Math.max(0, e.touches[0].clientY - dragStart);
 	}
 	function onTouchEnd() {

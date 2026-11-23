@@ -69,7 +69,7 @@
 			>
 			<button
 				class:active={tab === "quote"}
-				on:click={() => (tab = "quote")}>Quote</button
+				on:click={() => (tab = "quote")}>Profile</button
 			>
 			<button
 				class:active={tab === "colour"}
@@ -133,28 +133,22 @@
 				{/each}
 			</div>
 		{:else if tab === "quote"}
+			<label class="field-label" for="ep-display-name">Display name</label>
 			<input
+				id="ep-display-name"
 				type="text"
-				class="modal-input white"
-				style="width: 100%; box-sizing: border-box;"
-				placeholder="Display name"
+				class="modal-input white field-input"
+				placeholder="Shown instead of your username"
 				maxlength="32"
 				disabled={isRestricted(userRestrictions.EDITING_PROFILE)}
 				bind:value={displayName}
 			/>
-			<div class="quote-controls">
-				<button
-					disabled={isRestricted(userRestrictions.EDITING_PROFILE) ||
-						displayName === ($user.display_name || "")}
-					on:click={() =>
-						clm.updateProfile({display_name: displayName})}
-					>Save display name</button
-				>
-			</div>
+			<label class="field-label" for="ep-quote">Quote</label>
 			<input
+				id="ep-quote"
 				type="text"
-				class="modal-input white"
-				style="font-style: italic; width: 100%; box-sizing: border-box;"
+				class="modal-input white field-input"
+				style="font-style: italic;"
 				placeholder="Write something..."
 				maxlength="360"
 				disabled={isRestricted(userRestrictions.EDITING_QUOTE)}
@@ -162,10 +156,24 @@
 			/>
 			<div class="quote-controls">
 				<button
-					disabled={isRestricted(userRestrictions.EDITING_QUOTE) ||
-						quote === ($user.quote || "")}
-					on:click={() => clm.updateProfile({quote})}
-					>Save</button
+					disabled={(displayName === ($user.display_name || "") ||
+						isRestricted(userRestrictions.EDITING_PROFILE)) &&
+						(quote === ($user.quote || "") ||
+							isRestricted(userRestrictions.EDITING_QUOTE))}
+					on:click={() => {
+						const changes = {};
+						if (
+							displayName !== ($user.display_name || "") &&
+							!isRestricted(userRestrictions.EDITING_PROFILE)
+						)
+							changes.display_name = displayName;
+						if (
+							quote !== ($user.quote || "") &&
+							!isRestricted(userRestrictions.EDITING_QUOTE)
+						)
+							changes.quote = quote;
+						clm.updateProfile(changes);
+					}}>Save</button
 				>
 			</div>
 		{:else if tab === "colour"}
@@ -265,6 +273,19 @@
 		background-color: var(--orange);
 	}
 
+	.field-label {
+		display: block;
+		font-weight: bold;
+		margin: 0.9em 0 0.35em;
+	}
+	.field-label:first-of-type {
+		margin-top: 0;
+	}
+	.field-input {
+		width: 100%;
+		box-sizing: border-box;
+		margin: 0;
+	}
 	.quote-controls {
 		display: flex;
 		justify-content: flex-end;

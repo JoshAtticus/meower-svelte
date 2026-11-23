@@ -1091,6 +1091,7 @@
 	}
 	.creator h2 {
 		font-size: 200%;
+		line-height: 1.05;
 		margin: 0;
 		overflow-wrap: anywhere;
 	}
@@ -1375,11 +1376,14 @@
 	:global(main.layout-modern) .reaction.mine .reaction-pfp {
 		border-color: var(--orange);
 	}
+	/* the @username sits under the display name */
 	.author-username {
-		font-size: 0.75em;
+		display: block;
+		font-size: 0.42em;
 		font-weight: normal;
+		line-height: 1.1;
 		opacity: 0.6;
-		margin-left: 0.35em;
+		margin: 0;
 	}
 	/* inbox messages: a category tile instead of a profile picture */
 	.inbox-avatar {

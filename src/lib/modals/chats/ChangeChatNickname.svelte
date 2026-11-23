@@ -1132,9 +1132,16 @@
 		display: flex;
 		gap: 0.5em;
 		margin-bottom: 1em;
+		/* five tabs don't fit a phone: scroll the row, never the whole modal */
+		max-width: 100%;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+	.tabs::-webkit-scrollbar {
+		display: none;
 	}
 	.tabs button {
-		flex: 1;
+		flex: 1 0 auto;
 		opacity: 0.7;
 	}
 	.tabs button.active {

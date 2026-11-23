@@ -494,7 +494,7 @@
 
 <style>
 	.about-header {
-		padding: 0 0.8em;
+		padding: 0.8em 0.8em 0;
 	}
 	.center {
 		text-align: center;

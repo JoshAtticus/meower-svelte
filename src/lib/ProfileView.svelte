@@ -331,6 +331,7 @@
 		display: inline-block;
 		max-width: 100%;
 		font-size: 3em;
+		line-height: 1;
 	}
 	h2.profile-username {
 		font-size: 200%;
@@ -339,7 +340,9 @@
 	.profile-username-sub {
 		font-size: 0.95em;
 		font-weight: normal;
+		line-height: 1.1;
 		opacity: 0.65;
+		margin: 0.05em 0 0;
 	}
 	.small .profile-username-sub {
 		font-size: 0.55em;
@@ -347,7 +350,8 @@
 	}
 
 	.profile-active {
-		margin-bottom: 0.5em;
+		margin: 0.05em 0 0;
+		line-height: 1.1;
 	}
 
 	.unread-dot {
