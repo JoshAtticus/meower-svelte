@@ -761,3 +761,9 @@ main.layout-modern.layout-modern:not(.layout-mobile) .view > * {
 	flex-shrink: 0;
 	height: auto;
 }
+
+/* reserve the scrollbar's space on every page, so the centred column
+   doesn't shift sideways between short and long pages */
+main.layout-modern.layout-modern .view {
+	scrollbar-gutter: stable;
+}
