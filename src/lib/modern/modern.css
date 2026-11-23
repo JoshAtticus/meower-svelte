@@ -791,3 +791,15 @@ main.layout-modern.layout-modern.layout-mobile #members-inner {
 main.layout-modern.layout-modern #chat.dm div.container:has(> .profile-header) {
 	margin-top: 0;
 }
+
+/* DM cards on the Chats page: same name size as the group chat cards */
+main.layout-modern.layout-modern .chats .profile-header-info.small {
+	min-height: 0;
+}
+main.layout-modern.layout-modern .chats .profile-header-info.small .profile-username {
+	font-size: 1.25em;
+}
+main.layout-modern.layout-modern .chats .profile-header-info.small .profile-username-sub,
+main.layout-modern.layout-modern .chats .profile-header-info.small .profile-active {
+	font-size: 0.85em;
+}

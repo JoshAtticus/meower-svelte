@@ -75,7 +75,7 @@
 		</div>
 	{:then data}
 		<Container>
-			<div class="settings-controls">
+			<div class="settings-controls" class:dm-card={small && dmChat}>
 				{#if onEdit}
 					<button
 						class="circle pen"
@@ -341,7 +341,14 @@
 		overflow-wrap: anywhere;
 	}
 	.profile-header-info.small {
-		height: 4.5em;
+		height: auto;
+		min-height: 4.5em;
+		padding-right: 7em;
+	}
+	/* DM cards in chat lists: buttons sit inside the card like on group chat cards */
+	.settings-controls.dm-card {
+		top: 1.1em;
+		right: 1.1em;
 	}
 
 	.profile-username {
