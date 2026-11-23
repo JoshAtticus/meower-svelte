@@ -342,7 +342,9 @@
 		font-weight: normal;
 		line-height: 1.1;
 		opacity: 0.65;
-		margin: 0.05em 0 0;
+		/* the big name has empty space below its baseline; pull up to match the
+		   gap under the username */
+		margin: -0.3em 0 0;
 	}
 	.small .profile-username-sub {
 		font-size: 0.55em;

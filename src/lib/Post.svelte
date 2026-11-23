@@ -749,7 +749,10 @@
 			/>
 			{/if}
 		</button>
-		<div class="creatordate">
+		<div
+			class="creatordate"
+			class:has-display-name={!inboxCategoryMeta && postProfile.display_name}
+		>
 			<div class="creator">
 				<h2>
 					{#if inboxCategoryMeta}
@@ -760,7 +763,6 @@
 								? nameColorStyle($chat, post.user)
 								: ""}><LiText text={postProfile.display_name} /></span
 						>
-						<span class="author-username">@{post.user}</span>
 					{:else}
 						<span
 							style={isGroupPost
@@ -808,6 +810,9 @@
 				-->
 			</div>
 
+			{#if !inboxCategoryMeta && postProfile.display_name}
+				<span class="author-username">@{post.user}</span>
+			{/if}
 			<FormattedDate date={post.date} />
 			{#if post.pinned}
 				<i>(pinned)</i>
@@ -1320,6 +1325,16 @@
 		font-size: 0.8em;
 		opacity: 0.6;
 	}
+	/* name and @username lines sit close together */
+	:global(main.layout-modern) .creatordate.has-display-name {
+		row-gap: 0;
+	}
+	:global(main.layout-modern) .creatordate .author-username {
+		font-size: 0.8em;
+	}
+	:global(main.layout-modern) .creatordate .author-username::after {
+		content: "";
+	}
 	:global(main.layout-modern) .creatordate :global(.date)::before {
 		content: "· ";
 	}
@@ -1376,14 +1391,17 @@
 	:global(main.layout-modern) .reaction.mine .reaction-pfp {
 		border-color: var(--orange);
 	}
-	/* the @username sits under the display name */
+	/* @username sits on the line under the display name, before the time */
 	.author-username {
-		display: block;
-		font-size: 0.42em;
+		font-size: 0.85em;
 		font-weight: normal;
-		line-height: 1.1;
 		opacity: 0.6;
-		margin: 0;
+	}
+	.author-username::after {
+		content: " ·";
+	}
+	.creatordate.has-display-name .creator {
+		flex-basis: 100%;
 	}
 	/* inbox messages: a category tile instead of a profile picture */
 	.inbox-avatar {
