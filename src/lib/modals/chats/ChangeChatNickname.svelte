@@ -1131,7 +1131,9 @@
 	.tabs {
 		display: flex;
 		gap: 0.5em;
-		margin-bottom: 1em;
+		/* room inside the scrolling row so button borders and outlines aren't cropped */
+		padding: 0.2em 0.2em 0.45em;
+		margin: -0.2em -0.2em 0.6em;
 		/* five tabs don't fit a phone: scroll the row, never the whole modal */
 		max-width: 100%;
 		overflow-x: auto;
