@@ -749,8 +749,8 @@ main.layout-modern.layout-modern.mode-light .post-header .settings-controls butt
 	filter: invert(1) brightness(0.35);
 }
 
-/* profile pages: the header card is the header bar, so give it the same
-   breathing room at the top as other pages' titles */
-main.layout-modern.layout-modern .view > * > div.container:first-child.profile-header {
-	padding-top: 0.9em;
+/* profile pages: the header is a real card (not a sticky bar), so keep it
+   away from the top edge like cards elsewhere */
+main.layout-modern.layout-modern .view div.container:has(> .profile-header) {
+	margin-top: 0.9em;
 }
