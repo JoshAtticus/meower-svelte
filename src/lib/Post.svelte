@@ -725,9 +725,20 @@
 		<div class="creatordate">
 			<div class="creator">
 				<h2>
-					<span style={isGroupPost ? nameColorStyle($chat, post.user) : ""}
-						><LiText text={post.user} /></span
-					>
+					{#if postProfile.display_name}
+						<span
+							style={isGroupPost
+								? nameColorStyle($chat, post.user)
+								: ""}><LiText text={postProfile.display_name} /></span
+						>
+						<span class="author-username">@{post.user}</span>
+					{:else}
+						<span
+							style={isGroupPost
+								? nameColorStyle($chat, post.user)
+								: ""}><LiText text={post.user} /></span
+						>
+					{/if}
 				</h2>
 
 				{#if bridged}
@@ -894,7 +905,11 @@
 						alt="{reply.u}'s profile picture"
 						size={0.45}
 					/>
-					<b class="reply-user">{reply.u}</b>
+					<b class="reply-user"
+								>{reply.author && reply.author.display_name
+									? reply.author.display_name
+									: reply.u}</b
+							>
 					<span class="reply-text"
 						>{reply.p ||
 							(reply.attachments && reply.attachments.length
@@ -1330,5 +1345,11 @@
 	}
 	:global(main.layout-modern) .reaction.mine .reaction-pfp {
 		border-color: var(--orange);
+	}
+	.author-username {
+		font-size: 0.75em;
+		font-weight: normal;
+		opacity: 0.6;
+		margin-left: 0.35em;
 	}
 </style>

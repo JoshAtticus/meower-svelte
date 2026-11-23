@@ -17,6 +17,7 @@
 	let avatarColor = "";
 
 	let error;
+	let displayName = "";
 
 	/**
 	 * Initialize this post's user profile - gets profile info from the cache or fetches it.
@@ -30,6 +31,7 @@
 			pfp = profile.pfp_data;
 			avatar = profile.avatar;
 			avatarColor = profile.avatar_color;
+			displayName = profile.display_name || "";
 		} catch (e) {
 			if (name !== member) return;
 			error = e;
@@ -53,7 +55,9 @@
 			/>
 		</div>
 		<div class="member-text">
-			<p class="member-name"><span style={nameStyle}>{member}</span></p>
+			<p class="member-name" title={displayName ? `@${member}` : null}>
+				<span style={nameStyle}>{displayName || member}</span>
+			</p>
 			{#if role}
 				<p class="member-role">{role}</p>
 			{/if}

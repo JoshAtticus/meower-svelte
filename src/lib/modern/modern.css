@@ -44,6 +44,14 @@ main.layout-modern.layout-modern .view > * {
 main.layout-modern.layout-modern .view > .groupchat {
 	max-width: 1020px;
 }
+main.layout-modern.layout-modern:not(.layout-mobile) .view > .groupchat {
+	padding-top: 0.8em;
+}
+/* DM pages have no sticky header bar — give the ProfileView card the same
+   top breathing room instead of letting it clip at the scrollport edge */
+main.layout-modern.layout-modern.layout-mobile .view > .groupchat > #chat.dm {
+	padding-top: 0.8em;
+}
 main.layout-modern.layout-modern.layout-mobile .view {
 	/* no top padding: the sticky page header must reach the scrollport top,
 	   otherwise scrolled content shows in the padding strip above it */
@@ -97,7 +105,7 @@ main.layout-modern.layout-modern:not(.layout-mobile) #members {
 	height: auto;
 	align-self: flex-start;
 	position: sticky;
-	top: 0;
+	top: 0.8em;
 	max-height: calc(100dvh - 1.6em);
 	padding: 0.7em;
 	background-color: var(--surface) !important;
@@ -135,6 +143,7 @@ main.layout-modern.layout-modern:not(.layout-mobile) #members .member-button {
 	display: flex;
 	align-items: center;
 	width: 100%;
+	box-sizing: border-box;
 	padding: 0.45em 0.55em;
 	border: none;
 	border-radius: 12px;
@@ -168,6 +177,55 @@ main.layout-modern.layout-modern:not(.layout-mobile) #members .member-role {
 }
 main.layout-modern.layout-modern:not(.layout-mobile) #members .owner-icon {
 	height: 0.9em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.pending-invite {
+	opacity: 1;
+	gap: 0.25em;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.pending-invite
+	.member {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.revoke-invite {
+	width: 28px;
+	height: 28px;
+	min-width: 28px;
+	min-height: 28px;
+	margin: 0 0 0 auto;
+	border: none;
+	border-radius: 50%;
+	background-color: transparent !important;
+	background-image: none !important;
+	position: relative;
+	flex-shrink: 0;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.revoke-invite::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--foreground);
+	-webkit-mask-image: url("../../assets/close.svg");
+	mask-image: url("../../assets/close.svg");
+	-webkit-mask-size: 50%;
+	mask-size: 50%;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+}
+main.layout-modern.layout-modern:not(.layout-mobile)
+	#members
+	.revoke-invite:hover {
+	background-color: var(--surface-2) !important;
 }
 main.layout-modern.layout-modern:not(.layout-mobile) #members .invites-title {
 	margin: 0.6em 0 0.2em 0.55em;

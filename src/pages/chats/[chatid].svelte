@@ -244,7 +244,7 @@
 -->
 
 <div class="groupchat">
-	<div id="chat" class:active={!showMembers}>
+	<div id="chat" class:active={!showMembers} class:dm={$chat.type === 1}>
 		{#if $chat.type === 0}
 			<Container>
 				<h1 class="chat-name">

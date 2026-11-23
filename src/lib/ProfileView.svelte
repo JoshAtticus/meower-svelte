@@ -43,6 +43,14 @@
 	export let onEdit = null;
 	export let unread = false;
 
+	function displayName(data) {
+		return (
+			(data._id === $user.name
+				? $user.display_name ?? data.display_name
+				: data.display_name) || ""
+		);
+	}
+
 	function load() {
 		if (profile) {
 			return profile;
@@ -239,20 +247,26 @@
 					{#if small}
 						<h2 class="profile-username">
 							{#if unread}<span class="unread-dot" />{/if}<LiText
-								text={data._id}
+								text={displayName(data) || data._id}
 							/>{#if data.bot}
 								<Badge text="BOT" title="Bot account" />
 							{/if}
+							{#if displayName(data)}<span class="profile-username-sub"
+									>@{data._id}</span
+								>{/if}
 						</h2>
 					{:else}
 						<h1 class="profile-username">
-							<LiText text={data._id} />
+							<LiText text={displayName(data) || data._id} />
 							{#if data.bot}
 								<span class="profile-bot-badge"
 									><Badge text="BOT" title="Bot account" /></span
 								>
 							{/if}
 						</h1>
+						{#if displayName(data)}
+							<div class="profile-username-sub">@{data._id}</div>
+						{/if}
 					{/if}
 					<div class="profile-active">
 						{#if $ulist.includes(data._id)}
@@ -320,6 +334,16 @@
 	}
 	h2.profile-username {
 		font-size: 200%;
+	}
+
+	.profile-username-sub {
+		font-size: 0.95em;
+		font-weight: normal;
+		opacity: 0.65;
+	}
+	.small .profile-username-sub {
+		font-size: 0.55em;
+		margin-left: 0.4em;
 	}
 
 	.profile-active {

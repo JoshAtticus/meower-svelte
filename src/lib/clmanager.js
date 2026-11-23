@@ -24,6 +24,7 @@ import {
 	disconnectReason,
 } from "./stores.js";
 import unloadedProfile from "./unloadedprofile.js";
+import {profileCache} from "./loadProfile.js";
 import {stringToTheme, applyTheme, removeTheme} from "./CustomTheme.js";
 import {linkUrl, apiUrl} from "./urls.js";
 import {markChatRead} from "./unread.js";
@@ -227,6 +228,7 @@ let friendsUpdateEvent = null;
  * @type any
  */
 let configUpdateEvent = null;
+let profileUpdateEvent = null;
 /**
  * A variable used to keep track of chat creations.
  * @type any
@@ -342,6 +344,22 @@ async function finishReconnect() {
 	reconnectStallTimer = null;
 	reconnecting.set(false);
 	reconnectStalled.set(false);
+
+	// refresh live data that may have changed while offline (the socket
+	// pushes ulist/chats on auth, but re-pull the chats list to be sure)
+	if (_authHeader.username && _authHeader.token) {
+		try {
+			const resp = await fetch(`${apiUrl}chats?autoget=1`, {
+				headers: _authHeader,
+			});
+			if (resp.ok) {
+				chats.set((await resp.json()).autoget);
+			}
+		} catch (e) {
+			console.error("Failed to refresh chats after reconnect:", e);
+		}
+	}
+
 	// let mounted pages fetch anything they missed (no remount)
 	reconnectedAt.set(Date.now());
 }
@@ -405,6 +423,10 @@ export async function connect() {
 	if (configUpdateEvent) {
 		link.off(configUpdateEvent);
 		configUpdateEvent = null;
+	}
+	if (profileUpdateEvent) {
+		link.off(profileUpdateEvent);
+		profileUpdateEvent = null;
 	}
 	if (chatCreateEvent) {
 		link.off(chatCreateEvent);
@@ -531,6 +553,19 @@ export async function connect() {
 				...cmd.val.payload,
 			};
 			user.set(_user);
+		}
+	});
+	profileUpdateEvent = link.on("direct", cmd => {
+		if (cmd.val.mode === "update_profile" && cmd.val.payload?._id) {
+			const {_id, ...data} = cmd.val.payload;
+			profileCache.update(cache => ({
+				...cache,
+				[_id]: {...(cache[_id] || {}), ...data},
+			}));
+			if (_user.name === _id) {
+				_user = {..._user, ...data};
+				user.set(_user);
+			}
 		}
 	});
 	chatCreateEvent = link.on("direct", cmd => {

@@ -19,6 +19,7 @@
 
 	let fileInput, uploading;
 	let quote = $user.quote || "";
+	let displayName = $user.display_name || "";
 
 	function clearCache() {
 		if ($profileCache[$user.name]) delete $profileCache[$user.name];
@@ -132,6 +133,24 @@
 				{/each}
 			</div>
 		{:else if tab === "quote"}
+			<input
+				type="text"
+				class="modal-input white"
+				style="width: 100%; box-sizing: border-box;"
+				placeholder="Display name"
+				maxlength="32"
+				disabled={isRestricted(userRestrictions.EDITING_PROFILE)}
+				bind:value={displayName}
+			/>
+			<div class="quote-controls">
+				<button
+					disabled={isRestricted(userRestrictions.EDITING_PROFILE) ||
+						displayName === ($user.display_name || "")}
+					on:click={() =>
+						clm.updateProfile({display_name: displayName})}
+					>Save display name</button
+				>
+			</div>
 			<input
 				type="text"
 				class="modal-input white"

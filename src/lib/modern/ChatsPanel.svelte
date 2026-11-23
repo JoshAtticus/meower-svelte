@@ -59,7 +59,14 @@
 							size={0.37}
 						/>
 					</span>
-					<span class="panel-name">@{partner}</span>
+					<span class="panel-name"
+						>{($profileCache[partner] || {}).display_name ||
+							`@${partner}`}{#if (
+							$profileCache[partner] || {}
+						).display_name}<span class="panel-username"
+								>@{partner}</span
+							>{/if}</span
+					>
 				{:else}
 					<ChatIcon {chat} size={0.5} />
 					<span class="panel-name"
@@ -155,6 +162,12 @@
 	}
 	.panel-chat.active .live-icon {
 		background-color: var(--foreground-orange);
+	}
+	.panel-username {
+		font-size: 0.8em;
+		opacity: 0.55;
+		margin-left: 0.35em;
+		font-weight: normal;
 	}
 	.panel-name {
 		flex: 1;
