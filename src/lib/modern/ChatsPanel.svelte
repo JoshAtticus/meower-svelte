@@ -163,10 +163,12 @@
 	.panel-chat.active .live-icon {
 		background-color: var(--foreground-orange);
 	}
+	/* @username goes under the display name */
 	.panel-username {
-		font-size: 0.8em;
+		display: block;
+		font-size: 0.78em;
+		line-height: 1.1;
 		opacity: 0.55;
-		margin-left: 0.35em;
 		font-weight: normal;
 	}
 	.panel-name {

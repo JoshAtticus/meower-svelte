@@ -346,9 +346,11 @@
 		   gap under the username */
 		margin: -0.3em 0 0;
 	}
+	/* small headers (DMs, chat lists): @username sits under the name */
 	.small .profile-username-sub {
+		display: block;
 		font-size: 0.55em;
-		margin-left: 0.4em;
+		margin: 0;
 	}
 
 	.profile-active {
