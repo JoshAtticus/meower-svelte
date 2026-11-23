@@ -220,12 +220,12 @@ main.layout-modern.layout-modern:not(.layout-mobile) #members .top
 	background-color: var(--surface-2) !important;
 }
 /* chat header action buttons -> smaller tonal ghost buttons */
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls {
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls {
 	gap: 0.35em;
 	top: 0.45em;
 	right: 0.45em;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle {
 	width: 34px;
 	height: 34px;
@@ -236,7 +236,7 @@ main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
 	background-image: none !important;
 	position: relative;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle::after {
 	content: "";
 	position: absolute;
@@ -249,26 +249,26 @@ main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
 	-webkit-mask-position: center;
 	mask-position: center;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle:hover {
 	background-color: var(--surface) !important;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle.settings::after {
 	-webkit-mask-image: url("../../assets/settings.svg");
 	mask-image: url("../../assets/settings.svg");
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle.pin::after {
 	-webkit-mask-image: url("../../assets/pin.svg");
 	mask-image: url("../../assets/pin.svg");
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle.members::after {
 	-webkit-mask-image: url("../../assets/members.svg");
 	mask-image: url("../../assets/members.svg");
 }
-main.layout-modern.layout-modern:not(.layout-mobile) #chat .settings-controls
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle.admin::after {
 	-webkit-mask-image: url("../../assets/shield.svg");
 	mask-image: url("../../assets/shield.svg");
@@ -683,4 +683,10 @@ main.layout-modern.layout-modern .setup.setup-modern .column-ui {
 	width: 100%;
 	max-width: 100%;
 	box-sizing: border-box;
+}
+
+/* post action icons are white images; darken them on light themes so they
+   show on the pale toolbar pill */
+main.layout-modern.layout-modern.mode-light .post-header .settings-controls button.circle {
+	filter: invert(1) brightness(0.35);
 }
