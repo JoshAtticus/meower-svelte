@@ -37,6 +37,10 @@
 			throw new Error("Response code is not OK; code is " + resp.status);
 		}
 		const json = await resp.json();
+		// a link to a recently changed username: follow the account
+		if (json.renamed_from) {
+			$goto(`/users/${json._id}`);
+		}
 		profileData = json;
 		return json;
 	}

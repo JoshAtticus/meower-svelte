@@ -7,6 +7,7 @@
 	import SwitchThemeModal from "../lib/modals/settings/SwitchTheme.svelte";
 	import SwitchBGMSFXModal from "../lib/modals/settings/SwitchBGMSFX.svelte";
 	import ChangePasswordModal from "../lib/modals/settings/ChangePassword.svelte";
+	import ChangeUsernameModal from "../lib/modals/settings/ChangeUsername.svelte";
 	import LogoutEverywhereModal from "../lib/modals/settings/LogoutEverywhere.svelte";
 	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
 	import BotsModal from "../lib/modals/settings/Bots.svelte";
@@ -273,6 +274,19 @@
 				/>
 			</label>
 		{:else if tab === "account"}
+			{#if !$user.bot}
+				<div class="row">
+					<div class="row-text">
+						<h3>Username</h3>
+						<span class="row-sub">@{$user.name}</span>
+					</div>
+					<button
+						type="button"
+						on:click={() => modals.showModal(ChangeUsernameModal)}
+						>Change</button
+					>
+				</div>
+			{/if}
 			<div class="row">
 				<div class="row-text"><h3>Password</h3></div>
 				<button
