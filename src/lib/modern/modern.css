@@ -785,3 +785,9 @@ main.layout-modern.layout-modern.layout-mobile #members-inner {
 	padding: 0 0.9em 1em;
 	box-sizing: border-box;
 }
+
+/* the DM page already has top padding from its wrapper; don't add the
+   profile card's own margin on top */
+main.layout-modern.layout-modern #chat.dm div.container:has(> .profile-header) {
+	margin-top: 0;
+}

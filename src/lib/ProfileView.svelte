@@ -58,16 +58,18 @@
 		return name.length > 22 ? "1.7em" : name.length > 14 ? "2.2em" : null;
 	}
 
-	function load() {
-		if (profile) {
-			return profile;
+	// takes the inputs as arguments so the header reloads when they change
+	// (e.g. the person renamed their account)
+	function load(name, prof) {
+		if (prof) {
+			return prof;
 		}
-		return loadProfile(username, true);
+		return loadProfile(name, true);
 	}
 </script>
 
 <div>
-	{#await load()}
+	{#await load(username, profile)}
 		<div class="center">
 			<Loading />
 		</div>
