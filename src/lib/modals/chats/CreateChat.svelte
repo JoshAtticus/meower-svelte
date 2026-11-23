@@ -29,6 +29,10 @@
 			"Everyone can send messages, delete their own messages and invite people. Perfect for most chats!",
 	};
 	let purpose = "other";
+	let modeOverride = null; // null = follow purpose default
+	$: defaultMode = ["announcements", "emojis"].includes(purpose)
+		? "feed" : "chat";
+	$: mode = modeOverride ?? defaultMode;
 </script>
 
 <Modal on:close={modals.closeLastModal}>
@@ -45,7 +49,7 @@
 							"Content-Type": "application/json",
 							...$authHeader,
 						},
-						body: JSON.stringify({nickname, purpose}),
+						body: JSON.stringify({nickname, purpose, mode}),
 					});
 					if (!resp.ok) {
 						if (resp.status === 429) {
@@ -98,6 +102,27 @@
 				{/each}
 			</div>
 			<p class="purpose-info">{PURPOSE_INFO[purpose]}</p>
+			<br>
+			<p class="purpose-label"><b>Chat type</b></p>
+			<div class="purpose-grid mode-grid">
+				<button
+					type="button"
+					class="purpose-option"
+					class:selected={mode === "chat"}
+					disabled={loading}
+					on:click={() => (modeOverride = "chat")}>Chat</button
+				>
+				<button
+					type="button"
+					class="purpose-option"
+					class:selected={mode === "feed"}
+					disabled={loading}
+					on:click={() => (modeOverride = "feed")}>Feed</button
+				>
+			</div>
+			<p class="purpose-info">{mode === "feed"
+				? "Feed: members post, others reply under posts."
+				: "Live chat: a stream of messages."}</p>
 			<br>
 			<p class="purpose-note">You can always change these settings later.</p>
 			<div class="modal-buttons">

@@ -11,6 +11,9 @@
 	import * as modals from "../modals.js";
 
 	import home from "../../assets/home.svg";
+	import exploreIcon from "../../assets/explore.svg";
+	import shield from "../../assets/shield.svg";
+	import ModPanelModal from "../modals/moderation/ModPanel.svelte";
 	import mail from "../../assets/mail.svg";
 	import friendsIcon from "../../assets/friends.svg";
 	import gc from "../../assets/chat.svg";
@@ -25,6 +28,7 @@
 
 	$: tabs = [
 		{label: "Home", icon: home, href: "/home", active: $isActive("./home")},
+		{label: "Explore", icon: exploreIcon, href: "/explore", active: $isActive("./explore")},
 		{
 			label: "Chats",
 			icon: gc,
@@ -38,13 +42,6 @@
 			href: "/inbox",
 			active: $isActive("./inbox"),
 			badge: $user.unread_inbox,
-		},
-		{
-			label: "Friends",
-			icon: friendsIcon,
-			href: "/friends",
-			active: $isActive("./friends"),
-			badge: $friends.incoming.length > 0,
 		},
 	];
 </script>
@@ -117,6 +114,33 @@
 		>
 			<span class="micon" style:--icon={`url(${profile})`} /> Profile
 		</button>
+		<button
+			class="sheet-item"
+			on:click={() => {
+				if (!$user.name) {
+					modals.showModal(SignupModal);
+					return;
+				}
+				$goto("/friends");
+				menuOpen = false;
+			}}
+		>
+			<span class="micon" style:--icon={`url(${friendsIcon})`} /> Friends
+			{#if $friends.incoming.length > 0}
+				<span class="sheet-badge">{$friends.incoming.length}</span>
+			{/if}
+		</button>
+		{#if $user.permissions}
+			<button
+				class="sheet-item"
+				on:click={() => {
+					menuOpen = false;
+					modals.showModal(ModPanelModal);
+				}}
+			>
+				<span class="micon" style:--icon={`url(${shield})`} /> Moderation
+			</button>
+		{/if}
 		<button
 			class="sheet-item"
 			on:click={() => {
@@ -300,5 +324,14 @@
 	}
 	.micon.mirrored {
 		transform: scaleX(-1);
+	}
+	.sheet-badge {
+		margin-left: auto;
+		background: var(--orange, #f97720);
+		color: white;
+		border-radius: 999px;
+		font-size: 75%;
+		font-weight: 700;
+		padding: 0.1em 0.55em;
 	}
 </style>

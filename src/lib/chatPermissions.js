@@ -1,6 +1,7 @@
 // Client mirror of server/chat_permissions.py — keep semantics identical.
 export const PERMISSIONS = [
 	{key: "send_messages", tier: 0, label: "Send messages"},
+	{key: "reply_to_posts", tier: 0, label: "Reply to posts"},
 	{key: "delete_own_messages", tier: 0, label: "Delete own messages"},
 	{key: "invite_members", tier: 0, label: "Invite members"},
 	{key: "add_emotes", tier: 0, label: "Add emojis & stickers"},

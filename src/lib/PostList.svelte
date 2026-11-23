@@ -27,6 +27,7 @@
 	import ServerPostGroup from "./ServerPostGroup.svelte";
 	import emojiIcon from "../assets/emoji.svg";
 
+	import {replyBus} from "./replyBus.js";
 	import {
 		relationships,
 		authHeader,
@@ -334,6 +335,7 @@
 				attachments: post.attachments,
 				stickers: post.stickers,
 				reply_to: post.reply_to,
+				reply_count: post.reply_count || 0,
 				reactions: post.reactions || [],
 				emojis: post.emojis || [],
 				date: post.t.e,
@@ -507,6 +509,8 @@
 							attachments: post.attachments,
 							stickers: post.stickers,
 							reply_to: post.reply_to,
+							reply_count: post.reply_count || 0,
+				reply_count: post.reply_count || 0,
 							reactions: post.reactions || [],
 							emojis: post.emojis || [],
 							date: post.t.e,
@@ -529,6 +533,7 @@
 						attachments: cmd.val.attachments,
 						stickers: cmd.val.stickers,
 						reply_to: cmd.val.reply_to,
+						reply_count: cmd.val.reply_count || 0,
 						reactions: cmd.val.reactions || [],
 						emojis: cmd.val.emojis || [],
 						date: cmd.val.t.e,
@@ -548,6 +553,8 @@
 					if (cmd.val.nonce) {
 						items = items.filter(post => post.nonce !== cmd.val.nonce);
 					}
+					if (post.reply_to && post.reply_to.length)
+						replyBus.set({post});
 					// only when sound effects are explicitly on
 					if ($user.sfx === true && cmd.val.u !== $user.name)
 						playNotification();

@@ -14,6 +14,7 @@ import {
 	chats,
 	ulist,
 	user,
+	chat,
 	authHeader,
 	spinner,
 	intentionalDisconnect,
@@ -589,6 +590,11 @@ export async function connect() {
 				cmd.val.payload
 			);
 			chats.set(_chats);
+			chat.update(c =>
+				c && c._id === cmd.val.payload._id
+					? Object.assign(c, cmd.val.payload)
+					: c
+			);
 		}
 	});
 	chatDeleteEvent = link.on("direct", cmd => {

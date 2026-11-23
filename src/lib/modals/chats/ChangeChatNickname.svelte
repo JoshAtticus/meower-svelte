@@ -111,6 +111,17 @@
 
 	onMount(() => refreshEmotes($chat._id));
 
+	let pendingMode = null;
+	function requestMode(m) {
+		if (m === ($chat.mode || "chat")) { pendingMode = null; return; }
+		pendingMode = m;
+	}
+	async function confirmMode() {
+		const m = pendingMode;
+		pendingMode = null;
+		await patchChat({mode: m});
+	}
+
 	async function patchChat(body) {
 		const resp = await fetch(`${apiUrl}chats/${$chat._id}`, {
 			method: "PATCH",
@@ -587,6 +598,34 @@
 			{/if}
 
 			{#if canPerm("change_settings")}
+			<div class="chat-type-row">
+				<p><b>Chat type</b></p>
+				<div class="chat-type-seg">
+					<button
+						type="button"
+						class:selected={($chat.mode || "chat") === "chat"}
+						disabled={pendingMode !== null}
+						on:click={() => requestMode("chat")}>Chat</button
+					>
+					<button
+						type="button"
+						class:selected={($chat.mode || "chat") === "feed"}
+						disabled={pendingMode !== null}
+						on:click={() => requestMode("feed")}>Feed</button
+					>
+				</div>
+				{#if pendingMode}
+					<div class="mode-warn">
+						<p>{pendingMode === "feed"
+							? "Switching to a Feed changes how this chat works. Messages become posts with likes and replies, and members need the 'Reply to posts' permission to reply. Some things may disappear or look different, like the live chat layout. Switch to a Feed?"
+							: "Switching back to a live Chat shows posts as normal messages. Likes stay as heart reactions, and replies appear as regular replies. Some things may look different. Switch to a Chat?"}</p>
+						<div class="mode-warn-btns">
+							<button type="button" on:click={() => (pendingMode = null)}>Cancel</button>
+							<button type="button" class="mode-confirm" on:click={confirmMode}>Switch</button>
+						</div>
+					</div>
+				{/if}
+			</div>
 			<div class="announce-deletes">
 				<label class="announce-row">
 					<input
@@ -655,6 +694,34 @@
 			{/if}
 
 			{#if canPerm("change_settings")}
+			<div class="chat-type-row">
+				<p><b>Chat type</b></p>
+				<div class="chat-type-seg">
+					<button
+						type="button"
+						class:selected={($chat.mode || "chat") === "chat"}
+						disabled={pendingMode !== null}
+						on:click={() => requestMode("chat")}>Chat</button
+					>
+					<button
+						type="button"
+						class:selected={($chat.mode || "chat") === "feed"}
+						disabled={pendingMode !== null}
+						on:click={() => requestMode("feed")}>Feed</button
+					>
+				</div>
+				{#if pendingMode}
+					<div class="mode-warn">
+						<p>{pendingMode === "feed"
+							? "Switching to a Feed changes how this chat works. Messages become posts with likes and replies, and members need the 'Reply to posts' permission to reply. Some things may disappear or look different, like the live chat layout. Switch to a Feed?"
+							: "Switching back to a live Chat shows posts as normal messages. Likes stay as heart reactions, and replies appear as regular replies. Some things may look different. Switch to a Chat?"}</p>
+						<div class="mode-warn-btns">
+							<button type="button" on:click={() => (pendingMode = null)}>Cancel</button>
+							<button type="button" class="mode-confirm" on:click={confirmMode}>Switch</button>
+						</div>
+					</div>
+				{/if}
+			</div>
 			<div class="announce-deletes">
 				<label class="announce-row">
 					<input
@@ -1126,7 +1193,6 @@
 		{/if}
 	</div>
 </Modal>
-
 <style>
 	.tabs {
 		display: flex;
@@ -1471,4 +1537,45 @@
 	.perm-seg button.selected:disabled {
 		opacity: 0.8;
 	}
+	.chat-type-row {
+		margin: 0.5em 0;
+	}
+	.chat-type-seg {
+		display: inline-flex;
+		border: 1px solid var(--hairline, var(--gray, #ccc));
+		border-radius: 8px;
+		overflow: hidden;
+	}
+	.chat-type-seg button {
+		border: none;
+		background: transparent;
+		color: inherit;
+		padding: 0.4em 1.2em;
+		cursor: pointer;
+	}
+	.chat-type-seg button.selected {
+		background: var(--orange, #f97720);
+		color: white;
+	}
+	.mode-warn {
+		margin-top: 0.6em;
+		padding: 0.6em 0.8em;
+		border: 1px solid var(--orange, #f97720);
+		border-radius: 8px;
+		font-size: 90%;
+	}
+	.mode-warn-btns {
+		display: flex;
+		gap: 0.5em;
+		margin-top: 0.4em;
+	}
+	.mode-confirm {
+		background: var(--orange, #f97720);
+		color: white;
+		border: none;
+		border-radius: 6px;
+		padding: 0.3em 1em;
+		cursor: pointer;
+	}
+
 </style>

@@ -251,6 +251,7 @@
 								<span class="unread-dot" />
 							{/if}
 							<h1>{chat.nickname}</h1>
+						{#if chat.mode === "feed"}<span class="feed-chip"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>Feed</span>{/if}
 						</button>
 						<div class="member-stack">
 							{#each chat.members.slice(0, 5) as member}
@@ -299,6 +300,17 @@
 </div>
 
 <style>
+	.feed-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25em;
+		font-size: 60%;
+		font-weight: 600;
+		padding: 0.1em 0.5em;
+		border-radius: 999px;
+		background: var(--orange, #f97720);
+		color: white;
+	}
 	.chats {
 		height: 100%;
 	}

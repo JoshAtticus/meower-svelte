@@ -22,10 +22,11 @@
 	import SharePostModal from "./modals/SharePost.svelte";
 	import PinPostModal from "./modals/PinPost.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import PostReplies from "./PostReplies.svelte";
 	import {portal} from "./portal.js";
 	import {swipeDismiss} from "./swipeDismiss.js";
 
-	import {authHeader, user, chat, ulist} from "../lib/stores.js";
+	import {authHeader, user, chat, chats, ulist} from "../lib/stores.js";
 	import {adminPermissions, hasPermission} from "../lib/bitField.js";
 	import {apiUrl, uploadsUrl} from "./urls.js";
 	import {has as hasChatPerm, outranks, rank as chatRank, ADMIN_TIER, nameColorStyle} from "./chatPermissions.js";
@@ -35,6 +36,7 @@
 	import * as modals from "./modals.js";
 
 	import {IMAGE_HOST_WHITELIST} from "./hostWhitelist.js";
+	import {addFancyElements} from "./postFormat.js";
 
 	import {default as loadProfile, profileCache} from "../lib/loadProfile.js";
 
@@ -221,139 +223,7 @@
 		}
 	}
 
-	function confirmLink(link) {
-		link = atob(link); // we now base64 encode the link to prevent XSS
-		if (!link.startsWith("https:") && !link.startsWith("http:") && !link.startsWith("/")) {
-			link = "https://" + link;
-		}
-		let url = new URL(link, location.href);
-		if (url.host === location.host) {
-			$goto(url.pathname);
-		} else {
-			modals.showModal(ConfirmHyperlinkModal, {link});
-		}
-		return false;
-	}
-	// @ts-ignore
-	window.confirmLink = confirmLink;
 
-	function addFancyElements(content, emotes) {
-		// markdown (which has HTML escaping built-in)
-		try {
-			const md = new MarkdownIt("default", {
-				breaks: true,
-				linkify: true,
-				typographer: true,
-				highlight: function (str, lang) {
-					if (lang && hljs.getLanguage(lang)) {
-						try {
-							return (
-								'<pre><code class="hljs">' +
-								hljs.highlight(str, {
-									language: lang,
-									ignoreIllegals: true,
-								}).value +
-								"</code></pre>"
-							);
-						} catch {}
-					}
-					return ""; // use default escaping
-				},
-			});
-			md.linkify.add("@", {
-				validate: function (text, pos) {
-					var tail = text.slice(pos);
-					return tail.match(/[a-zA-Z0-9-_]{0,20}/gs)[0].length;
-				},
-				normalize: function (match) {
-					match.url =
-						window.location.host +
-						"/users/" +
-						match.url.replace(/^@/, "");
-				},
-			});
-			const tokens = md.parse(
-				content
-					.replaceAll(/\[([^\]]+?): (https:\/\/[^\]]+?)\]/gs, "")
-					.replaceAll(/\*\*\*\*/gs, "\\*\\*\\*\\*"),
-				{}
-			);
-			for (const token of tokens) {
-				if (token.children) {
-					for (const childToken of token.children) {
-						if (childToken.type === "text") {
-							childToken.type = "html_inline";
-							childToken.content = renderTextEmojis(
-								md.utils.escapeHtml(childToken.content),
-								emotes
-							);
-						}
-						if (childToken.type === "image") {
-							const srcPos = childToken.attrs.findIndex(
-								attr => attr[0] === "src"
-							);
-							if (
-								!IMAGE_HOST_WHITELIST.some(o =>
-									childToken.attrs[srcPos][1]
-										.toLowerCase()
-										.startsWith(o.toLowerCase())
-								)
-							) {
-								childToken.attrs[srcPos][1] = "about:blank";
-								console.log(childToken);
-							}
-						}
-						if (childToken.type === "link_open") {
-							const href = childToken.attrs.find(
-								attr => attr[0] === "href"
-							)[1];
-							const b64href = btoa(href);
-							childToken.attrs.push([
-								"onclick",
-								`return confirmLink('${b64href}')`,
-							]);
-						}
-					}
-				}
-			}
-			content = md.renderer.render(tokens, md.options);
-
-			// add quote containers to blockquotes (although, quotes are currently broken)
-			content = content.replaceAll(
-				/<blockquote>(.+?)<\/blockquote>/gms,
-				'<div class="quote-container"><blockquote>$1</blockquote></div>'
-			);
-		} catch (e) {
-			// this is to stop any possible XSS attacks by bypassing the markdown lib
-			// which is responsible for escaping HTML
-			return `Failed rendering post: ${e}`;
-		}
-
-		return content;
-	}
-
-	// Takes already-escaped text from a markdown text token, never rendered
-	// HTML, so emoji markup can't land inside an attribute value.
-	// Custom emojis are written <:EMOJI_ID>; the server sends their details
-	// with the post (post.emojis), so they work outside their own chat too.
-	function renderTextEmojis(escapedText, emotes) {
-		escapedText = escapedText.replaceAll(
-			/&lt;:([a-zA-Z0-9]{24})&gt;/g,
-			(match, id) => {
-				const known =
-					(post.emojis || []).find(e => (e._id || e) === id) ||
-					((emotes && emotes.emojis) || []).find(e => e._id === id);
-				const name = known && known.name ? `:${known.name.replace(/[^a-zA-Z0-9_-]/g, "")}:` : "emoji";
-				return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}">`;
-			}
-		);
-
-		return twemoji.parse(escapedText, {
-			folder: "svg",
-			ext: ".svg",
-			size: 20,
-		});
-	}
 
 	async function adminDelete() {
 		adminDeleteButton.disabled = true;
@@ -422,6 +292,33 @@
 	$: (post?.reactions || []).forEach(r =>
 		(r.users || []).forEach(u => u && loadProfile(u))
 	);
+
+	const LIKE_EMOJIS = ["❤️", "❤"];
+	$: feedContext =
+		post.post_origin === "home" ||
+		(isGroupPost &&
+			(($chat && $chat._id === post.post_origin
+				? $chat.mode
+				: ($chats || []).find(c => c._id === post.post_origin)?.mode) ||
+				"chat") === "feed");
+	$: likeReactions = (post.reactions || []).filter(r =>
+		LIKE_EMOJIS.includes(r.emoji));
+	$: likeCount = likeReactions.reduce((sum, r) => sum + (r.count || 0), 0);
+	$: likedByMe = likeReactions.some(r => r.user_reacted);
+	$: otherReactions = (post.reactions || []).filter(
+		r => !LIKE_EMOJIS.includes(r.emoji));
+	$: canLike =
+		$user.name &&
+		post.post_id &&
+		!post.pending &&
+		!post.isDeleted &&
+		!adminView &&
+		post.user !== "Server" &&
+		(likedByMe ||
+			(!isGroupPost ||
+				hasChatPerm(
+					$chat, $user.name,
+					likeReactions.length ? "react" : "add_reactions")));
 
 	// joining a reaction someone else already added
 	$: canJoinReaction =
@@ -515,7 +412,7 @@
 	<div class="server-wrap">
 		<Container>
 			<p class="server-post">
-				{#await addFancyElements(post.content, postEmotes) then content}
+				{#await addFancyElements(post.content, postEmotes, post.emojis || []) then content}
 					{@html content.replace(/<\/?p>/g, "")}
 				{/await}
 				<i class="server-date">{relativeDate(post.date, $now)}</i>
@@ -598,7 +495,7 @@
 							on:click={() => $goto(`/posts/${post.post_id}`)}
 						/>
 					{/if}
-					{#if !editing && canReact}
+					{#if !editing && canReact && !feedContext}
 						<button
 							class="circle react"
 							title="React"
@@ -964,7 +861,7 @@
 				? 'opacity: 0.5;'
 				: ''}"
 		>
-			{#await addFancyElements(post.content, postEmotes) then content}
+			{#await addFancyElements(post.content, postEmotes, post.emojis || []) then content}
 				{@html content}
 			{/await}
 		</p>
@@ -993,6 +890,98 @@
 				<ExternalImage {title} {url} />
 			{/each}
 		</div>
+		{#if feedContext && !post.isDeleted}
+			<div class="post-footer">
+				<div class="feed-left">
+					<button
+						type="button"
+						class="feed-btn like-btn"
+						class:liked={likedByMe}
+						disabled={!likedByMe && !canLike}
+						title={likedByMe ? "Unlike" : "Like"}
+						on:click={() =>
+							toggleReaction(
+								// remove whichever heart variant this user used
+								likeReactions.find(r => r.user_reacted)?.emoji || "❤️"
+							)}
+					>
+						<svg class="feed-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill={likedByMe ? "currentColor" : "none"}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+						{#if likeCount > 0}<span class="feed-count">{likeCount}</span>{/if}
+					</button>
+					{#if canReact}
+						<button
+							type="button"
+							class="feed-btn react-btn"
+							title="Add reaction"
+							bind:this={reactButton}
+							on:click={openReactPopup}
+						>
+							<svg class="feed-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+						</button>
+					{/if}
+				{#if otherReactions.length}
+				<div class="reactions footer-chips">
+				{#each feedContext ? otherReactions : post.reactions as reaction (reaction.emoji)}
+					<button
+						type="button"
+						class="reaction"
+						class:mine={reaction.user_reacted}
+						disabled={!(
+							(reaction.user_reacted && $user.name) ||
+							canJoinReaction
+						)}
+						title={!(
+							(reaction.user_reacted && $user.name) ||
+							canJoinReaction
+						)
+							? "You can't react in this chat"
+							: reactorTitles[reaction.emoji] || ""}
+						on:mouseenter={() => loadReactors(reaction.emoji)}
+						on:click={() => toggleReaction(reaction.emoji)}
+					>
+						{#if isCustomReaction(reaction.emoji)}
+							<img
+								class="reaction-emoji"
+								src="{uploadsUrl}emojis/{reaction.emoji}"
+								alt="Custom emoji"
+								draggable="false"
+							/>
+						{:else}
+							<span class="reaction-emoji"
+								>{@html twemoji.parse(reaction.emoji, {
+									folder: "svg",
+									ext: ".svg",
+								})}</span
+							>
+						{/if}
+						{#if reaction.users && reaction.users.length}
+							<span class="reaction-pfps">
+								{#each reaction.users.slice(0, 3) as reactor (reactor)}
+									{@const reactorProfile = $profileCache[reactor] || {}}
+									<span class="reaction-pfp">
+										<PFP
+											raw
+											icon={reactorProfile.error
+												? -2
+												: reactorProfile.pfp_data ?? -1}
+											avatar={reactorProfile.avatar}
+											avatarColor={reactorProfile.avatar_color}
+											alt="{reactor}'s profile picture"
+											size={0.4}
+										/>
+									</span>
+								{/each}
+							</span>
+						{/if}
+						<span class="reaction-count">{reaction.count}</span>
+					</button>
+				{/each}
+			</div>
+		{/if}
+				</div>
+				<PostReplies {post} {onReply} />
+			</div>
+		{:else}
 		{#if (post.reactions || []).length}
 			<div class="reactions">
 				{#each post.reactions as reaction (reaction.emoji)}
@@ -1051,6 +1040,7 @@
 					</button>
 				{/each}
 			</div>
+		{/if}
 		{/if}
 	{/if}
 	{#if reactPopupAnchor}
@@ -1163,6 +1153,93 @@
 	.edit-row button.circle {
 		flex-shrink: 0;
 		margin-top: 0.3em;
+	}
+	.post-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		flex-wrap: wrap;
+		gap: 0.4em 1em;
+		margin-top: 0.45em;
+	}
+	.feed-left {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.4em;
+		min-width: 0;
+	}
+	.feed-btn {
+		margin: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35em;
+		height: 32px;
+		min-width: 32px;
+		padding: 0 0.6em;
+		border: none;
+		border-radius: 16px;
+		background: transparent;
+		color: var(--gray, #888);
+		font-weight: 600;
+		cursor: pointer;
+		transition: color 0.15s, background-color 0.15s, transform 0.1s;
+	}
+	.feed-btn:hover:not(:disabled) {
+		background: var(--orange-light, rgba(249, 119, 32, 0.12));
+		color: var(--orange, #f97720);
+	}
+	.feed-btn:disabled {
+		opacity: 0.45;
+		cursor: default;
+	}
+	.feed-btn:active:not(:disabled) .feed-icon {
+		transform: scale(1.25);
+	}
+	.feed-icon {
+		width: 18px;
+		height: 18px;
+		transition: transform 0.12s;
+	}
+	.like-btn.liked {
+		color: var(--orange, #f97720);
+	}
+	.feed-count {
+		font-variant-numeric: tabular-nums;
+	}
+	.reactions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3em;
+	}
+	.reactions.footer-chips {
+		align-items: center;
+		gap: 0.4em;
+		margin-top: 0;
+	}
+	.reactions.footer-chips .reaction {
+		height: 32px;
+		box-sizing: border-box;
+		padding: 0 0.6em;
+		gap: 0.3em;
+	}
+	.reactions.footer-chips .reaction-emoji,
+	.footer-chips .reaction-emoji :global(img.emoji) {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		line-height: 1;
+	}
+	.reactions.footer-chips .reaction-pfps {
+		display: inline-flex;
+		align-items: center;
+		line-height: 1;
+	}
+	.reactions.footer-chips .reaction-count {
+		line-height: 1;
+		display: inline-flex;
+		align-items: center;
 	}
 	.reactions {
 		display: flex;

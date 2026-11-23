@@ -20,7 +20,7 @@
 	import mail from "../assets/mail.svg";
 	import friendsIcon from "../assets/friends.svg";
 	import gc from "../assets/chat.svg";
-	import search from "../assets/search.svg";
+	import search from "../assets/explore.svg";
 	import terminal from "../assets/terminal.svg";
 	import shield from "../assets/shield.svg";
 	import profile from "../assets/profile.svg";
@@ -104,7 +104,7 @@
 		<img src={gc} alt="Group chats" draggable={false} />
 	</button>
 	<button
-		on:click={() => $goto("/search")}
+		on:click={() => $goto("/explore")}
 		title="Search"
 		class="search-btn round"
 	>

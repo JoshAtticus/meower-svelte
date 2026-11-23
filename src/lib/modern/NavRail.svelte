@@ -15,7 +15,7 @@
 	import mail from "../../assets/mail.svg";
 	import friendsIcon from "../../assets/friends.svg";
 	import gc from "../../assets/chat.svg";
-	import search from "../../assets/search.svg";
+	import search from "../../assets/explore.svg";
 	import shield from "../../assets/shield.svg";
 	import profile from "../../assets/profile.svg";
 	import settings from "../../assets/settings.svg";
@@ -49,7 +49,7 @@
 			active: $isActive("./chats", {}, {strict: false}),
 			badge: $chats.some(c => isChatUnread(c, $chatReads)),
 		},
-		{label: "Search", icon: search, href: "/search", active: $isActive("./search")},
+		{label: "Explore", icon: search, href: "/explore", active: $isActive("./explore")},
 	];
 </script>
 
@@ -78,7 +78,7 @@
 				class="nav-item"
 				class:active={item.active}
 				on:click={() => {
-					if (!$user.name && item.href !== "/search") {
+					if (!$user.name && item.href !== "/explore") {
 						modals.showModal(SignupModal);
 						return;
 					}
