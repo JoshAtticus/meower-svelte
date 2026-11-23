@@ -162,7 +162,7 @@
 			</div>
 			<div class="row">
 				<div class="row-text">
-					<h3>Try new layout</h3>
+					<h3>Layout</h3>
 					<span class="row-sub"
 						>{$modernLayout
 							? "You're using the new layout"
