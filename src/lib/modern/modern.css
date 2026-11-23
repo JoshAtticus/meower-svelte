@@ -767,3 +767,21 @@ main.layout-modern.layout-modern:not(.layout-mobile) .view > * {
 main.layout-modern.layout-modern .view {
 	scrollbar-gutter: stable;
 }
+
+/* mobile members sheet: side padding for the title row and the list */
+main.layout-modern.layout-modern.layout-mobile #members {
+	background: var(--background);
+	border: 1px solid var(--hairline);
+	border-bottom: none;
+	box-sizing: border-box;
+}
+main.layout-modern.layout-modern.layout-mobile #members .top {
+	padding: 1em 1em 0;
+	box-sizing: border-box;
+}
+main.layout-modern.layout-modern.layout-mobile #members-inner {
+	margin-top: 3.4em;
+	height: calc(100% - 3.4em);
+	padding: 0 0.9em 1em;
+	box-sizing: border-box;
+}
