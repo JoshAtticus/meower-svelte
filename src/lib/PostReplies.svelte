@@ -10,6 +10,7 @@
 	import {addFancyElements} from "./postFormat.js";
 	import {goto} from "@roxi/routify";
 	import twemoji from "twemoji";
+	import {tick} from "svelte";
 	import loadProfile, {profileCache} from "./loadProfile.js";
 
 	export let post;
@@ -29,6 +30,8 @@
 	let replyInput = "";
 	let sending = false;
 	let sendError = "";
+	let alsoPost = false;
+	let composeInput;
 
 	$: total = (post.reply_count || 0) + liveExtra;
 
@@ -43,6 +46,10 @@
 			(theChat &&
 				(hasChatPerm(theChat, $user.name, "reply_to_posts") ||
 					hasChatPerm(theChat, $user.name, "send_messages"))));
+	$: canPostHere =
+		$user.name &&
+		(!isGroupPost ||
+			(theChat && hasChatPerm(theChat, $user.name, "send_messages")));
 	$: canReactHere =
 		$user.name &&
 		(!isGroupPost ||
@@ -112,7 +119,7 @@
 				: fresh;
 			page = json["page#"] || p;
 			pages = json.pages || 1;
-			fresh.forEach(r => (r.users || []).forEach(u => u && loadProfile(u)));
+			fresh.forEach(r => r.user && loadProfile(r.user));
 		} finally {
 			loading = false;
 		}
@@ -121,6 +128,16 @@
 	function toggle() {
 		expanded = !expanded;
 		if (expanded && !replies.length) load(1);
+	}
+
+	// open the inline composer (used by the post's reply button)
+	export async function openCompose() {
+		if (!expanded) {
+			expanded = true;
+			if (!replies.length) load(1);
+		}
+		await tick();
+		composeInput?.focus();
 	}
 
 	// Live: posts arriving whose reply_to contains this post bump the count and
@@ -133,24 +150,31 @@
 		$replyBus.post = null;
 	}
 
-	async function sendReply() {
+	let replyingTo = null;
+
+	async function sendReply(target = post) {
 		const content = replyInput.trim();
 		if (!content || sending) return;
 		sending = true;
 		sendError = "";
 		const nonce = Math.random().toString();
+		const endpoint = `${apiUrl}${post.post_origin === "home" ? "home" : `posts/${post.post_origin}`}`;
 		try {
-			const resp = await fetch(
-				`${apiUrl}${post.post_origin === "home" ? "home" : `posts/${post.post_origin}`}`,
-				{
-					method: "POST",
-					headers: {"Content-Type": "application/json", ...$authHeader},
-					body: JSON.stringify({content, nonce, reply_to: [post.post_id], stickers: [], attachments: []}),
-				}
-			);
+			const resp = await fetch(endpoint, {
+				method: "POST",
+				headers: {"Content-Type": "application/json", ...$authHeader},
+				body: JSON.stringify({content, nonce, reply_to: [target.post_id], stickers: [], attachments: [], reply_only: !(alsoPost && canPostHere)}),
+			});
 			const json = await resp.json();
 			if (!resp.ok) throw new Error(json.type || "Send failed");
 			replyInput = "";
+			alsoPost = false;
+			if (target !== post) {
+				target.reply_count = (target.reply_count || 0) + 1;
+				replyingTo = null;
+				replies = replies;
+				return;
+			}
 			const newReply = {
 				post_id: json._id,
 				post_origin: json.post_origin,
@@ -194,16 +218,15 @@
 			{@const rp = $profileCache[reply.user] || {}}
 			{@const dn = reply.author?.display_name || rp.display_name || ""}
 			<div class="reply-row">
-				<span class="reply-pfp">
+				<button type="button" class="reply-pfp" title="View profile" on:click={() => $goto(`/users/${reply.user}`)}>
 					<PFP
-						raw
 						icon={reply.author ? reply.author.pfp_data : rp.pfp_data ?? -1}
 						avatar={reply.author ? reply.author.avatar : rp.avatar}
 						avatarColor={reply.author ? reply.author.avatar_color : rp.avatar_color}
 						alt="{reply.user}'s profile picture"
-						size={0.7}
+						size={0.55}
 					/>
-				</span>
+				</button>
 				<div class="reply-body">
 					<div class="reply-head">
 						{#if dn}
@@ -238,12 +261,12 @@
 							<svg class="lite-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill={likedByMe(reply) ? "currentColor" : "none"}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
 							{#if likeCount(reply) > 0}<span class="lite-count">{likeCount(reply)}</span>{/if}
 						</button>
-						{#if onReply}
+						{#if canReplyHere}
 							<button
 								type="button"
 								class="lite-btn"
 								title="Reply"
-								on:click={() => onReply(reply)}
+								on:click={() => (replyingTo = replyingTo === reply.post_id ? null : reply.post_id)}
 							>
 								<svg class="lite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10l-5 5 5 5"/><path d="M4 15h11a4 4 0 0 0 0-8h-1"/></svg>
 							</button>
@@ -256,6 +279,28 @@
 							</a>
 						{/if}
 					</div>
+					{#if replyingTo === reply.post_id}
+						<div class="nested-compose">
+							<form class="reply-compose" on:submit|preventDefault={() => sendReply(reply)}>
+								<input
+									type="text"
+									bind:value={replyInput}
+									placeholder="Reply to {reply.user}…"
+									maxlength="360"
+									disabled={sending}
+									autofocus
+								/>
+								<button type="submit" disabled={sending || !replyInput.trim()}>Reply</button>
+							</form>
+							{#if canPostHere}
+								<label class="also-post">
+									<input type="checkbox" bind:checked={alsoPost} disabled={sending} />
+									Also send as a post
+								</label>
+							{/if}
+							{#if sendError}<p class="replies-note err">{sendError}</p>{/if}
+						</div>
+					{/if}
 				</div>
 			</div>
 		{/each}
@@ -268,9 +313,10 @@
 			</button>
 		{/if}
 		{#if canReplyHere}
-			<form class="reply-compose" on:submit|preventDefault={sendReply}>
+			<form class="reply-compose" on:submit|preventDefault={() => sendReply()}>
 				<input
 					type="text"
+					bind:this={composeInput}
 					bind:value={replyInput}
 					placeholder="Write a reply…"
 					maxlength="360"
@@ -278,6 +324,12 @@
 				/>
 				<button type="submit" disabled={sending || !replyInput.trim()}>Reply</button>
 			</form>
+			{#if canPostHere}
+				<label class="also-post">
+					<input type="checkbox" bind:checked={alsoPost} disabled={sending} />
+					Also send as a post
+				</label>
+			{/if}
 			{#if sendError}<p class="replies-note err">{sendError}</p>{/if}
 		{/if}
 	</div>
@@ -326,25 +378,14 @@
 	}
 	.reply-pfp {
 		flex-shrink: 0;
-		width: 28px;
-		height: 28px;
 		display: inline-flex;
 		align-items: flex-start;
-	}
-	.reply-pfp :global(.pfp),
-	.reply-pfp :global(img),
-	.reply-pfp :global(span) {
-		width: 28px !important;
-		height: 28px !important;
-	}
-	@media (max-width: 560px) {
-		.reply-pfp,
-		.reply-pfp :global(.pfp),
-		.reply-pfp :global(img),
-		.reply-pfp :global(span) {
-			width: 24px !important;
-			height: 24px !important;
-		}
+		align-self: flex-start;
+		padding: 0;
+		margin: 0;
+		border: none;
+		background: none;
+		cursor: pointer;
 	}
 	.reply-body {
 		min-width: 0;
@@ -473,5 +514,25 @@
 	}
 	.reply-compose button:disabled {
 		opacity: 0.5;
+	}
+	.also-post {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		margin-top: 0.35em;
+		font-size: 85%;
+		color: var(--gray, #888);
+		cursor: pointer;
+		user-select: none;
+	}
+	.also-post input {
+		margin: 0;
+		accent-color: var(--orange, #f97720);
+	}
+	.nested-compose {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2em;
+		margin-top: 6px;
 	}
 </style>

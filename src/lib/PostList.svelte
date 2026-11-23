@@ -37,6 +37,7 @@
 		reconnectedAt,
 	} from "./stores.js";
 	import {userRestrictions, isRestricted} from "../lib/bitField.js";
+	import {has as hasChatPerm} from "./chatPermissions.js";
 	import {shiftHeld} from "./keyDetect.js";
 	import {mobile} from "./responsiveness.js";
 	import {modernLayout} from "./modernLayout.js";
@@ -74,6 +75,15 @@
 
 	let id = 0;
 	let postErrors = {};
+
+	// group chats gate posting and replying separately (feed groups)
+	$: isGroupPostOrigin =
+		postOrigin && !["home", "inbox", "livechat"].includes(postOrigin);
+	$: canReplyPosts =
+		!!$user.name &&
+		(!isGroupPostOrigin ||
+			hasChatPerm($chat, $user.name, "reply_to_posts") ||
+			hasChatPerm($chat, $user.name, "send_messages"));
 
 	// User restriction status
 	let userRestricted = false;
@@ -207,6 +217,7 @@
 
 	let pendingReplies = [];
 	let showEmojiPopup = false;
+	let alsoPostReply = false;
 
 	// Collapse runs of 3+ server posts by the same person within 5 minutes
 	const GROUP_MIN = 3;
@@ -364,7 +375,7 @@
 		};
 	}
 
-	function sendPost(content, stickers = [], replyTo = [], attachments = []) {
+	function sendPost(content, stickers = [], replyTo = [], attachments = [], replyOnly = false) {
 		/**
 		 * @type {import('src/lib/types.js').ListPost}
 		 */
@@ -381,7 +392,7 @@
 			isDeleted: false,
 			pending: true,
 		};
-		list.addItem(pendingPost);
+		if (!replyOnly) list.addItem(pendingPost);
 
 		const postProm = new Promise(async (resolve, reject) => {
 			try {
@@ -400,6 +411,7 @@
 							nonce: pendingPost.nonce,
 							stickers,
 							reply_to: replyTo,
+							reply_only: replyOnly,
 							attachments: attachments.map(
 								attachment => attachment.id
 							),
@@ -412,7 +424,7 @@
 					// the live event normally delivers the post; if it hasn't
 					// shown up, use the server's reply so a sent post is never
 					// left pending
-					if (json && json._id && !items.some(p => p.post_id === json._id)) {
+					if (!replyOnly && json && json._id && !items.some(p => p.post_id === json._id)) {
 						list.addItem({
 							id: id++,
 							post_id: json._id,
@@ -510,7 +522,6 @@
 							stickers: post.stickers,
 							reply_to: post.reply_to,
 							reply_count: post.reply_count || 0,
-				reply_count: post.reply_count || 0,
 							reactions: post.reactions || [],
 							emojis: post.emojis || [],
 							date: post.t.e,
@@ -543,6 +554,14 @@
 						mod_deleted: cmd.val.mod_deleted,
 						deleted_at: cmd.val.deleted_at,
 					};
+					if (cmd.val.reply_only) {
+						if (cmd.val.nonce) {
+							items = items.filter(p => p.nonce !== cmd.val.nonce);
+						}
+						if (post.reply_to && post.reply_to.length)
+							replyBus.set({post});
+						return;
+					}
 					if (items.some(p => p.post_id === cmd.val._id)) {
 						if (cmd.val.nonce) {
 							items = items.filter(p => p.nonce !== cmd.val.nonce);
@@ -631,6 +650,10 @@
 						/>
 					</div>
 				{/each}
+				<label class="also-post">
+					<input type="checkbox" bind:checked={alsoPostReply} />
+					Also send as a post
+				</label>
 			</div>
 		{/if}
 		<div
@@ -697,18 +720,21 @@
 						}
 					} else {
 						// normal post
+						const sentAttachmentIds = sentAttachments.map(attachment => ({
+							id: attachment.id,
+							mime: attachment.file.type,
+							filename: attachment.file.name,
+							size: attachment.file.size,
+						}));
 						sendPost(
 							content,
 							[],
 							pendingReplies.map(r => r.post_id),
-							sentAttachments.map(attachment => ({
-								id: attachment.id,
-								mime: attachment.file.type,
-								filename: attachment.file.name,
-								size: attachment.file.size,
-							}))
+							sentAttachmentIds,
+							pendingReplies.length > 0 && !alsoPostReply
 						);
 						pendingReplies = [];
+						alsoPostReply = false;
 					}
 	
 					input.value = "";
@@ -1209,6 +1235,19 @@
 		min-height: 1.6em;
 		margin: 0;
 		border: none;
+	}
+	.also-post {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4em;
+		font-size: 85%;
+		color: var(--gray, #888);
+		cursor: pointer;
+		user-select: none;
+	}
+	.also-post input {
+		margin: 0;
+		accent-color: var(--orange, #f97720);
 	}
 
 

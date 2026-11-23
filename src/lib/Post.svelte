@@ -64,6 +64,7 @@
 
 	let bridged = false;
 	let webhook = false;
+	let postReplies;
 
 	let images = [];
 
@@ -320,6 +321,17 @@
 					$chat, $user.name,
 					likeReactions.length ? "react" : "add_reactions")));
 
+	// whether the current user may reply to this post
+	$: canReply =
+		$user.name &&
+		post.post_id &&
+		!post.pending &&
+		!post.isDeleted &&
+		!adminView &&
+		(!isGroupPost ||
+			hasChatPerm($chat, $user.name, "reply_to_posts") ||
+			hasChatPerm($chat, $user.name, "send_messages"));
+
 	// joining a reaction someone else already added
 	$: canJoinReaction =
 		$user.name &&
@@ -481,13 +493,6 @@
 						/>
 					{/if}
 				{:else if !adminView}
-					{#if !editing && onReply && post.post_origin !== "inbox" && post.post_origin !== "livechat"}
-						<button
-							class="circle reply"
-							title="Reply"
-							on:click={() => onReply(post)}
-						/>
-					{/if}
 					{#if showJump && post.post_id && !post.pending}
 						<button
 							class="circle join"
@@ -979,7 +984,17 @@
 			</div>
 		{/if}
 				</div>
-				<PostReplies {post} {onReply} />
+				<PostReplies {post} {onReply} bind:this={postReplies} />
+				{#if canReply}
+					<button
+						type="button"
+						class="feed-btn reply-btn"
+						title="Reply"
+						on:click={() => postReplies?.openCompose()}
+					>
+						<svg class="feed-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10l-5 5 5 5"/><path d="M4 15h11a4 4 0 0 0 0-8h-1"/></svg>
+					</button>
+				{/if}
 			</div>
 		{:else}
 		{#if (post.reactions || []).length}
@@ -1039,6 +1054,19 @@
 						<span class="reaction-count">{reaction.count}</span>
 					</button>
 				{/each}
+			</div>
+		{/if}
+		{#if canReply && onReply}
+			<div class="post-footer-right">
+				<button
+					type="button"
+					class="reply-btn-inline"
+					title="Reply"
+					on:click={() => onReply(post)}
+				>
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10l-5 5 5 5"/><path d="M4 15h11a4 4 0 0 0 0-8h-1"/></svg>
+					Reply
+				</button>
 			</div>
 		{/if}
 		{/if}
@@ -1204,6 +1232,35 @@
 	}
 	.like-btn.liked {
 		color: var(--orange, #f97720);
+	}
+	.reply-btn {
+		margin-left: auto;
+	}
+	.post-footer-right {
+		display: flex;
+		justify-content: flex-end;
+		margin-top: 0.35em;
+	}
+	.reply-btn-inline {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35em;
+		margin: 0;
+		padding: 0.25em 0.7em;
+		border: none;
+		border-radius: 999px;
+		background: transparent;
+		color: var(--gray, #888);
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.reply-btn-inline:hover {
+		background: var(--orange-light, rgba(249, 119, 32, 0.12));
+		color: var(--orange, #f97720);
+	}
+	.reply-btn-inline svg {
+		width: 16px;
+		height: 16px;
 	}
 	.feed-count {
 		font-variant-numeric: tabular-nums;
