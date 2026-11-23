@@ -102,15 +102,9 @@
 			<img class="inline-meowy" src={meowy} height="24" alt="Meowy" /> Original
 			creator of Meowy
 		</Contributor>
-		<Contributor
-			username="JoshAtticus"
-			url="https://github.com/JoshAtticus"
-			pfp="https://github.com/JoshAtticus.png"
-		>
-			Creator of the multicolour Meowys, originally made for BetterMeower
-		</Contributor>
 	</div>
 </Container>
+<!--
 <Container>
 	<h2>Changelog</h2>
 	<Container>
@@ -394,13 +388,6 @@
 				<li>Crash bug fix (hopefully)</li>
 				<li>Unfinished mod panel</li>
 				<li>Changelog page (this one!)</li>
-				<!--
-					it's roblox kid
-					<li>
-						Added "Badge" to Roblox888i for 200th chat (please dont beg for
-						badges)
-					</li>
-				-->
 				<li>Search bar only when logged in fix</li>
 			</ul>
 
@@ -490,7 +477,7 @@
 		<h2>1.0</h2>
 		<ul><li>Inital release</li></ul>
 	</Container>
-</Container>
+</Container> -->
 
 <style>
 	.about-header {
