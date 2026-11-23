@@ -748,3 +748,9 @@ main.layout-modern.layout-modern .setup.setup-modern .column-ui {
 main.layout-modern.layout-modern.mode-light .post-header .settings-controls button.circle {
 	filter: invert(1) brightness(0.35);
 }
+
+/* profile pages: the header card is the header bar, so give it the same
+   breathing room at the top as other pages' titles */
+main.layout-modern.layout-modern .view > * > div.container:first-child.profile-header {
+	padding-top: 0.9em;
+}
