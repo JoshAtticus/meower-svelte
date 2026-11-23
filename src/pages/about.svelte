@@ -31,19 +31,28 @@
 	}
 </script>
 
-<h1 class="logo center">
-	<img src={logo} alt="Meower" height="80" />
-</h1>
-<b class="center friendlier">The friendlier social media for everyone.</b>
-<div class="center">Svelte Client, version {version}</div>
-<div class="center links">
-	<a href="https://meower.org" target="_blank" rel="noreferrer">Learn more</a>
-	|
-	<a
-		href="https://github.com/meower-media-co"
-		target="_blank"
-		rel="noreferrer">Source code</a
-	>
+<div class="about-header">
+	<h1 class="logo center">
+		<span
+			class="logo-mark"
+			style:--logo={`url(${logo})`}
+			role="img"
+			aria-label="Meower"
+		/>
+	</h1>
+	<b class="center friendlier">The friendlier social media for everyone.</b>
+	<div class="center">Svelte Client, version {version}</div>
+	<div class="center links">
+		<a href="https://meower.org" target="_blank" rel="noreferrer"
+			>Learn more</a
+		>
+		|
+		<a
+			href="https://github.com/meower-media-co"
+			target="_blank"
+			rel="noreferrer">Source code</a
+		>
+	</div>
 </div>
 
 <Container>
@@ -484,12 +493,30 @@
 </Container>
 
 <style>
+	.about-header {
+		padding: 0 0.8em;
+	}
 	.center {
 		text-align: center;
 		display: block;
 	}
 	.logo {
 		margin-bottom: 0;
+	}
+	.logo-mark {
+		display: inline-block;
+		height: 80px;
+		width: 300px;
+		max-width: 100%;
+		background-color: var(--orange);
+		-webkit-mask-image: var(--logo);
+		mask-image: var(--logo);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 	.friendlier {
 		font-size: 1.25em;

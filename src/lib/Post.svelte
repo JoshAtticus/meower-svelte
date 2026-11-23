@@ -2,6 +2,12 @@
 <script>
 	import Container from "../lib/Container.svelte";
 	import PFP from "../lib/PFP.svelte";
+	import catIconFriends from "../assets/friends.svg";
+	import catIconChats from "../assets/chat.svg";
+	import catIconSecurity from "../assets/lock.svg";
+	import catIconModeration from "../assets/gavel.svg";
+	import catIconAnnouncement from "../assets/info.svg";
+	import catIconAccount from "../assets/profile.svg";
 	import FormattedDate from "./FormattedDate.svelte";
 	import {relativeDate, now} from "./relativeDate.js";
 	import Badge from "./Badge.svelte";
@@ -74,6 +80,18 @@
 	let deleteButton;
 	let pinButton;
 
+	const INBOX_CATEGORY_META = {
+		friends: {label: "Friends", icon: catIconFriends},
+		chats: {label: "Group chats", icon: catIconChats},
+		security: {label: "Security", icon: catIconSecurity},
+		moderation: {label: "Moderation", icon: catIconModeration},
+		announcement: {label: "Announcement", icon: catIconAnnouncement},
+		account: {label: "Account", icon: catIconAccount},
+	};
+	$: inboxCategoryMeta =
+		post.user === "Notification" && post.category
+			? INBOX_CATEGORY_META[post.category]
+			: null;
 	$: postProfile = $profileCache[post.user] || {};
 
 	$: postEmotes = $chatEmotes[post.post_origin] || {
@@ -725,7 +743,13 @@
 		<div class="creatordate">
 			<div class="creator">
 				<h2>
-					{#if postProfile.display_name}
+					{#if inboxCategoryMeta}
+						<span
+							class="inbox-category-icon"
+							style:--icon={`url(${inboxCategoryMeta.icon})`}
+						/>
+						<span>{inboxCategoryMeta.label}</span>
+					{:else if postProfile.display_name}
 						<span
 							style={isGroupPost
 								? nameColorStyle($chat, post.user)
@@ -1351,5 +1375,20 @@
 		font-weight: normal;
 		opacity: 0.6;
 		margin-left: 0.35em;
+	}
+	.inbox-category-icon {
+		display: inline-block;
+		width: 0.9em;
+		height: 0.9em;
+		margin-right: 0.25em;
+		background-color: currentColor;
+		-webkit-mask-image: var(--icon);
+		mask-image: var(--icon);
+		-webkit-mask-size: contain;
+		mask-size: contain;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
 	}
 </style>

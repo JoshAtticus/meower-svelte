@@ -110,6 +110,12 @@
 	let pendingAttachments = [];
 	let attachmentId = 0;
 	let attachError = "";
+	let inputMultiline = false;
+	function updateInputMultiline() {
+		if (!postInput) return;
+		const lh = parseFloat(getComputedStyle(postInput).lineHeight) || 20;
+		inputMultiline = postInput.scrollHeight > lh * 1.6;
+	}
 	$: uploadsInProgress = pendingAttachments.some(
 		attachment => !attachment.id && !attachment.error
 	);
@@ -323,6 +329,7 @@
 				post_id: post._id,
 				post_origin: post.post_origin,
 				user: post.u,
+				category: post.category,
 				content: post.p,
 				attachments: post.attachments,
 				stickers: post.stickers,
@@ -739,6 +746,7 @@
 				{#if attachError}
 					<p class="attach-error">{attachError}</p>
 				{/if}
+				<div class="composer-row" class:multiline={inputMultiline}>
 				{#if $modernLayout}
 					<span class="composer-pfp mpfp">
 						<PFP
@@ -767,6 +775,7 @@
 						onFiles: files => addAttachments(files),
 					}}
 					on:input={() => {
+						updateInputMultiline();
 						if ($lastTyped + 2000 < +new Date()) {
 							lastTyped.set(+new Date());
 							fetch(
@@ -838,6 +847,7 @@
 						>Post</button
 					>
 				{/if}
+				</div>
 			</form>
 			{#if showEmojiPopup}
 				<div
@@ -1011,16 +1021,22 @@
 	.createpost {
 		top: 0;
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		align-items: stretch;
 		margin-bottom: 0.5em;
 		gap: 0.25em;
 	}
+	.composer-row {
+		display: flex;
+		align-items: stretch;
+		gap: 0.25em;
+	}
 	/* the global -0.15rem bottom margin made the buttons taller than the box */
-	.createpost > :global(*) {
+	.createpost > :global(*),
+	.composer-row > :global(*) {
 		margin: 0;
 	}
-	.createpost > :global(button) {
+	.composer-row > :global(button) {
 		flex-shrink: 0;
 		min-width: 2.75rem;
 	}
@@ -1185,12 +1201,31 @@
 		overflow: hidden;
 	}
 	:global(main.layout-modern) .createpost {
-		align-items: center;
+		align-items: stretch;
 		gap: 0.4em;
 		padding: 0.55em 0.7em;
 		background-color: var(--surface);
 		border: solid 1px var(--hairline);
 		border-radius: 16px;
+		transition: border-color 0.15s;
+	}
+	:global(main.layout-modern) .createpost:focus-within {
+		border-color: var(--orange);
+	}
+	:global(main.layout-modern) .composer-row {
+		align-items: center;
+		gap: 0.4em;
+	}
+	:global(main.layout-modern) .composer-row > :global(button),
+	:global(main.layout-modern) .composer-row > :global(*),
+	:global(main.layout-modern) .composer-pfp {
+		align-self: center;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	:global(main.layout-modern) .composer-row.multiline > :global(button),
+	:global(main.layout-modern) .composer-row.multiline .composer-pfp {
+		align-self: flex-end;
 	}
 	:global(main.layout-modern.mode-light) .createpost {
 		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -1204,6 +1239,9 @@
 	}
 	:global(main.layout-modern) .composer-input:focus {
 		border-radius: 0;
+		outline: none !important;
+		border: none !important;
+		box-shadow: none !important;
 	}
 	:global(main.layout-modern) .send-files,
 	:global(main.layout-modern) .emoji-trigger {
