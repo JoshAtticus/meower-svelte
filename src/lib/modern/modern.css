@@ -754,3 +754,10 @@ main.layout-modern.layout-modern.mode-light .post-header .settings-controls butt
 main.layout-modern.layout-modern .view div.container:has(> .profile-header) {
 	margin-top: 0.9em;
 }
+
+/* desktop: pages grow with their content so the view's bottom padding
+   always shows below the last item (inbox was forced to screen height) */
+main.layout-modern.layout-modern:not(.layout-mobile) .view > * {
+	flex-shrink: 0;
+	height: auto;
+}
