@@ -60,13 +60,23 @@
 	}
 	.inbox-categories {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.4em;
 		margin: -0.2em 0 0.6em;
+	}
+	/* phones: one row that scrolls sideways, with no scrollbars */
+	:global(main.layout-mobile) .inbox-categories {
+		flex-wrap: nowrap;
 		overflow-x: auto;
-		scrollbar-width: thin;
+		overflow-y: hidden;
+		scrollbar-width: none;
+	}
+	:global(main.layout-mobile) .inbox-categories::-webkit-scrollbar {
+		display: none;
 	}
 	.inbox-category-chip {
 		flex-shrink: 0;
+		margin: 0;
 		padding: 0.3em 0.9em;
 		border: solid 1px var(--hairline, #7775);
 		border-radius: 999px;

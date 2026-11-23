@@ -721,6 +721,14 @@
 				$goto(`/users/${post.user}`);
 			}}
 		>
+			{#if inboxCategoryMeta}
+				<span
+					class="inbox-avatar"
+					role="img"
+					aria-label={inboxCategoryMeta.label}
+					style:--icon={`url(${inboxCategoryMeta.icon})`}
+				/>
+			{:else}
 			<PFP
 				icon={noPFP
 					? post.user === "Server"
@@ -739,15 +747,12 @@
 				alt="{post.user}'s profile picture"
 				online={$ulist.includes(post.user)}
 			/>
+			{/if}
 		</button>
 		<div class="creatordate">
 			<div class="creator">
 				<h2>
 					{#if inboxCategoryMeta}
-						<span
-							class="inbox-category-icon"
-							style:--icon={`url(${inboxCategoryMeta.icon})`}
-						/>
 						<span>{inboxCategoryMeta.label}</span>
 					{:else if postProfile.display_name}
 						<span
@@ -1376,19 +1381,31 @@
 		opacity: 0.6;
 		margin-left: 0.35em;
 	}
-	.inbox-category-icon {
-		display: inline-block;
-		width: 0.9em;
-		height: 0.9em;
-		margin-right: 0.25em;
-		background-color: currentColor;
-		-webkit-mask-image: var(--icon);
-		mask-image: var(--icon);
-		-webkit-mask-size: contain;
-		mask-size: contain;
-		-webkit-mask-repeat: no-repeat;
-		mask-repeat: no-repeat;
-		-webkit-mask-position: center;
-		mask-position: center;
+	/* inbox messages: a category tile instead of a profile picture */
+	.inbox-avatar {
+		display: block;
+		position: relative;
+		width: 3.75em;
+		height: 3.75em;
+		box-sizing: border-box;
+		border-radius: 1.25em;
+		background: var(--orange);
+	}
+	.inbox-avatar::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-color: var(--foreground-orange, #fff);
+		-webkit-mask: var(--icon) center / 50% no-repeat;
+		mask: var(--icon) center / 50% no-repeat;
+	}
+	:global(main.layout-modern) .inbox-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 12px;
+	}
+	:global(main.layout-modern.layout-mobile) .inbox-avatar {
+		width: 36px;
+		height: 36px;
 	}
 </style>
