@@ -162,7 +162,6 @@
 								<b>{item.chat.nickname || "Group chat"}</b>
 								<span class="result-sub">{item.chat.members} member{item.chat.members === 1 ? "" : "s"}</span>
 							</span>
-							{#if item.chat.mode === "feed"}<span class="feed-chip">Feed</span>{/if}
 						</button>
 					{:else if item.type === "post"}
 						<Post post={item.post} showJump={true} />
