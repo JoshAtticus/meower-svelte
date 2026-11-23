@@ -407,6 +407,30 @@
 				const json = await resp.json();
 
 				if (resp.ok) {
+					// the live event normally delivers the post; if it hasn't
+					// shown up, use the server's reply so a sent post is never
+					// left pending
+					if (json && json._id && !items.some(p => p.post_id === json._id)) {
+						list.addItem({
+							id: id++,
+							post_id: json._id,
+							post_origin: json.post_origin,
+							user: json.u,
+							content: json.p,
+							attachments: json.attachments,
+							stickers: json.stickers,
+							reply_to: json.reply_to,
+							reactions: json.reactions || [],
+							emojis: json.emojis || [],
+							date: json.t.e,
+							edited_at: json.edited_at,
+							pinned: json.pinned,
+							isDeleted: json.isDeleted,
+							mod_deleted: json.mod_deleted,
+							deleted_at: json.deleted_at,
+						});
+					}
+					items = items.filter(p => p.nonce !== pendingPost.nonce);
 					resolve();
 				} else {
 					reject(json.type);
@@ -514,6 +538,12 @@
 						mod_deleted: cmd.val.mod_deleted,
 						deleted_at: cmd.val.deleted_at,
 					};
+					if (items.some(p => p.post_id === cmd.val._id)) {
+						if (cmd.val.nonce) {
+							items = items.filter(p => p.nonce !== cmd.val.nonce);
+						}
+						return;
+					}
 					list.addItem(post);
 					if (cmd.val.nonce) {
 						items = items.filter(post => post.nonce !== cmd.val.nonce);

@@ -179,7 +179,7 @@
 						/>
 					</span>
 					<span class="nav-label profile-name"
-						>{$user.name || "Guest"}</span
+						>{$user.display_name || $user.name || "Guest"}</span
 					>
 				</button>
 				<button

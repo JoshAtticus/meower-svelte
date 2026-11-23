@@ -43,12 +43,19 @@
 	export let onEdit = null;
 	export let unread = false;
 
-	function displayName(data) {
+	// takes the current user as an argument so the template redraws when
+	// your own display name changes
+	function displayName(data, me) {
 		return (
-			(data._id === $user.name
-				? $user.display_name ?? data.display_name
+			(data._id === me.name
+				? me.display_name ?? data.display_name
 				: data.display_name) || ""
 		);
+	}
+
+	// long names shrink instead of overflowing the card
+	function nameSize(name) {
+		return name.length > 22 ? "1.7em" : name.length > 14 ? "2.2em" : null;
 	}
 
 	function load() {
@@ -247,24 +254,27 @@
 					{#if small}
 						<h2 class="profile-username">
 							{#if unread}<span class="unread-dot" />{/if}<LiText
-								text={displayName(data) || data._id}
+								text={displayName(data, $user) || data._id}
 							/>{#if data.bot}
 								<Badge text="BOT" title="Bot account" />
 							{/if}
-							{#if displayName(data)}<span class="profile-username-sub"
+							{#if displayName(data, $user)}<span class="profile-username-sub"
 									>@{data._id}</span
 								>{/if}
 						</h2>
 					{:else}
-						<h1 class="profile-username">
-							<LiText text={displayName(data) || data._id} />
+						<h1
+							class="profile-username"
+							style:font-size={nameSize(displayName(data, $user) || data._id)}
+						>
+							<LiText text={displayName(data, $user) || data._id} />
 							{#if data.bot}
 								<span class="profile-bot-badge"
 									><Badge text="BOT" title="Bot account" /></span
 								>
 							{/if}
 						</h1>
-						{#if displayName(data)}
+						{#if displayName(data, $user)}
 							<div class="profile-username-sub">@{data._id}</div>
 						{/if}
 					{/if}
@@ -319,7 +329,14 @@
 		align-items: left;
 		justify-content: center;
 		margin-left: 1em;
-		height: 6em;
+		min-height: 6em;
+		min-width: 0;
+		flex: 1;
+		/* leave room for the buttons in the corner */
+		padding-right: 4.5em;
+	}
+	.profile-username {
+		overflow-wrap: anywhere;
 	}
 	.profile-header-info.small {
 		height: 4.5em;
@@ -382,7 +399,8 @@
 	.profile-header {
 		display: flex;
 		align-items: center;
-		flex-wrap: wrap;
+		/* never drop the name under the picture, however long it is */
+		flex-wrap: nowrap;
 	}
 	/* keep the BOT badge badge-sized next to the big name */
 	.profile-bot-badge {
