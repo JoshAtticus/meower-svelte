@@ -2,6 +2,8 @@ import {defineConfig} from "vite";
 import {svelte} from "@sveltejs/vite-plugin-svelte";
 import routify from "@roxi/routify/plugins/rollup.js";
 
+const buildId = Date.now().toString(36);
+
 // import replace from "@rollup/plugin-replace";
 // import {injectManifest} from "rollup-plugin-workbox";
 
@@ -22,6 +24,17 @@ export default defineConfig(({command}) => ({
 				});
 			},
 		},
+		// lets the running app notice when a newer build has been deployed
+		{
+			name: "version-file",
+			generateBundle() {
+				this.emitFile({
+					type: "asset",
+					fileName: "version.json",
+					source: JSON.stringify({id: buildId}),
+				});
+			},
+		},
 		routify({singleBuild: command === "build"}),
 		svelte(),
 		/*
@@ -39,6 +52,7 @@ export default defineConfig(({command}) => ({
 		*/
 	],
 	base: "/",
+	define: {__BUILD_ID__: JSON.stringify(buildId)},
 	// When the dev server is shared (e.g. through a Cloudflare tunnel), it also
 	// forwards the API, CloudLink and uploads so one address serves everything.
 	server: {

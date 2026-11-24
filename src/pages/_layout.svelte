@@ -7,6 +7,7 @@
 	import TabBar from "../lib/modern/TabBar.svelte";
 	import ChatsPanel from "../lib/modern/ChatsPanel.svelte";
 	import Spinner from "../lib/Spinner.svelte";
+	import UpdateNotice from "../lib/UpdateNotice.svelte";
 
 	import {
 		screen,
@@ -165,6 +166,7 @@
 			</div>
 		{/if}
 	{/if}
+	<UpdateNotice />
 </main>
 
 <style>

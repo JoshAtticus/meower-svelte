@@ -694,34 +694,6 @@
 			{/if}
 
 			{#if canPerm("change_settings")}
-			<div class="chat-type-row">
-				<p><b>Chat type</b></p>
-				<div class="chat-type-seg">
-					<button
-						type="button"
-						class:selected={($chat.mode || "chat") === "chat"}
-						disabled={pendingMode !== null}
-						on:click={() => requestMode("chat")}>Chat</button
-					>
-					<button
-						type="button"
-						class:selected={($chat.mode || "chat") === "feed"}
-						disabled={pendingMode !== null}
-						on:click={() => requestMode("feed")}>Feed</button
-					>
-				</div>
-				{#if pendingMode}
-					<div class="mode-warn">
-						<p>{pendingMode === "feed"
-							? "Switching to a Feed changes how this chat works. Messages become posts with likes and replies, and members need the 'Reply to posts' permission to reply. Some things may disappear or look different, like the live chat layout. Switch to a Feed?"
-							: "Switching back to a live Chat shows posts as normal messages. Likes stay as heart reactions, and replies appear as regular replies. Some things may look different. Switch to a Chat?"}</p>
-						<div class="mode-warn-btns">
-							<button type="button" on:click={() => (pendingMode = null)}>Cancel</button>
-							<button type="button" class="mode-confirm" on:click={confirmMode}>Switch</button>
-						</div>
-					</div>
-				{/if}
-			</div>
 			<div class="announce-deletes">
 				<label class="announce-row">
 					<input
