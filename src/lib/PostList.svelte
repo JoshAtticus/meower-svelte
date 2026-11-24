@@ -648,7 +648,7 @@
 						<span class="pending-reply-label"
 							>Replying to <b>{reply.user}</b></span
 						>
-						<span class="pending-reply-text">{#await addFancyElements(reply.content || "", $chatEmotes[postOrigin] || {}, reply.emojis || []) then html}{@html html}{/await}</span>
+						<span class="pending-reply-text">{#await addFancyElements((reply.content || "").replace(/\s*\n+\s*/g, " "), $chatEmotes[postOrigin] || {}, reply.emojis || []) then html}{@html html}{/await}</span>
 						<button
 							type="button"
 							class="circle close"
@@ -1241,6 +1241,9 @@
 		white-space: nowrap;
 		font-size: inherit;
 		border: none;
+	}
+	.pending-reply-text :global(br) {
+		display: none;
 	}
 	.pending-reply-text :global(img) {
 		height: 1.2em;

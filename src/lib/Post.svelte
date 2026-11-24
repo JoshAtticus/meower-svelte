@@ -856,7 +856,7 @@
 									: reply.u}</b
 							>
 					<span class="reply-text"
-						>{#if reply.p}{#await addFancyElements(reply.p, postEmotes, reply.emojis || []) then html}{@html html}{/await}{:else}{reply.attachments && reply.attachments.length
+						>{#if reply.p}{#await addFancyElements(reply.p.replace(/\s*\n+\s*/g, " "), postEmotes, reply.emojis || []) then html}{@html html}{/await}{:else}{reply.attachments && reply.attachments.length
 								? "Attachment"
 								: "Sticker"}{/if}</span
 					>
@@ -1409,6 +1409,9 @@
 		white-space: nowrap;
 		font-size: inherit;
 		border: none;
+	}
+	.reply-text :global(br) {
+		display: none;
 	}
 	.reply-text :global(img) {
 		height: 1.2em;
