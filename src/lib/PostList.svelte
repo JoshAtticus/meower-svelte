@@ -1226,6 +1226,7 @@
 		margin-bottom: 0.4em;
 	}
 	.pending-reply {
+		contain: inline-size;
 		min-width: 0;
 		max-width: 100%;
 		box-sizing: border-box;

@@ -1420,6 +1420,7 @@
 	.reply-box {
 		min-width: 0;
 		max-width: 100%;
+		contain: inline-size;
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
