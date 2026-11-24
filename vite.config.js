@@ -1,4 +1,5 @@
 import {defineConfig} from "vite";
+import {execSync} from "node:child_process";
 import {svelte} from "@sveltejs/vite-plugin-svelte";
 import routify from "@roxi/routify/plugins/rollup.js";
 
@@ -8,9 +9,14 @@ const buildId =
 	Date.now().toString(36);
 
 // commits starting with "CRITICAL:" make open clients refresh themselves
-const critical = /^critical:/i.test(
-	process.env.CF_PAGES_COMMIT_MESSAGE || ""
-);
+// (Cloudflare Pages only exposes the commit hash, so the message comes from git)
+let commitMessage = process.env.CF_PAGES_COMMIT_MESSAGE || "";
+try {
+	commitMessage = execSync("git log -1 --pretty=%s", {
+		stdio: ["ignore", "pipe", "ignore"],
+	}).toString();
+} catch {}
+const critical = /^critical:/i.test(commitMessage.trim());
 
 // import replace from "@rollup/plugin-replace";
 // import {injectManifest} from "rollup-plugin-workbox";
