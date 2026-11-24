@@ -559,10 +559,13 @@ export async function connect() {
 	profileUpdateEvent = link.on("direct", cmd => {
 		if (cmd.val.mode === "update_profile" && cmd.val.payload?._id) {
 			const {_id, ...data} = cmd.val.payload;
-			profileCache.update(cache => ({
-				...cache,
-				[_id]: {...(cache[_id] || {}), ...data},
-			}));
+			// only patch profiles that are fully loaded; a partial entry would
+			// stop the full profile (display name, etc.) from ever loading
+			profileCache.update(cache => {
+				const cur = cache[_id];
+				if (!cur || cur.temporary || cur.error) return cache;
+				return {...cache, [_id]: {...cur, ...data}};
+			});
 			if (_user.name === _id) {
 				_user = {..._user, ...data};
 				user.set(_user);

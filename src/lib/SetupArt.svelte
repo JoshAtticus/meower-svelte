@@ -9,7 +9,6 @@
 		"night",
 		"chat",
 		"camping",
-		"party",
 		"space",
 	];
 	const scene = SCENES[Math.floor(Math.random() * SCENES.length)];
@@ -123,19 +122,6 @@
 				<path d="M310 376 q-16 -30 0 -52 q6 18 18 22 q10 -12 4 -30 q30 28 8 60z" fill="#ff8a2a" />
 				<path d="M318 376 q-8 -16 2 -28 q8 10 10 28z" fill="#ffd45e" />
 			</g>
-		{:else if scene === "party"}
-			<circle cx="210" cy="220" r="175" fill="var(--orange)" opacity="0.12" />
-			{#each [[70, 90, "#ff6b8b"], [150, 60, "#ffd45e"], [250, 76, "#5ac8fa"], [336, 110, "#8be28b"], [196, 130, "#c58bff"]] as b}
-				<line x1={b[0]} y1={b[1] + 32} x2="210" y2="226" stroke="var(--foreground)" stroke-width="1.5" opacity="0.4" />
-				<ellipse cx={b[0]} cy={b[1]} rx="30" ry="36" fill={b[2]} />
-				<ellipse cx={b[0] - 10} cy={b[1] - 12} rx="7" ry="10" fill="#fff" opacity="0.4" />
-			{/each}
-			<image href={meowy} x="140" y="262" width="140" height="128" class="bob" />
-			<path d="M180 272 l30 -52 l30 52z" fill="#ff6b8b" />
-			<circle cx="210" cy="220" r="7" fill="#ffd45e" />
-			{#each [[40, 200], [90, 250], [330, 220], [370, 280], [60, 330], [350, 340]] as c, i}
-				<rect x={c[0]} y={c[1]} width="12" height="6" rx="2" fill={["#ff6b8b", "#ffd45e", "#5ac8fa", "#8be28b"][i % 4]} transform="rotate({i * 37} {c[0]} {c[1]})" />
-			{/each}
 		{:else}
 			<clipPath id="space-clip"><rect width="420" height="420" rx="36" /></clipPath>
 			<g clip-path="url(#space-clip)">

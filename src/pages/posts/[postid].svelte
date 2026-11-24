@@ -50,6 +50,8 @@
 			attachments: post.attachments,
 			stickers: post.stickers,
 			reply_to: post.reply_to,
+			reply_count: post.reply_count || 0,
+			author: post.author,
 			date: post.t.e,
 			edited_at: post.edited_at,
 			pinned: post.pinned,
