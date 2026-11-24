@@ -7,6 +7,11 @@ const buildId =
 	(process.env.CF_PAGES_COMMIT_SHA || "").slice(0, 7) ||
 	Date.now().toString(36);
 
+// commits starting with "CRITICAL:" make open clients refresh themselves
+const critical = /^critical:/i.test(
+	process.env.CF_PAGES_COMMIT_MESSAGE || ""
+);
+
 // import replace from "@rollup/plugin-replace";
 // import {injectManifest} from "rollup-plugin-workbox";
 
@@ -34,7 +39,7 @@ export default defineConfig(({command}) => ({
 				this.emitFile({
 					type: "asset",
 					fileName: "version.json",
-					source: JSON.stringify({id: buildId}),
+					source: JSON.stringify({id: buildId, critical}),
 				});
 			},
 		},

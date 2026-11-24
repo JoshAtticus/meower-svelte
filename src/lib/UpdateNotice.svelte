@@ -4,14 +4,24 @@
 	import {mobile} from "./responsiveness.js";
 
 	let available = false;
+	let forced = false;
 	let dismissedFor = sessionStorage.getItem("meower_update_dismissed");
 
 	async function check() {
 		try {
 			const resp = await fetch(`/version.json?t=${Date.now()}`, {cache: "no-store"});
 			if (!resp.ok) return;
-			const {id} = await resp.json();
-			if (id && id !== __BUILD_ID__ && id !== dismissedFor) available = true;
+			const {id, critical} = await resp.json();
+			if (!id || id === __BUILD_ID__) return;
+			// a critical update (e.g. a security fix) refreshes the page by itself, once per version
+			if (critical && sessionStorage.getItem("meower_forced_reload") !== id) {
+				sessionStorage.setItem("meower_forced_reload", id);
+				forced = true;
+				available = true;
+				setTimeout(() => location.reload(), 3000);
+				return;
+			}
+			if (id !== dismissedFor) available = true;
 		} catch {}
 	}
 
@@ -41,9 +51,13 @@
 
 {#if available}
 	<div class="update-notice" class:mobile={$mobile} role="status">
-		<span>A new version of Meower is available.</span>
-		<button type="button" class="refresh" on:click={() => location.reload()}>Refresh</button>
-		<button type="button" class="close" title="Dismiss" aria-label="Dismiss" on:click={dismiss}>&times;</button>
+		{#if forced}
+			<span>Important update available. Refreshing…</span>
+		{:else}
+			<span>A new version of Meower is available.</span>
+			<button type="button" class="refresh" on:click={() => location.reload()}>Refresh</button>
+			<button type="button" class="close" title="Dismiss" aria-label="Dismiss" on:click={dismiss}>&times;</button>
+		{/if}
 	</div>
 {/if}
 
