@@ -74,17 +74,38 @@ export function emojiPlaceholderStyle(icon) {
 	return url ? `background:url('${url}') center/contain no-repeat` : "";
 }
 
-export const emojiLoadedAttr =
-	"this.classList.remove('emoji-loading');this.style.background='none'";
-
 /** Options for twemoji.parse so it emits Noto 3D images with silhouette placeholders. */
 export const parseOptions = {
 	className: "emoji emoji-loading",
 	callback: icon => notoUrl(icon),
 	attributes: (raw, icon) => {
 		const style = emojiPlaceholderStyle(icon);
-		return style
-			? {style, onload: emojiLoadedAttr, onerror: emojiLoadedAttr}
-			: {onload: "this.classList.remove('emoji-loading')"};
+		return style ? {style} : {};
 	},
 };
+
+// Placeholders are removed once the image has loaded (or failed). Doing this
+// from document-level listeners also covers images that were already cached
+// when they were inserted, which never fire their own load event.
+function settle(img) {
+	img.classList.remove("emoji-loading");
+	img.style.background = "none";
+}
+if (typeof document !== "undefined") {
+	const onDone = e => {
+		const el = e.target;
+		if (el && el.classList && el.classList.contains("emoji-loading")) settle(el);
+	};
+	document.addEventListener("load", onDone, true);
+	document.addEventListener("error", onDone, true);
+	const sweep = root => {
+		if (root.nodeType !== 1) return;
+		const imgs = root.matches("img.emoji-loading")
+			? [root]
+			: root.querySelectorAll("img.emoji-loading");
+		imgs.forEach(img => img.complete && settle(img));
+	};
+	new MutationObserver(muts =>
+		muts.forEach(m => m.addedNodes.forEach(sweep))
+	).observe(document.documentElement, {childList: true, subtree: true});
+}

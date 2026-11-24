@@ -7,6 +7,9 @@
  *   node.disabled   -> read-only state (get/set)
  *   node.insert(t)  -> insert text (which may contain <:id>) at the caret
  */
+import twemoji from "twemoji";
+import {emojiCharUrl} from "./emoji.js";
+
 const EMOJI_RE = /<:([a-zA-Z0-9]{24})>/g;
 
 export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} = {}) {
@@ -22,6 +25,17 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 		return img;
 	}
 
+	// Unicode emoji are shown as images too, so they render on every OS
+	function unicodeImg(char) {
+		const img = document.createElement("img");
+		img.className = "composer-emoji";
+		img.src = emojiCharUrl(char);
+		img.alt = char;
+		img.dataset.unicode = char;
+		img.draggable = false;
+		return img;
+	}
+
 	// Build DOM nodes for text that may contain <:id> and newlines
 	function fragmentFor(text) {
 		const frag = document.createDocumentFragment();
@@ -29,7 +43,14 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 		const pushText = t => {
 			t.split("\n").forEach((line, i) => {
 				if (i > 0) frag.appendChild(document.createElement("br"));
-				if (line) frag.appendChild(document.createTextNode(line));
+				if (!line) return;
+				const marked = twemoji.replace(line, m => `\u0000${m}\u0000`);
+				marked.split("\u0000").forEach((part, j) => {
+					if (!part) return;
+					frag.appendChild(
+						j % 2 ? unicodeImg(part) : document.createTextNode(part)
+					);
+				});
 			});
 		};
 		for (const m of text.matchAll(EMOJI_RE)) {
@@ -48,6 +69,8 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 				out += child.textContent;
 			} else if (child.nodeName === "IMG" && child.dataset.emoji) {
 				out += `<:${child.dataset.emoji}>`;
+			} else if (child.nodeName === "IMG" && child.dataset.unicode) {
+				out += child.dataset.unicode;
 			} else if (child.nodeName === "BR") {
 				out += "\n";
 			} else if (child.nodeName === "DIV" || child.nodeName === "P") {

@@ -15,7 +15,7 @@
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
 	import {mobile} from "./responsiveness.js";
-	import {emojiCharUrl, emojiPlaceholderStyle, emojiLoadedAttr} from "./emoji.js";
+	import {emojiCharUrl, emojiPlaceholderStyle} from "./emoji.js";
 	import {placeholderUrl} from "./postFormat.js";
 	import {portal} from "./portal.js";
 	import {fly, fade} from "svelte/transition";
