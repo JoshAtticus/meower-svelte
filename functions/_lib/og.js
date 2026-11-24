@@ -16,7 +16,7 @@ export const trunc = (s, n) => {
 };
 
 export async function getJson(env, path) {
-	if (!env.API_URL) return null;
+	if (!env.API_URL || !env.UPLOADS_URL) throw new Error("missing-env");
 	const resp = await fetch(env.API_URL + path, {
 		headers: {Accept: "application/json"},
 		cf: {cacheTtl: 60, cacheEverything: true},
@@ -63,5 +63,14 @@ export async function withMeta(context, meta) {
 		.transform(response);
 	const headers = new Headers(rewritten.headers);
 	headers.set("Cache-Control", "public, max-age=60");
+	headers.set("x-og-status", "ok");
 	return new Response(rewritten.body, {status: 200, headers});
+}
+
+/** Serves the normal page, with an x-og-status header saying why there are no embed tags. */
+export async function fallback(context, reason) {
+	const response = await context.next();
+	const headers = new Headers(response.headers);
+	headers.set("x-og-status", reason);
+	return new Response(response.body, {status: response.status, headers});
 }

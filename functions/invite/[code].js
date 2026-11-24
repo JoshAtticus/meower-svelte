@@ -1,4 +1,4 @@
-import {getJson, uploadUrl, withMeta} from "../_lib/og.js";
+import {fallback, getJson, uploadUrl, withMeta} from "../_lib/og.js";
 
 export async function onRequestGet(context) {
 	try {
@@ -10,6 +10,8 @@ export async function onRequestGet(context) {
 				image: uploadUrl(context.env, "icons", invite.icon),
 			});
 		}
-	} catch {}
-	return context.next();
+		return fallback(context, "not-found");
+	} catch (e) {
+		return fallback(context, e.message === "missing-env" ? "missing-env" : "error");
+	}
 }
