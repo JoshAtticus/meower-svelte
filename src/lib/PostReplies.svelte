@@ -19,7 +19,6 @@
 	import {portal} from "./portal.js";
 	import {swipeDismiss} from "./swipeDismiss.js";
 	import {mobile} from "./responsiveness.js";
-	import twemoji from "twemoji";
 	import {tick} from "svelte";
 	import loadProfile, {profileCache} from "./loadProfile.js";
 

@@ -53,6 +53,19 @@
 			rel="noreferrer">Source code</a
 		>
 	</div>
+	<div class="center credits">
+		Emoji: <a
+			href="https://github.com/googlefonts/noto-emoji"
+			target="_blank"
+			rel="noreferrer">Noto Emoji 3D</a
+		>
+		by Google, licensed under
+		<a
+			href="https://creativecommons.org/licenses/by/4.0/"
+			target="_blank"
+			rel="noreferrer">CC BY 4.0</a
+		>
+	</div>
 </div>
 
 <Container>

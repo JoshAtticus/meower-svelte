@@ -47,6 +47,7 @@
 	import hljs from "highlight.js/lib/common";
 	import "highlight.js/styles/github-dark.css";
 	import twemoji from "twemoji";
+	import {parseOptions} from "./emoji.js";
 	import {goto} from "@roxi/routify";
 	import {onMount, tick} from "svelte";
 
@@ -968,10 +969,7 @@
 							/>
 						{:else}
 							<span class="reaction-emoji"
-								>{@html twemoji.parse(reaction.emoji, {
-									folder: "svg",
-									ext: ".svg",
-								})}</span
+								>{@html twemoji.parse(reaction.emoji, parseOptions)}</span
 							>
 						{/if}
 						{#if reaction.users && reaction.users.length}
@@ -1041,10 +1039,7 @@
 							/>
 						{:else}
 							<span class="reaction-emoji"
-								>{@html twemoji.parse(reaction.emoji, {
-									folder: "svg",
-									ext: ".svg",
-								})}</span
+								>{@html twemoji.parse(reaction.emoji, parseOptions)}</span
 							>
 						{/if}
 						{#if reaction.users && reaction.users.length}

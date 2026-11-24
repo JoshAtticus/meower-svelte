@@ -15,6 +15,8 @@
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
 	import {mobile} from "./responsiveness.js";
+	import {emojiCharUrl} from "./emoji.js";
+	import {placeholderUrl} from "./postFormat.js";
 	import {portal} from "./portal.js";
 	import {fly, fade} from "svelte/transition";
 
@@ -312,7 +314,15 @@
 					<button type="button"
 						class="option unicode"
 						title={e.keywords[0] || ""}
-						on:click={ev => pickUnicode(e, ev)}>{e.char}</button
+						on:click={ev => pickUnicode(e, ev)}
+						><img
+							class="unicode-img"
+							src={emojiCharUrl(e.char, 72)}
+							alt={e.char}
+							loading="lazy"
+							decoding="async"
+							draggable="false"
+						/></button
 					>
 				{:else}
 					<p class="empty">No emoji found.</p>
@@ -329,6 +339,10 @@
 							<img
 								src="{uploadsUrl}emojis/{e._id}"
 								alt={e.name}
+								style:background={e.thumbhash && placeholderUrl(e.thumbhash)
+									? `url(${placeholderUrl(e.thumbhash)}) center/cover`
+									: null}
+								on:load={ev => (ev.target.style.background = "none")}
 							/>
 						</button>
 					{/each}
@@ -345,6 +359,10 @@
 								class="sticker"
 								src="{uploadsUrl}stickers/{e._id}"
 								alt={e.name}
+								style:background={e.thumbhash && placeholderUrl(e.thumbhash)
+									? `url(${placeholderUrl(e.thumbhash)}) center/cover`
+									: null}
+								on:load={ev => (ev.target.style.background = "none")}
 							/>
 						</button>
 					{/each}
@@ -358,6 +376,12 @@
 </div>
 
 <style>
+	.unicode-img {
+		width: 1.5em;
+		height: 1.5em;
+		display: block;
+		pointer-events: none;
+	}
 	.emoji-popup.anchored {
 		position: fixed;
 		top: auto;
