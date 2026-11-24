@@ -15,7 +15,7 @@
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
 	import {mobile} from "./responsiveness.js";
-	import {emojiCharUrl, emojiPlaceholderStyle} from "./emoji.js";
+	import {emojiCharUrl} from "./emoji.js";
 	import {placeholderUrl} from "./postFormat.js";
 	import {portal} from "./portal.js";
 	import {fly, fade} from "svelte/transition";
@@ -319,9 +319,7 @@
 							class="unicode-img"
 							src={emojiCharUrl(e.char, 72)}
 							alt={e.char}
-							style={emojiPlaceholderStyle([...e.char].map(c => c.codePointAt(0).toString(16)).join("-"))}
-							on:load={ev => (ev.target.style.background = "none")}
-							class:emoji-loading={true}
+							on:load={ev => ev.target.classList.add("ready")}
 							loading="lazy"
 							decoding="async"
 							draggable="false"
@@ -379,6 +377,9 @@
 </div>
 
 <style>
+	.option.unicode img.unicode-img:not(.ready) {
+		background: radial-gradient(circle, rgba(128, 128, 128, 0.25) 55%, transparent 58%);
+	}
 	.option.unicode img.unicode-img {
 		width: 100%;
 		height: 100%;

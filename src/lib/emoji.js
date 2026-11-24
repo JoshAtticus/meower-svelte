@@ -6,12 +6,17 @@ const NOTO_COMMIT = "99701e07d3d1fe1bdbcdb14964547f0fd592966f";
 const BASE = `https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@${NOTO_COMMIT}/3D/png/`;
 
 /** Image URL for an emoji given as a twemoji-style codepoint string ("1f600", "1f468-200d-1f4bb"). Sizes: 32, 72, 128, 512. */
-export function notoUrl(icon, size = 128) {
-	const name = icon
+// Noto file names: lowercase hex, at least 4 digits, FE0F removed ("0023_20e3")
+function iconName(icon) {
+	return icon
 		.split("-")
 		.filter(part => part !== "fe0f")
+		.map(part => part.padStart(4, "0"))
 		.join("_");
-	return `${BASE}${size}/emoji_u${name}.png`;
+}
+
+export function notoUrl(icon, size = 128) {
+	return `${BASE}${size}/emoji_u${iconName(icon)}.png`;
 }
 
 /** Same, for an emoji character. */
@@ -27,10 +32,7 @@ export function emojiCharUrl(char, size = 128) {
 const silhouettes = new Map();
 
 function silhouetteUrl(icon) {
-	const name = icon
-		.split("-")
-		.filter(part => part !== "fe0f")
-		.join("_");
+	const name = iconName(icon);
 	if (silhouettes.has(name)) return silhouettes.get(name);
 	let url = null;
 	const b64 = shapes[name];
@@ -98,14 +100,27 @@ if (typeof document !== "undefined") {
 	};
 	document.addEventListener("load", onDone, true);
 	document.addEventListener("error", onDone, true);
-	const sweep = root => {
-		if (root.nodeType !== 1) return;
-		const imgs = root.matches("img.emoji-loading")
-			? [root]
-			: root.querySelectorAll("img.emoji-loading");
-		imgs.forEach(img => img.complete && settle(img));
+	// check newly added images once per frame, not once per mutation
+	let pending = new Set();
+	let scheduled = false;
+	const flush = () => {
+		scheduled = false;
+		const nodes = pending;
+		pending = new Set();
+		nodes.forEach(root => {
+			if (!root.isConnected) return;
+			const imgs = root.matches("img.emoji-loading")
+				? [root]
+				: root.querySelectorAll("img.emoji-loading");
+			imgs.forEach(img => img.complete && settle(img));
+		});
 	};
-	new MutationObserver(muts =>
-		muts.forEach(m => m.addedNodes.forEach(sweep))
-	).observe(document.documentElement, {childList: true, subtree: true});
+	new MutationObserver(muts => {
+		for (const m of muts)
+			for (const n of m.addedNodes) if (n.nodeType === 1) pending.add(n);
+		if (pending.size && !scheduled) {
+			scheduled = true;
+			requestAnimationFrame(flush);
+		}
+	}).observe(document.documentElement, {childList: true, subtree: true});
 }
