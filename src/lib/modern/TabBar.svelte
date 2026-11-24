@@ -23,6 +23,26 @@
 	import info from "../../assets/info.svg";
 
 	import {goto, isActive} from "@roxi/routify";
+	import {onMount} from "svelte";
+
+	// hide the bar while typing so it doesn't float above the on-screen keyboard
+	let typing = false;
+	const isTextField = el =>
+		el &&
+		(el.tagName === "INPUT" ||
+			el.tagName === "TEXTAREA" ||
+			el.isContentEditable) &&
+		!["checkbox", "radio", "button", "submit", "file"].includes(el.type);
+	onMount(() => {
+		const onIn = e => (typing = isTextField(e.target));
+		const onOut = () => setTimeout(() => (typing = isTextField(document.activeElement)), 50);
+		window.addEventListener("focusin", onIn);
+		window.addEventListener("focusout", onOut);
+		return () => {
+			window.removeEventListener("focusin", onIn);
+			window.removeEventListener("focusout", onOut);
+		};
+	});
 
 	let menuOpen = false;
 
@@ -48,7 +68,7 @@
 
 <svelte:body on:click={() => (menuOpen = false)} />
 
-<nav class="tabbar" aria-label="Main navigation">
+<nav class="tabbar" class:hidden={typing} aria-label="Main navigation">
 	{#each tabs as tab}
 		<button
 			class="tab"
@@ -179,6 +199,9 @@
 {/if}
 
 <style>
+	.tabbar.hidden {
+		display: none;
+	}
 	.tabbar {
 		position: fixed;
 		left: 0;

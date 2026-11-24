@@ -481,6 +481,9 @@
 	}
 	.replies-rail {
 		flex-basis: 100%;
+		box-sizing: border-box;
+		min-width: 0;
+		max-width: 100%;
 		margin-top: 0.5em;
 		padding-left: 0.9em;
 		border-left: 2px solid var(--hairline, var(--gray, #ddd));
