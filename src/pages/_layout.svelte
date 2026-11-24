@@ -39,6 +39,20 @@
 		: themeColors($user.theme, isDark, $user.avatar_color);
 	$: custom = $useCustomTheme && !accentOn;
 
+	// keep the browser/PWA chrome (status bar, address bar) matching the app, not orange
+	$: themeColor =
+		(custom ? $customTheme.background : tc?.background) ||
+		(isDark ? "#202020" : "#ffffff");
+	$: if (typeof document !== "undefined") {
+		let meta = document.querySelector('meta[name="theme-color"]');
+		if (!meta) {
+			meta = document.createElement("meta");
+			meta.name = "theme-color";
+			document.head.appendChild(meta);
+		}
+		meta.setAttribute("content", themeColor);
+	}
+
 	let currentPage = "";
 	let currentParams = JSON.stringify($params);
 	let remounting = false;

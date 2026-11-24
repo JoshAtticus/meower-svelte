@@ -726,29 +726,29 @@
 			{/if}
 			<FormattedDate date={post.date} />
 			{#if post.pinned}
-				<i>(pinned)</i>
+				<span class="post-tag">pinned</span>
 			{/if}
 			{#if post.edited_at}
-				<i
-					>(<FormattedDate
+				<span class="post-tag"
+					><FormattedDate
 						date={post.edited_at}
 						customText="edited"
-					/>)</i
+					/></span
 				>
 			{/if}
 			{#if post.isDeleted && post.mod_deleted}
-				<i
-					>(<FormattedDate
+				<span class="post-tag deleted"
+					><FormattedDate
 						date={post.deleted_at}
 						customText="deleted by moderator"
-					/>)</i
+					/></span
 				>
 			{:else if post.isDeleted}
-				<i
-					>(<FormattedDate
+				<span class="post-tag deleted"
+					><FormattedDate
 						date={post.deleted_at}
 						customText="self-deleted"
-					/>)</i
+					/></span
 				>
 			{/if}
 		</div>
@@ -1111,6 +1111,34 @@
 		max-width: 100%;
 	}
 
+	.post-tag {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.05em 0.6em;
+		border-radius: 999px;
+		border: 1px solid currentColor;
+		font-size: 0.7em;
+		line-height: 1.5;
+		opacity: 0.65;
+		white-space: nowrap;
+	}
+	.post-tag.deleted {
+		color: crimson;
+		opacity: 0.9;
+	}
+	.post-tag :global(.date) {
+		font-style: normal;
+		font-size: 1em !important;
+		opacity: 1 !important;
+	}
+	.post-tag :global(.date)::before {
+		content: none !important;
+	}
+	/* keep the name block beside the avatar on narrow screens */
+	.creatordate {
+		flex: 1 1 0;
+		min-width: 0;
+	}
 	.creatordate {
 		margin-left: 0.5em;
 	}
