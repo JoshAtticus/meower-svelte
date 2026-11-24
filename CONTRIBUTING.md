@@ -17,8 +17,8 @@ Requirements:
 To clone and run a development server on your machine (that autoupdates when you modify files):
 
 ```
-git clone https://github.com/meower-media-co/Meower-Svelte
-cd Meower-Svelte
+git clone https://github.com/JoshAtticus/meower-svelte
+cd meower-svelte
 npm install
 npm run dev:routify (in a separate terminal)
 npm run dev
