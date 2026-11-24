@@ -659,3 +659,22 @@ img.custom-emoji:not([data-l]) {
 .icon-menu button.trash { --icon: url("./trash.svg"); }
 .icon-menu button.report { --icon: url("./report.svg"); }
 .icon-menu button.admin { --icon: url("./shield.svg"); }
+
+/* emoji silhouette placeholders pulse until the image has loaded */
+img.emoji.emoji-loading {
+	animation: emoji-pulse 1.2s ease-in-out infinite;
+}
+@keyframes emoji-pulse {
+	0%,
+	100% {
+		opacity: 0.55;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	img.emoji.emoji-loading {
+		animation: none;
+	}
+}
