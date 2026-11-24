@@ -14,6 +14,7 @@
 
 	import {createEventDispatcher, onMount} from "svelte";
 	import emojilib from "emojilib";
+	import emojiOrder from "../assets/emoji-order.json";
 	import {mobile} from "./responsiveness.js";
 	import {emojiCharUrl} from "./emoji.js";
 	import {placeholderUrl} from "./postFormat.js";
@@ -86,10 +87,15 @@
 
 	const dispatch = createEventDispatcher();
 
-	const ALL_EMOJI = Object.entries(emojilib).map(([char, keywords]) => ({
-		char,
-		keywords,
-	}));
+	// the standard Unicode order (emojilib's own order is not sorted)
+	const ORDER = new Map(emojiOrder.map((c, i) => [c, i]));
+	const orderOf = char => {
+		const i = ORDER.get(char.replace(/️/g, ""));
+		return i === undefined ? Infinity : i;
+	};
+	const ALL_EMOJI = Object.entries(emojilib)
+		.map(([char, keywords]) => ({char, keywords}))
+		.sort((a, b) => orderOf(a.char) - orderOf(b.char));
 
 	let query = "";
 	// section: "recent" | "unicode" | `chat:${id}`
@@ -270,7 +276,16 @@
 								type="button"
 								class="option unicode"
 								title={e.name}
-								on:click={ev => pickRecent(e, ev)}>{e.v}</button
+								on:click={ev => pickRecent(e, ev)}
+								><img
+									class="unicode-img"
+									src={emojiCharUrl(e.v, 72)}
+									alt={e.v}
+									on:load={ev => ev.target.classList.add("ready")}
+									loading="lazy"
+									decoding="async"
+									draggable="false"
+								/></button
 							>
 						{:else}
 							<button

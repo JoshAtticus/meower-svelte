@@ -1,9 +1,7 @@
 import shapes from "../assets/emoji-shapes.json";
 
-// Emoji images: Noto Emoji 3D by Google (CC BY 4.0), served from jsDelivr.
-// Pinned to a commit so the images never change underneath us.
-const NOTO_COMMIT = "99701e07d3d1fe1bdbcdb14964547f0fd592966f";
-const BASE = `https://cdn.jsdelivr.net/gh/googlefonts/noto-emoji@${NOTO_COMMIT}/3D/png/`;
+// Emoji images: Noto Emoji 3D by Google (CC BY 4.0), self-hosted in /emoji as
+// 128px WebP (generated from googlefonts/noto-emoji commit 99701e0).
 
 /** Image URL for an emoji given as a twemoji-style codepoint string ("1f600", "1f468-200d-1f4bb"). Sizes: 32, 72, 128, 512. */
 // Noto file names: lowercase hex, at least 4 digits, FE0F removed ("0023_20e3")
@@ -16,7 +14,7 @@ function iconName(icon) {
 }
 
 export function notoUrl(icon, size = 128) {
-	return `${BASE}${size}/emoji_u${iconName(icon)}.png`;
+	return `/emoji/${iconName(icon)}.webp`;
 }
 
 /** Same, for an emoji character. */
@@ -76,15 +74,33 @@ export function emojiPlaceholderStyle(icon) {
 	return url ? `background:url('${url}') center/contain no-repeat` : "";
 }
 
-/** Options for twemoji.parse so it emits Noto 3D images with silhouette placeholders. */
-export const parseOptions = {
-	className: "emoji emoji-loading",
-	callback: icon => notoUrl(icon),
-	attributes: (raw, icon) => {
+import twemoji from "twemoji";
+
+// The browser's own Unicode data knows about new emoji (twemoji's list is old)
+const RGI = (() => {
+	try {
+		return new RegExp("\\p{RGI_Emoji}", "gv");
+	} catch {
+		return null;
+	}
+})();
+
+/** Calls fn(emojiString) for every emoji in text and returns the result. */
+export function replaceEmoji(text, fn) {
+	return RGI ? text.replace(RGI, fn) : twemoji.replace(text, fn);
+}
+
+const toIcon = char =>
+	[...char].map(c => c.codePointAt(0).toString(16)).join("-");
+
+/** Turns the emoji in already-escaped text into Noto images with silhouette placeholders. */
+export function emojiHtml(text) {
+	return replaceEmoji(text, char => {
+		const icon = toIcon(char);
 		const style = emojiPlaceholderStyle(icon);
-		return style ? {style} : {};
-	},
-};
+		return `<img class="emoji emoji-loading" draggable="false" alt="${char}" src="${notoUrl(icon)}"${style ? ` style="${style}"` : ""}>`;
+	});
+}
 
 // Placeholders are removed once the image has loaded (or failed). Doing this
 // from document-level listeners also covers images that were already cached

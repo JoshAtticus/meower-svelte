@@ -7,8 +7,7 @@
  *   node.disabled   -> read-only state (get/set)
  *   node.insert(t)  -> insert text (which may contain <:id>) at the caret
  */
-import twemoji from "twemoji";
-import {emojiCharUrl} from "./emoji.js";
+import {emojiCharUrl, emojiPlaceholderStyle, replaceEmoji} from "./emoji.js";
 
 const EMOJI_RE = /<:([a-zA-Z0-9]{24})>/g;
 
@@ -28,7 +27,11 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 	// Unicode emoji are shown as images too, so they render on every OS
 	function unicodeImg(char) {
 		const img = document.createElement("img");
-		img.className = "composer-emoji";
+		img.className = "composer-emoji emoji-loading";
+		const style = emojiPlaceholderStyle(
+			[...char].map(c => c.codePointAt(0).toString(16)).join("-")
+		);
+		if (style) img.style.cssText = style;
 		img.src = emojiCharUrl(char);
 		img.alt = char;
 		img.dataset.unicode = char;
@@ -44,7 +47,7 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 			t.split("\n").forEach((line, i) => {
 				if (i > 0) frag.appendChild(document.createElement("br"));
 				if (!line) return;
-				const marked = twemoji.replace(line, m => `\u0000${m}\u0000`);
+				const marked = replaceEmoji(line, m => `\u0000${m}\u0000`);
 				marked.split("\u0000").forEach((part, j) => {
 					if (!part) return;
 					frag.appendChild(

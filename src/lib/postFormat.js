@@ -12,7 +12,7 @@ import * as modals from "./modals.js";
 import {IMAGE_HOST_WHITELIST} from "./hostWhitelist.js";
 import {uploadsUrl} from "./urls.js";
 import {thumbHashToDataURL} from "thumbhash";
-import {parseOptions} from "./emoji.js";
+import {emojiHtml} from "./emoji.js";
 
 const placeholderCache = new Map();
 // base64 ThumbHash -> data URL of its blurred preview (null if invalid)
@@ -67,7 +67,7 @@ function renderTextEmojis(escapedText, emotes, postEmojis = []) {
 		}
 	);
 
-	return twemoji.parse(escapedText, parseOptions);
+	return emojiHtml(escapedText);
 }
 
 export function addFancyElements(content, emotes, postEmojis = []) {
