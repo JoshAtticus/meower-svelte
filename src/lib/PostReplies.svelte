@@ -400,7 +400,7 @@
 								<input
 									type="text"
 									bind:value={nestedInput}
-									placeholder="Reply to {reply.user}…"
+									placeholder="Reply to {reply.user}..."
 									maxlength="360"
 									disabled={sending}
 									autofocus
@@ -414,7 +414,7 @@
 			</div>
 		{/each}
 		{#if loading}
-			<p class="replies-note">Loading…</p>
+			<p class="replies-note">Loading...</p>
 		{/if}
 		{#if page < pages}
 			<button type="button" class="load-more" on:click={() => load(page + 1, true)}>
@@ -427,7 +427,7 @@
 					type="text"
 					bind:this={composeInput}
 					bind:value={replyInput}
-					placeholder="Write a reply…"
+					placeholder="Write a reply..."
 					maxlength="360"
 					disabled={sending}
 				/>

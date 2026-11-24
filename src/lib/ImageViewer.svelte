@@ -60,13 +60,21 @@
 		<div class="top" on:click|stopPropagation>
 			<a
 				class="btn"
+				href={(current.downloadUrl || current.src) + "?download"}
+				title="Download"
+				aria-label="Download"
+				><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 4v11"/><path d="M7 11l5 5 5-5"/><path d="M5 20h14"/></svg></a
+			>
+			<a
+				class="btn"
 				href={current.downloadUrl || current.src}
 				target="_blank"
 				rel="noreferrer"
 				title="Open original"
-				aria-label="Open original">&#8599;</a
+				aria-label="Open original"
+				><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a
 			>
-			<button type="button" class="btn" title="Close" aria-label="Close" on:click={closeViewer}>&times;</button>
+			<button type="button" class="btn" title="Close" aria-label="Close" on:click={closeViewer}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
 		</div>
 
 		<div class="stage">
@@ -85,8 +93,8 @@
 		</div>
 
 		{#if count > 1}
-			<button type="button" class="nav prev" aria-label="Previous image" on:click|stopPropagation={() => go(-1)}>&#8249;</button>
-			<button type="button" class="nav next" aria-label="Next image" on:click|stopPropagation={() => go(1)}>&#8250;</button>
+			<button type="button" class="nav prev" aria-label="Previous image" on:click|stopPropagation={() => go(-1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polyline points="15 5 8 12 15 19"/></svg></button>
+			<button type="button" class="nav next" aria-label="Next image" on:click|stopPropagation={() => go(1)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><polyline points="9 5 16 12 9 19"/></svg></button>
 			<div class="counter" on:click|stopPropagation>{$viewer.index + 1} / {count}</div>
 		{/if}
 	</div>
@@ -129,6 +137,11 @@
 		text-decoration: none;
 		cursor: pointer;
 	}
+	.icon {
+		width: 1.3rem;
+		height: 1.3rem;
+		display: block;
+	}
 	.btn:hover {
 		background: rgba(255, 255, 255, 0.26);
 	}
@@ -170,13 +183,16 @@
 		}
 	}
 	.nav {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		position: absolute;
 		top: 50%;
 		transform: translateY(-50%);
 		width: 3rem;
 		height: 3rem;
 		margin: 0;
-		padding: 0 0 0.15em;
+		padding: 0;
 		border: none;
 		border-radius: 50%;
 		color: #fff;

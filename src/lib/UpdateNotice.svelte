@@ -52,11 +52,11 @@
 {#if available}
 	<div class="update-notice" class:mobile={$mobile} role="status">
 		{#if forced}
-			<span>Important update available. Refreshing…</span>
+			<span>Important update available. Refreshing...</span>
 		{:else}
 			<span>A new version of Meower is available.</span>
 			<button type="button" class="refresh" on:click={() => location.reload()}>Refresh</button>
-			<button type="button" class="close" title="Dismiss" aria-label="Dismiss" on:click={dismiss}>&times;</button>
+			<button type="button" class="close" title="Dismiss" aria-label="Dismiss" on:click={dismiss}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="icon"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
 		{/if}
 	</div>
 {/if}
@@ -107,6 +107,15 @@
 		opacity: 0.7;
 		font-size: 1.1em;
 		line-height: 1;
+	}
+	.close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.icon {
+		width: 1em;
+		height: 1em;
 	}
 	.close:hover {
 		opacity: 1;
