@@ -23,6 +23,7 @@
 	import SharePostModal from "./modals/SharePost.svelte";
 	import PinPostModal from "./modals/PinPost.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import EmoteAutocomplete from "./EmoteAutocomplete.svelte";
 	import PostReplies from "./PostReplies.svelte";
 	import {portal} from "./portal.js";
 	import {swipeDismiss} from "./swipeDismiss.js";
@@ -793,6 +794,10 @@
 				onClose={() => (editPopupAnchor = null)}
 			/>
 		{/if}
+		<EmoteAutocomplete
+			input={editContentInput}
+			chatId={post.post_origin === "home" ? null : post.post_origin}
+		/>
 		<div style="display: flex; justify-content: space-between;">
 			<button on:click={() => (editing = false)}>Cancel</button>
 			<button

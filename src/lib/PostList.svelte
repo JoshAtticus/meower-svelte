@@ -24,6 +24,7 @@
 	import AccountBannedModal from "./modals/safety/AccountBanned.svelte";
 	import BlockUserModal from "./modals/safety/BlockUser.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
+	import EmoteAutocomplete from "./EmoteAutocomplete.svelte";
 	import ServerPostGroup from "./ServerPostGroup.svelte";
 	import emojiIcon from "../assets/emoji.svg";
 
@@ -931,6 +932,20 @@
 				{/if}
 				</div>
 			</form>
+			<EmoteAutocomplete
+				input={postInput}
+				chatId={postOrigin === "home" ? null : $chat._id}
+				onSticker={textOnly
+					? null
+					: id => {
+							sendPost(
+								"",
+								[id],
+								pendingReplies.map(r => r.post_id)
+							);
+							pendingReplies = [];
+						}}
+			/>
 			{#if showEmojiPopup}
 				<div
 					class="popup-overlay"

@@ -87,6 +87,14 @@
 		if (emotePreview) URL.revokeObjectURL(emotePreview);
 		emoteFile = file;
 		emotePreview = URL.createObjectURL(file);
+		// default the name to the file name without its extension
+		if (!emoteName) {
+			emoteName = file.name
+				.replace(/\.[^.]+$/, "")
+				.replace(/[^A-Za-z0-9_-]+/g, "_")
+				.replace(/^_+|_+$/g, "")
+				.slice(0, 32);
+		}
 	}
 
 	function clearEmoteFile() {
@@ -803,6 +811,13 @@
 						maxlength="32"
 						disabled={emoteUploading}
 						bind:value={emoteName}
+						on:keydown={e => {
+							if (e.key === "Enter") {
+								e.preventDefault();
+								if (!emoteUploading && emoteFile && emoteNameValid)
+									uploadEmote(type);
+							}
+						}}
 					/>
 				</div>
 				<button

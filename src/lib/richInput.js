@@ -124,6 +124,31 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 		node.dispatchEvent(new Event("input", {bubbles: true}));
 	}
 
+	// The text in the current text node up to the caret ("" if the caret isn't in plain text)
+	function tokenBeforeCaret() {
+		const sel = window.getSelection();
+		if (!sel.rangeCount || !sel.isCollapsed) return "";
+		const r = sel.getRangeAt(0);
+		if (r.startContainer.nodeType !== Node.TEXT_NODE || !node.contains(r.startContainer)) return "";
+		return r.startContainer.data.slice(0, r.startOffset);
+	}
+
+	// Replace the `len` characters before the caret with text (which may contain <:id>)
+	function replaceBeforeCaret(len, text) {
+		const sel = window.getSelection();
+		if (!sel.rangeCount) return;
+		const r = sel.getRangeAt(0);
+		if (r.startContainer.nodeType !== Node.TEXT_NODE || !node.contains(r.startContainer)) return;
+		const range = document.createRange();
+		range.setStart(r.startContainer, Math.max(0, r.startOffset - len));
+		range.setEnd(r.startContainer, r.startOffset);
+		range.deleteContents();
+		sel.removeAllRanges();
+		sel.addRange(range);
+		if (text) insert(text);
+		else node.dispatchEvent(new Event("input", {bubbles: true}));
+	}
+
 	Object.defineProperty(node, "value", {
 		configurable: true,
 		get: () => serialize(node).replace(/\u00a0/g, " "),
@@ -142,6 +167,8 @@ export function richInput(node, {uploadsUrl, disabled = false, onFiles = null} =
 		},
 	});
 	node.insert = insert;
+	node.tokenBeforeCaret = tokenBeforeCaret;
+	node.replaceBeforeCaret = replaceBeforeCaret;
 	node.caretToEnd = placeCaretAtEnd;
 	node.disabled = disabled;
 	node.classList.add("empty");
