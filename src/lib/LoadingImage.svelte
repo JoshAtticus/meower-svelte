@@ -5,6 +5,8 @@
 	(the full image is available in the viewer).
 -->
 <script>
+	import {thumbHashToDataURL} from "thumbhash";
+
 	export let src;
 	export let alt = "";
 	export let width = 0;
@@ -12,6 +14,8 @@
 	export let maxWidth = "28em";
 	export let maxHeight = "15em";
 	export let clickable = false;
+	// base64 ThumbHash: a tiny blurred preview shown until the image loads
+	export let thumbhash = "";
 
 	let loaded = false;
 	let failed = false;
@@ -20,6 +24,17 @@
 		lastSrc = src;
 		loaded = false;
 		failed = false;
+	}
+
+	let placeholder = null;
+	$: {
+		placeholder = null;
+		if (thumbhash) {
+			try {
+				const bytes = Uint8Array.from(atob(thumbhash), c => c.charCodeAt(0));
+				placeholder = thumbHashToDataURL(bytes);
+			} catch {}
+		}
 	}
 
 	$: known = width > 0 && height > 0;
@@ -34,10 +49,12 @@
 	class:loaded
 	class:failed
 	class:clickable
+	class:has-placeholder={!!placeholder}
 	style:--r={ratio || null}
 	style:--mw={maxWidth}
 	style:--mh={maxHeight}
 	style:aspect-ratio={known ? ratio : null}
+	style:background-image={placeholder && !loaded ? `url(${placeholder})` : null}
 >
 	<img
 		{src}
@@ -72,6 +89,11 @@
 		animation: li-shimmer 1.3s linear infinite;
 		min-width: 6em;
 		min-height: 6em;
+	}
+	.li.has-placeholder {
+		animation: none;
+		background-size: cover;
+		background-position: center;
 	}
 	.li.loaded {
 		animation: none;

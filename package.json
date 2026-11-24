@@ -25,6 +25,7 @@
 	},
 	"dependencies": {
 		"emojilib": "^4.0.3",
-		"highlight.js": "^11.12.0"
+		"highlight.js": "^11.12.0",
+		"thumbhash": "^0.1.1"
 	}
 }

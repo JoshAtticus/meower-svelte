@@ -7,8 +7,8 @@
 
 	import Contributor from "../lib/Contributor.svelte";
 
-	const REPO_OWNER = "meower-media-co";
-	const REPO_NAME = "Meower-Svelte";
+	const REPO_OWNER = "JoshAtticus";
+	const REPO_NAME = "meower-svelte";
 
 	async function fetchContributors() {
 		const res = await fetch(
@@ -48,7 +48,7 @@
 		>
 		|
 		<a
-			href="https://github.com/meower-media-co"
+			href="https://github.com/JoshAtticus/meower-svelte"
 			target="_blank"
 			rel="noreferrer">Source code</a
 		>

@@ -14,6 +14,7 @@
 	export let size = 0;
 	export let width = 0;
 	export let height = 0;
+	export let thumbhash = "";
 	// all attachments of the post, so the viewer can page through the images
 	export let siblings = null;
 
@@ -59,6 +60,7 @@
 				alt={filename}
 				{width}
 				{height}
+				{thumbhash}
 				clickable
 			/>
 		</a>

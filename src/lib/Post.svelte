@@ -901,6 +901,7 @@
 					size={attachment.size}
 					width={attachment.width}
 					height={attachment.height}
+					thumbhash={attachment.thumbhash}
 					siblings={post.attachments}
 				/>
 			{/each}

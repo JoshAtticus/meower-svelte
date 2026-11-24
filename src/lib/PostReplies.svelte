@@ -328,7 +328,7 @@
 					{#if reply.attachments?.length}
 						<div class="reply-attachments">
 							{#each reply.attachments as a}
-								<Attachment id={a.id} filename={a.filename} mime={a.mime} size={a.size} width={a.width} height={a.height} siblings={reply.attachments} />
+								<Attachment id={a.id} filename={a.filename} mime={a.mime} size={a.size} width={a.width} height={a.height} thumbhash={a.thumbhash} siblings={reply.attachments} />
 							{/each}
 						</div>
 					{/if}
