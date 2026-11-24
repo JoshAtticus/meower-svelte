@@ -51,12 +51,25 @@ export default async function loadProfile(username, ignoreSpecialUsers) {
 
 		inFlight[username] = (async () => {
 			try {
-				const resp = await fetch(`${apiUrl}users/${username}`);
-				if (!resp.ok) {
-					throw new Error("response code not OK; code " + resp.status);
+				let lastError;
+				for (let attempt = 0; attempt < 3; attempt++) {
+					try {
+						const resp = await fetch(`${apiUrl}users/${username}`);
+						if (!resp.ok) {
+							// a missing user won't appear by retrying
+							if (resp.status === 404) attempt = 2;
+							throw new Error("response code not OK; code " + resp.status);
+						}
+						_profileCache[username] = await resp.json();
+						profileCache.set(_profileCache);
+						return;
+					} catch (e) {
+						lastError = e;
+						if (attempt < 2)
+							await new Promise(r => setTimeout(r, 400 * 2 ** attempt));
+					}
 				}
-				_profileCache[username] = await resp.json();
-				profileCache.set(_profileCache);
+				throw lastError;
 			} catch (e) {
 				console.log(e);
 				_profileCache[username] = {

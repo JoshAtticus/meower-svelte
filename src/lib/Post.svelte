@@ -96,7 +96,15 @@
 		post.user === "Notification" && post.category
 			? INBOX_CATEGORY_META[post.category]
 			: null;
-	$: postProfile = $profileCache[post.user] || {};
+	// the cached profile can be missing or failed (e.g. a dropped request);
+	// fall back to the author details that arrived with the post
+	$: postProfile = (() => {
+		const cached = $profileCache[post.user];
+		const author = bridged || webhook ? null : post.author;
+		if (cached && !cached.temporary && !cached.error)
+			return author ? {...author, ...cached} : cached;
+		return author || cached || {};
+	})();
 
 	$: postEmotes = $chatEmotes[post.post_origin] || {
 		emojis: [],
@@ -848,10 +856,9 @@
 									: reply.u}</b
 							>
 					<span class="reply-text"
-						>{reply.p ||
-							(reply.attachments && reply.attachments.length
+						>{#if reply.p}{#await addFancyElements(reply.p, postEmotes, reply.emojis || []) then html}{@html html}{/await}{:else}{reply.attachments && reply.attachments.length
 								? "Attachment"
-								: "Sticker")}</span
+								: "Sticker"}{/if}</span
 					>
 				</button>
 			{:else}
@@ -1372,6 +1379,8 @@
 		gap: 0.25em;
 	}
 	.reply-box {
+		min-width: 0;
+		max-width: 100%;
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
@@ -1393,7 +1402,21 @@
 	.reply-user {
 		flex-shrink: 0;
 	}
+	.reply-text :global(*) {
+		display: inline;
+		margin: 0;
+		padding: 0;
+		white-space: nowrap;
+		font-size: inherit;
+		border: none;
+	}
+	.reply-text :global(img) {
+		height: 1.2em;
+		width: auto;
+		vertical-align: middle;
+	}
 	.reply-text {
+		flex: 1 1 0;
 		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;

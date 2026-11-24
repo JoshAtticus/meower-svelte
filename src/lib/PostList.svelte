@@ -28,6 +28,7 @@
 	import emojiIcon from "../assets/emoji.svg";
 
 	import {replyBus} from "./replyBus.js";
+	import {addFancyElements} from "./postFormat.js";
 	import {
 		relationships,
 		authHeader,
@@ -352,6 +353,7 @@
 				stickers: post.stickers,
 				reply_to: post.reply_to,
 				reply_count: post.reply_count || 0,
+				author: post.author,
 				reactions: post.reactions || [],
 				emojis: post.emojis || [],
 				date: post.t.e,
@@ -439,6 +441,7 @@
 							attachments: json.attachments,
 							stickers: json.stickers,
 							reply_to: json.reply_to,
+							author: json.author,
 							reactions: json.reactions || [],
 							emojis: json.emojis || [],
 							date: json.t.e,
@@ -527,6 +530,7 @@
 							stickers: post.stickers,
 							reply_to: post.reply_to,
 							reply_count: post.reply_count || 0,
+							author: post.author,
 							reactions: post.reactions || [],
 							emojis: post.emojis || [],
 							date: post.t.e,
@@ -550,6 +554,7 @@
 						stickers: cmd.val.stickers,
 						reply_to: cmd.val.reply_to,
 						reply_count: cmd.val.reply_count || 0,
+						author: cmd.val.author,
 						reactions: cmd.val.reactions || [],
 						emojis: cmd.val.emojis || [],
 						date: cmd.val.t.e,
@@ -643,7 +648,7 @@
 						<span class="pending-reply-label"
 							>Replying to <b>{reply.user}</b></span
 						>
-						<span class="pending-reply-text">{reply.content}</span>
+						<span class="pending-reply-text">{#await addFancyElements(reply.content || "", $chatEmotes[postOrigin] || {}, reply.emojis || []) then html}{@html html}{/await}</span>
 						<button
 							type="button"
 							class="circle close"
@@ -1214,6 +1219,9 @@
 		margin-bottom: 0.4em;
 	}
 	.pending-reply {
+		min-width: 0;
+		max-width: 100%;
+		box-sizing: border-box;
 		display: flex;
 		align-items: center;
 		gap: 0.5em;
@@ -1225,6 +1233,19 @@
 	}
 	.pending-reply-label {
 		flex-shrink: 0;
+	}
+	.pending-reply-text :global(*) {
+		display: inline;
+		margin: 0;
+		padding: 0;
+		white-space: nowrap;
+		font-size: inherit;
+		border: none;
+	}
+	.pending-reply-text :global(img) {
+		height: 1.2em;
+		width: auto;
+		vertical-align: middle;
 	}
 	.pending-reply-text {
 		flex: 1;
