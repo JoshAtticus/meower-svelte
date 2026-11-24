@@ -18,7 +18,7 @@ export const linkUrl =
 			: "ws://127.0.0.1:3000"
 		: beta
 			? "wss://beta.meower.org/api/v0/cloudlink"
-			: "wss://meower-cl.joshatticus.site/v0/cloudlink");
+			: import.meta.env.VITE_LINK_URL || "wss://meower-cl.joshatticus.site/v0/cloudlink");
 export const apiUrl =
 	localStorage.getItem("meower_apiurl") ||
 	(dev
@@ -27,13 +27,13 @@ export const apiUrl =
 			: "http://127.0.0.1:3001/"
 		: beta
 			? "https://beta.meower.org/api/"
-			: "https://meower-api.joshatticus.site/");
+			: import.meta.env.VITE_API_URL || "https://meower-api.joshatticus.site/");
 export const uploadsUrl =
 	localStorage.getItem("meower_uploadsurl") ||
 	(dev
 		? shared
 			? `${location.origin}/uploads/`
 			: "http://127.0.0.1:3002/"
-		: "https://uploads.meower.org/");
+		: import.meta.env.VITE_UPLOADS_URL || "https://uploads.meower.org/");
 export const encodeApiURLParams =
 	localStorage.getItem("meower_encodeapi") || false;
