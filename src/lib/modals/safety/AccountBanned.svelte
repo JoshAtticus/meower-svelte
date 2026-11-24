@@ -58,7 +58,7 @@
 
 		{#if ban.state.includes("temp")}
 			<p>
-				This {banType} will expire after <FormattedDate
+				This {banType} will expire <FormattedDate
 					date={ban.expires}
 				/>.
 			</p>

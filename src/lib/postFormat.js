@@ -40,7 +40,7 @@ function renderTextEmojis(escapedText, emotes, postEmojis = []) {
 				postEmojis.find(e => (e._id || e) === id) ||
 				((emotes && emotes.emojis) || []).find(e => e._id === id);
 			const name = known && known.name ? `:${known.name.replace(/[^a-zA-Z0-9_-]/g, "")}:` : "emoji";
-			return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}">`;
+			return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}" decoding="async" onload="this.dataset.l=1">`;
 		}
 	);
 

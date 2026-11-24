@@ -8,6 +8,7 @@
 	import ChatsPanel from "../lib/modern/ChatsPanel.svelte";
 	import Spinner from "../lib/Spinner.svelte";
 	import UpdateNotice from "../lib/UpdateNotice.svelte";
+	import ImageViewer from "../lib/ImageViewer.svelte";
 
 	import {
 		screen,
@@ -167,6 +168,7 @@
 		{/if}
 	{/if}
 	<UpdateNotice />
+	<ImageViewer />
 </main>
 
 <style>

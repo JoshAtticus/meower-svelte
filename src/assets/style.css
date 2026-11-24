@@ -609,3 +609,25 @@ button.more {
 	background-color: var(--orange);
 	opacity: 0.6;
 }
+
+/* custom emoji placeholder until the image has loaded */
+img.custom-emoji:not([data-l]) {
+	min-width: 1.4em;
+	border-radius: 4px;
+	background: linear-gradient(
+		100deg,
+		rgba(128, 128, 128, 0.12) 30%,
+		rgba(128, 128, 128, 0.3) 50%,
+		rgba(128, 128, 128, 0.12) 70%
+	);
+	background-size: 200% 100%;
+	animation: emoji-shimmer 1.3s linear infinite;
+}
+@keyframes emoji-shimmer {
+	from {
+		background-position: 200% 0;
+	}
+	to {
+		background-position: -200% 0;
+	}
+}

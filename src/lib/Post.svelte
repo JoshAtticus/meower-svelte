@@ -14,6 +14,7 @@
 	import LiText from "./LiText.svelte";
 	import Attachment from "./Attachment.svelte";
 	import ExternalImage from "./ExternalImage.svelte";
+	import LoadingImage from "./LoadingImage.svelte";
 
 	import ConfirmHyperlinkModal from "./modals/ConfirmHyperlink.svelte";
 	import DeletePostModal from "./modals/DeletePost.svelte";
@@ -885,11 +886,11 @@
 	{#if !editing}
 		<div class="post-images">
 			{#each post.stickers || [] as sticker}
-				<img
-					class="post-sticker"
+				<LoadingImage
 					src="{uploadsUrl}stickers/{sticker._id || sticker}"
 					alt={sticker.name || "Sticker"}
-					draggable="false"
+					maxWidth="12em"
+					maxHeight="12em"
 				/>
 			{/each}
 			{#each post.attachments as attachment}
@@ -897,6 +898,10 @@
 					id={attachment.id}
 					filename={attachment.filename}
 					mime={attachment.mime}
+					size={attachment.size}
+					width={attachment.width}
+					height={attachment.height}
+					siblings={post.attachments}
 				/>
 			{/each}
 			{#each images as { title, url }}
