@@ -889,6 +889,7 @@
 				<LoadingImage
 					src="{uploadsUrl}stickers/{sticker._id || sticker}"
 					alt={sticker.name || "Sticker"}
+					thumbhash={sticker.thumbhash}
 					maxWidth="12em"
 					maxHeight="12em"
 				/>

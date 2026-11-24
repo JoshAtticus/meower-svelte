@@ -11,6 +11,24 @@ import * as modals from "./modals.js";
 
 import {IMAGE_HOST_WHITELIST} from "./hostWhitelist.js";
 import {uploadsUrl} from "./urls.js";
+import {thumbHashToDataURL} from "thumbhash";
+
+const placeholderCache = new Map();
+// base64 ThumbHash -> data URL of its blurred preview (null if invalid)
+function placeholderUrl(b64) {
+	if (!b64) return null;
+	if (!placeholderCache.has(b64)) {
+		try {
+			placeholderCache.set(
+				b64,
+				thumbHashToDataURL(Uint8Array.from(atob(b64), c => c.charCodeAt(0)))
+			);
+		} catch {
+			placeholderCache.set(b64, null);
+		}
+	}
+	return placeholderCache.get(b64);
+}
 
 export function confirmLink(link) {
 	link = atob(link); // we now base64 encode the link to prevent XSS
@@ -40,7 +58,11 @@ function renderTextEmojis(escapedText, emotes, postEmojis = []) {
 				postEmojis.find(e => (e._id || e) === id) ||
 				((emotes && emotes.emojis) || []).find(e => e._id === id);
 			const name = known && known.name ? `:${known.name.replace(/[^a-zA-Z0-9_-]/g, "")}:` : "emoji";
-			return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}" decoding="async" onload="this.dataset.l=1">`;
+			const placeholder = placeholderUrl(known && known.thumbhash);
+			const style = placeholder
+				? ` style="background:url(${placeholder}) center/cover;animation:none"`
+				: "";
+			return `<img class="custom-emoji" src="${uploadsUrl}emojis/${id}" alt="${name}" title="${name}"${style} decoding="async" onload="this.dataset.l=1;this.style.background='none'">`;
 		}
 	);
 
