@@ -223,7 +223,7 @@
 
 
     </Container>-->
-	Meower Svelte v{version}
+	Meower Svelte {version}
 </div>
 
 <style>

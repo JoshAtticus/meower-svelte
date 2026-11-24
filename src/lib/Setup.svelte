@@ -290,7 +290,7 @@
 					</p>
 				{/if}
 				<div>
-					<p class="small">Meower v{version}</p>
+					<p class="small">Meower {version}</p>
 					<img src={meowy} alt="" height="64" />
 				</div>
 			</div>

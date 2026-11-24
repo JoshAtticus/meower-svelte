@@ -2,7 +2,10 @@ import {defineConfig} from "vite";
 import {svelte} from "@sveltejs/vite-plugin-svelte";
 import routify from "@roxi/routify/plugins/rollup.js";
 
-const buildId = Date.now().toString(36);
+// the commit when built on Cloudflare Pages, otherwise a timestamp
+const buildId =
+	(process.env.CF_PAGES_COMMIT_SHA || "").slice(0, 7) ||
+	Date.now().toString(36);
 
 // import replace from "@rollup/plugin-replace";
 // import {injectManifest} from "rollup-plugin-workbox";

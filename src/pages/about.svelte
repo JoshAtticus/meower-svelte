@@ -41,7 +41,7 @@
 		/>
 	</h1>
 	<b class="center friendlier">The friendlier social media for everyone.</b>
-	<div class="center">Svelte Client, version {version}</div>
+	<div class="center">Svelte Client, build {version}</div>
 	<div class="center links">
 		<a href="https://meower.org" target="_blank" rel="noreferrer"
 			>Learn more</a
