@@ -33,3 +33,10 @@ export function systemDarkMode() {
 		return false;
 	}
 }
+
+export const systemDark = writable(systemDarkMode());
+if (window.matchMedia) {
+	window
+		.matchMedia("(prefers-color-scheme: dark)")
+		.addEventListener("change", e => systemDark.set(e.matches));
+}

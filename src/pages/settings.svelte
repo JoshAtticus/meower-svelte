@@ -1,5 +1,6 @@
 <!-- You probably know what this is. -->
 <script>
+	import {systemDark} from "../lib/responsiveness.js";
 	import Container from "../lib/Container.svelte";
 	import FormattedDate from "../lib/FormattedDate.svelte";
 
@@ -59,7 +60,7 @@
 	$: themeLabel = $user.theme.startsWith("custom:")
 		? "Custom theme"
 		: `${$user.theme.charAt(0).toUpperCase()}${$user.theme.slice(1)} · ${
-				$user.mode ? "Light" : "Dark"
+				($user.mode == null ? !$systemDark : $user.mode) ? "Light" : "Dark"
 			}`;
 
 	const formatSize = bytes =>

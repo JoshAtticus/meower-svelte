@@ -19,7 +19,7 @@
 		useCustomTheme,
 		customTheme,
 	} from "../lib/stores.js";
-	import {mobile, touch} from "../lib/responsiveness.js";
+	import {mobile, touch, systemDark} from "../lib/responsiveness.js";
 	import {localLayout} from "../lib/layoutPref.js";
 	import {modernLayout} from "../lib/modernLayout.js";
 	import {themeColors, validProfileColor} from "../lib/themes.js";
@@ -32,10 +32,11 @@
 
 	// colours for the built-in themes (custom themes set their own)
 	// a page accent (e.g. the profile being viewed) overrides the theme
+	$: isDark = $user.mode == null ? $systemDark : $user.mode === false;
 	$: accentOn = validProfileColor($pageAccent);
 	$: tc = accentOn
-		? themeColors("profile", $user.mode === false, $pageAccent)
-		: themeColors($user.theme, $user.mode === false, $user.avatar_color);
+		? themeColors("profile", isDark, $pageAccent)
+		: themeColors($user.theme, isDark, $user.avatar_color);
 	$: custom = $useCustomTheme && !accentOn;
 
 	let currentPage = "";
@@ -74,8 +75,8 @@
 	style:--foreground-orange={custom
 		? $customTheme.foregroundOrange
 		: tc?.foregroundOrange}
-	class:mode-light={!($user.mode === false)}
-	class:mode-dark={$user.mode === false}
+	class:mode-light={!isDark}
+	class:mode-dark={isDark}
 	class:layout-modern={$modernLayout}
 	class:layout-old={!$modernLayout && ($localLayout || $user.layout) === "old"}
 	class:layout-mobile={$mobile}

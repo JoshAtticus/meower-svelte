@@ -10,6 +10,7 @@
 	import {THEMES, validProfileColor} from "../../themes.js";
 	import * as modals from "../../modals.js";
 	import * as clm from "../../clmanager.js";
+	import {systemDarkMode} from "../../responsiveness.js";
 
 	export let fromoobe = false;
 
@@ -26,7 +27,7 @@
 		{id: "custom", name: "Custom", color: null},
 	];
 
-	let darkMode = $user.mode === false;
+	let darkMode = $user.mode == null ? systemDarkMode() : $user.mode === false;
 	let theme = $user.theme || "orange";
 	let error = false;
 	if (theme.startsWith("custom:")) {
