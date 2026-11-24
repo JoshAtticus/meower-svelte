@@ -85,57 +85,42 @@
 			<rect x="150" y="232" width="116" height="40" rx="14" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
 			<text x="208" y="258" text-anchor="middle" font-size="20" fill="var(--foreground)">hi everyone!</text>
 		{:else if scene === "night"}
-			<clipPath id="night-clip"><rect width="420" height="420" rx="36" /></clipPath>
-			<g clip-path="url(#night-clip)">
-				<rect width="420" height="420" fill="#1c2340" />
-				{#each stars as s, i}
-					<circle cx={s[0]} cy={s[1]} r={i % 3 === 0 ? 2.6 : 1.6} fill="#fff" opacity={0.5 + (i % 4) * 0.12} />
-				{/each}
-				<circle cx="304" cy="96" r="48" fill="#fff6c8" />
-				<circle cx="324" cy="84" r="44" fill="#1c2340" />
-				<path d="M0 330 q80 -60 170 -20 t250 -10 v120 h-420z" fill="#2b3563" />
-				<path d="M0 372 q100 -44 200 -10 t220 -8 v66 h-420z" fill="#363f75" />
-				<image href={meowy} x="140" y="256" width="140" height="128" class="bob" />
-			</g>
+			{#each stars as s, i}
+				<circle cx={s[0]} cy={s[1]} r={i % 3 === 0 ? 2.6 : 1.6} fill="var(--foreground)" opacity={0.3 + (i % 4) * 0.1} />
+			{/each}
+			<circle cx="300" cy="100" r="50" fill="#ffd45e" />
+			<circle cx="322" cy="88" r="46" fill="var(--surface, var(--background))" />
+			<ellipse cx="210" cy="372" rx="150" ry="26" fill="var(--orange)" opacity="0.2" />
+			<image href={meowy} x="140" y="256" width="140" height="128" class="bob" />
 		{:else if scene === "chat"}
 			<circle cx="210" cy="220" r="170" fill="var(--orange)" opacity="0.12" />
 			<rect x="30" y="50" width="190" height="64" rx="22" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
-			<text x="50" y="92" font-size="26" fill="var(--foreground)">👋 hey!</text>
+			<text x="50" y="92" font-size="26" fill="var(--foreground)">heyyyy!</text>
 			<rect x="196" y="140" width="196" height="64" rx="22" fill="var(--orange)" />
-			<text x="216" y="182" font-size="26" fill="var(--foreground-orange, #fff)">✨ new post</text>
+			<text x="216" y="182" font-size="26" fill="var(--foreground-orange, #fff)">heyo!</text>
 			<rect x="44" y="230" width="170" height="64" rx="22" fill="var(--background)" stroke="var(--orange)" stroke-width="2" />
-			<text x="64" y="272" font-size="26" fill="var(--foreground)">😸 lol</text>
+			<text x="64" y="272" font-size="26" fill="var(--foreground)">WHAT</text>
 			<image href={meowy} x="248" y="290" width="124" height="113" class="bob" />
 		{:else if scene === "camping"}
-			<clipPath id="camp-clip"><rect width="420" height="420" rx="36" /></clipPath>
-			<g clip-path="url(#camp-clip)">
-				<rect width="420" height="420" fill="#27315a" />
-				{#each stars as s, i}
-					<circle cx={s[0]} cy={s[1]} r="1.8" fill="#fff" opacity={0.5 + (i % 3) * 0.2} />
-				{/each}
-				<path d="M-10 300 L90 150 L190 300z" fill="#1d2547" />
-				<path d="M120 300 L250 120 L380 300z" fill="#222c52" />
-				<path d="M0 320 q120 -40 240 -10 t180 -8 v120 h-420z" fill="#2f6b4a" />
-				<path d="M60 372 l56 -76 l56 76z" fill="var(--orange)" />
-				<path d="M116 372 l-22 0 l22 -48 l22 48z" fill="#00000040" />
-				<image href={meowy} x="190" y="312" width="86" height="79" class="bob" />
-				<path d="M310 376 q-16 -30 0 -52 q6 18 18 22 q10 -12 4 -30 q30 28 8 60z" fill="#ff8a2a" />
-				<path d="M318 376 q-8 -16 2 -28 q8 10 10 28z" fill="#ffd45e" />
-			</g>
+			{#each stars as s, i}
+				<circle cx={s[0]} cy={s[1]} r="1.8" fill="var(--foreground)" opacity={0.25 + (i % 3) * 0.12} />
+			{/each}
+			<ellipse cx="210" cy="372" rx="180" ry="30" fill="#2f6b4a" opacity="0.35" />
+			<path d="M60 372 l56 -76 l56 76z" fill="var(--orange)" />
+			<path d="M116 372 l-22 0 l22 -48 l22 48z" fill="#00000040" />
+			<image href={meowy} x="190" y="312" width="86" height="79" class="bob" />
+			<path d="M310 376 q-16 -30 0 -52 q6 18 18 22 q10 -12 4 -30 q30 28 8 60z" fill="#ff8a2a" />
+			<path d="M318 376 q-8 -16 2 -28 q8 10 10 28z" fill="#ffd45e" />
 		{:else}
-			<clipPath id="space-clip"><rect width="420" height="420" rx="36" /></clipPath>
-			<g clip-path="url(#space-clip)">
-				<rect width="420" height="420" fill="#120f2e" />
-				{#each stars as s, i}
-					<circle cx={s[0]} cy={s[1] + 20} r={i % 3 === 0 ? 2.4 : 1.4} fill="#fff" opacity={0.5 + (i % 4) * 0.12} />
-				{/each}
-				<circle cx="90" cy="110" r="48" fill="#ff8a5b" />
-				<ellipse cx="90" cy="110" rx="76" ry="14" fill="none" stroke="#ffd0a8" stroke-width="5" transform="rotate(-18 90 110)" />
-				<circle cx="340" cy="320" r="30" fill="#5ac8fa" />
-				<circle cx="330" cy="312" r="10" fill="#fff" opacity="0.25" />
-				<circle cx="210" cy="220" r="86" fill="#cfe9ff" opacity="0.14" stroke="#cfe9ff" stroke-width="3" />
-				<image href={meowy} x="150" y="164" width="120" height="110" class="bob" />
-			</g>
+			{#each stars as s, i}
+				<circle cx={s[0]} cy={s[1] + 20} r={i % 3 === 0 ? 2.4 : 1.4} fill="var(--foreground)" opacity={0.3 + (i % 4) * 0.1} />
+			{/each}
+			<circle cx="90" cy="110" r="48" fill="#ff8a5b" />
+			<ellipse cx="90" cy="110" rx="76" ry="14" fill="none" stroke="#ffd0a8" stroke-width="5" transform="rotate(-18 90 110)" />
+			<circle cx="340" cy="320" r="30" fill="#5ac8fa" />
+			<circle cx="330" cy="312" r="10" fill="#fff" opacity="0.25" />
+			<circle cx="210" cy="220" r="86" fill="var(--orange)" opacity="0.12" stroke="var(--orange)" stroke-width="3" />
+			<image href={meowy} x="150" y="164" width="120" height="110" class="bob" />
 		{/if}
 	</svg>
 </div>
