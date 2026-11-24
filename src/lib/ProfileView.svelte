@@ -33,6 +33,7 @@
 	import * as modals from "./modals.js";
 
 	import {goto} from "@roxi/routify";
+	import ChatCardMenu from "./ChatCardMenu.svelte";
 
 	export let username = "";
 	export let profile = null;
@@ -75,6 +76,11 @@
 		</div>
 	{:then data}
 		<Container>
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<div
+				class:dm-clickable={dmChat}
+				on:click={() => dmChat && $goto(`/chats/${dmChat._id}`)}
+			>
 			<div class="settings-controls" class:dm-card={small && dmChat}>
 				{#if onEdit}
 					<button
@@ -84,54 +90,7 @@
 					/>
 				{/if}
 				{#if dmChat}
-					<button
-						class="circle star"
-						class:filled={$user.favorited_chats.includes(
-							dmChat._id
-						)}
-						on:click={() => {
-							if ($user.favorited_chats.includes(dmChat._id)) {
-								$user.favorited_chats.splice(
-									$user.favorited_chats.indexOf(dmChat._id),
-									1
-								);
-								clm.updateProfile({
-									favorited_chats: $user.favorited_chats,
-								});
-							} else {
-								$user.favorited_chats =
-									$user.favorited_chats.filter(chatId => {
-										return $chats.some(
-											_chat => _chat._id === chatId
-										);
-									});
-								if ($user.favorited_chats.length >= 50) {
-									modals.showModal(BasicModal, {
-										title: "Too many stars!",
-										desc: "Sorry, you can only have up to 50 favorited chats!",
-									});
-								} else {
-									$user.favorited_chats.push(dmChat._id);
-									clm.updateProfile({
-										favorited_chats: $user.favorited_chats,
-									});
-								}
-							}
-						}}
-					/>
-					{#if !$user.favorited_chats.includes(dmChat._id)}
-						<button
-							class="circle close"
-							on:click={() =>
-								modals.showModal(LeaveChatModal, {
-									chat: dmChat,
-								})}
-						/>
-					{/if}
-					<button
-						class="circle join"
-						on:click={$goto(`/chats/${dmChat._id}`)}
-					/>
+					<ChatCardMenu chat={dmChat} />
 				{:else if canDoActions && $user.name}
 					{#if $user.permissions}
 						<button
@@ -219,7 +178,7 @@
 				{#if canClick}
 					<button
 						class="clickable-pfp"
-						on:click={$goto(`/users/${data._id}`)}
+						on:click={() => ($goto(dmChat ? `/chats/${dmChat._id}` : `/users/${data._id}`))}
 					>
 						<PFP
 							online={$ulist.includes(data._id)}
@@ -308,6 +267,7 @@
 						</div>
 					{/if}
 				</div>
+			</div>
 			</div>
 		</Container>
 	{:catch e}
@@ -415,5 +375,8 @@
 	.profile-bot-badge {
 		font-size: 0.4em;
 		vertical-align: middle;
+	}
+	.dm-clickable {
+		cursor: pointer;
 	}
 </style>

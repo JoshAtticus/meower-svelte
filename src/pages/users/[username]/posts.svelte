@@ -11,7 +11,6 @@
 <div class="posts">
 	<Container>
 		<h1>{$params.username}'s Recent Posts</h1>
-		Here are {$params.username}'s recent posts.
 	</Container>
 	<PostList
 		fetchUrl="users/{$params.username}/posts"

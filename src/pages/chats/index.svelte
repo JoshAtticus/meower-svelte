@@ -10,6 +10,7 @@
 	import Container from "../../lib/Container.svelte";
 	import FormattedDate from "../../lib/FormattedDate.svelte";
 	import ChatIcon from "../../lib/ChatIcon.svelte";
+	import ChatCardMenu from "../../lib/ChatCardMenu.svelte";
 	import ProfileView from "../..//lib/ProfileView.svelte";
 
 	import BasicModal from "../../lib/modals/Basic.svelte";
@@ -108,8 +109,6 @@
 <div class="chats">
 	<Container>
 		<h1>Chats</h1>
-		Here are your chats. Press the chat button to enter a chat, and the plus
-		to create one.
 		<div class="settings-controls">
 			<button
 				class="circle plus"
@@ -156,14 +155,14 @@
 		</Container>
 	{/if}
 	<Container>
-		<div class="chat">
-			<div class="settings-controls">
-				<button
-					class="circle join"
-					on:click={$goto("/chats/livechat")}
-				/>
-			</div>
-
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
+		<div
+			class="chat clickable"
+			role="link"
+			tabindex="0"
+			on:click={() => $goto("/chats/livechat")}
+			on:keydown={e => e.key === "Enter" && $goto("/chats/livechat")}
+		>
 			<h1>Livechat</h1>
 			Post history isn't saved here.
 		</div>
@@ -175,69 +174,17 @@
 		>
 			{#if chat.type === 0}
 				<Container>
-					<div class="chat">
+					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<div
+						class="chat clickable"
+						role="link"
+						tabindex="0"
+						on:click={() => $goto(`/chats/${chat._id}`)}
+						on:keydown={e =>
+							e.key === "Enter" && $goto(`/chats/${chat._id}`)}
+					>
 						<div class="settings-controls">
-							<button
-								class="circle star"
-								class:filled={$user.favorited_chats.includes(
-									chat._id
-								)}
-								on:click={() => {
-									if (
-										$user.favorited_chats.includes(chat._id)
-									) {
-										$user.favorited_chats.splice(
-											$user.favorited_chats.indexOf(
-												chat._id
-											),
-											1
-										);
-										clm.updateProfile({
-											favorited_chats:
-												$user.favorited_chats,
-										});
-									} else {
-										$user.favorited_chats =
-											$user.favorited_chats.filter(
-												chatId => {
-													return $chats.some(
-														_chat =>
-															_chat._id === chatId
-													);
-												}
-											);
-										if (
-											$user.favorited_chats.length >= 50
-										) {
-											modals.showModal(BasicModal, {
-												title: "Too many stars!",
-												desc: "Sorry, you can only have up to 50 favorited chats!",
-											});
-										} else {
-											$user.favorited_chats.push(
-												chat._id
-											);
-											clm.updateProfile({
-												favorited_chats:
-													$user.favorited_chats,
-											});
-										}
-									}
-								}}
-							/>
-							{#if !$user.favorited_chats.includes(chat._id)}
-								<button
-									class="circle close"
-									on:click={() =>
-										modals.showModal(LeaveChatModal, {
-											chat,
-										})}
-								/>
-							{/if}
-							<button
-								class="circle join"
-								on:click={$goto(`/chats/${chat._id}`)}
-							/>
+							<ChatCardMenu {chat} />
 						</div>
 
 						<button
@@ -304,6 +251,9 @@
 	}
 	.chat {
 		min-height: 4.5em;
+	}
+	.chat.clickable {
+		cursor: pointer;
 	}
 	.chat-heading {
 		display: flex;

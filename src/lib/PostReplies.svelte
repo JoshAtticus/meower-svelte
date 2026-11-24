@@ -362,6 +362,7 @@
 									<div
 										class="settings-controls reply-menu"
 										class:action-sheet={$mobile}
+										class:icon-menu={!$mobile}
 										class:open={$mobile}
 										use:portal={$mobile}
 										use:swipeDismiss={{enabled: $mobile, onDismiss: () => (menuFor = null)}}
