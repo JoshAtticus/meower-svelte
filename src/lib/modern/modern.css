@@ -44,8 +44,21 @@ main.layout-modern.layout-modern .view > * {
 main.layout-modern.layout-modern .view > .groupchat {
 	max-width: 1020px;
 }
-main.layout-modern.layout-modern:not(.layout-mobile) .view > .groupchat {
-	padding-top: 0.8em;
+/* Every page gets the same breathing room above it: a sticky spacer strip at
+   the top of the scrollport (content scrolls under the page header, never
+   above the strip), with the sticky page header sitting just below it. */
+main.layout-modern.layout-modern:not(.layout-mobile) .view::before {
+	content: "";
+	position: sticky;
+	top: 0;
+	z-index: 60;
+	flex: 0 0 0.8em;
+	width: 100%;
+	background-color: var(--background);
+}
+main.layout-modern.layout-modern:not(.layout-mobile) .view > * > div.container:first-child,
+main.layout-modern.layout-modern:not(.layout-mobile) .view > * > #chat > div.container:first-child {
+	top: 0.8em;
 }
 /* DM pages have no sticky header bar — give the ProfileView card the same
    top breathing room instead of letting it clip at the scrollport edge */
