@@ -54,8 +54,14 @@
 	// keep an anchored popup fully inside the window
 	let popupEl;
 	function keepOnScreen() {
-		if (!anchor || !popupEl || $mobile) return;
-		const r = popupEl.getBoundingClientRect();
+		if (!popupEl || $mobile) return;
+		popupEl.style.translate = "";
+		let r = popupEl.getBoundingClientRect();
+		const dx = r.left < 8 ? 8 - r.left : r.right > window.innerWidth - 8 ? window.innerWidth - 8 - r.right : 0;
+		const dy = !anchor ? (r.top < 8 ? 8 - r.top : r.bottom > window.innerHeight - 8 ? window.innerHeight - 8 - r.bottom : 0) : 0;
+		if (dx || dy) popupEl.style.translate = `${dx}px ${dy}px`;
+		if (!anchor) return;
+		r = popupEl.getBoundingClientRect();
 		if (r.top < 8) {
 			popupEl.style.top = "8px";
 			popupEl.style.bottom = "auto";
@@ -66,7 +72,11 @@
 			popupEl.style.maxHeight = window.innerHeight - 16 + "px";
 		}
 	}
-	onMount(() => requestAnimationFrame(keepOnScreen));
+	onMount(() => {
+		requestAnimationFrame(keepOnScreen);
+		window.addEventListener("resize", keepOnScreen);
+		return () => window.removeEventListener("resize", keepOnScreen);
+	});
 
 	function done(event) {
 		if (!(event && event.shiftKey) && onClose) onClose();

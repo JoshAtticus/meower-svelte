@@ -65,6 +65,7 @@
 	let bridged = false;
 	let webhook = false;
 	let postReplies;
+	let repliesTotal = 0;
 
 	let images = [];
 
@@ -984,8 +985,8 @@
 			</div>
 		{/if}
 				</div>
-				<PostReplies {post} {onReply} bind:this={postReplies} />
-				{#if canReply}
+				<PostReplies {post} {onReply} bind:this={postReplies} bind:total={repliesTotal} />
+				{#if canReply && !repliesTotal}
 					<button
 						type="button"
 						class="feed-btn reply-btn"
@@ -1185,9 +1186,9 @@
 	.post-footer {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		justify-content: flex-start;
 		flex-wrap: wrap;
-		gap: 0.4em 1em;
+		gap: 0.4em 0.4em;
 		margin-top: 0.45em;
 	}
 	.feed-left {

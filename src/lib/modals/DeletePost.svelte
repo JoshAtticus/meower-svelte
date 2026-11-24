@@ -39,6 +39,7 @@
 							"Response code is not OK; code is " + resp.status
 						);
 					}
+					modalData.onDone?.();
 					modals.closeLastModal();
 				} catch (e) {
 					loading = false;

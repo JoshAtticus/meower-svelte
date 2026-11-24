@@ -5,10 +5,20 @@
 	import {relativeDate, now} from "./relativeDate.js";
 	import {authHeader, user, chat} from "./stores.js";
 	import {apiUrl, uploadsUrl} from "./urls.js";
-	import {has as hasChatPerm} from "./chatPermissions.js";
+	import {has as hasChatPerm, outranks, rank as chatRank, ADMIN_TIER} from "./chatPermissions.js";
+	import {adminPermissions, hasPermission} from "./bitField.js";
+	import * as modals from "./modals.js";
+	import DeletePostModal from "./modals/DeletePost.svelte";
+	import ReportPostModal from "./modals/safety/ReportPost.svelte";
+	import ModeratePostModal from "./modals/moderation/ModeratePost.svelte";
+	import SharePostModal from "./modals/SharePost.svelte";
+	import PinPostModal from "./modals/PinPost.svelte";
 	import {replyBus} from "./replyBus.js";
 	import {addFancyElements} from "./postFormat.js";
 	import {goto} from "@roxi/routify";
+	import {portal} from "./portal.js";
+	import {swipeDismiss} from "./swipeDismiss.js";
+	import {mobile} from "./responsiveness.js";
 	import twemoji from "twemoji";
 	import {tick} from "svelte";
 	import loadProfile, {profileCache} from "./loadProfile.js";
@@ -17,6 +27,9 @@
 	export let depth = 0;
 	export let onReply = null;
 	export let chatPermChat = null; // optional override for non-$chat contexts
+
+	export let bare = false;
+	export let total = 0;
 
 	const MAX_DEPTH = 3;
 	const LIKE_EMOJIS = ["\u2764\ufe0f", "\u2764"];
@@ -125,6 +138,11 @@
 		}
 	}
 
+	if (bare) {
+		expanded = true;
+		tick().then(() => load(1));
+	}
+
 	function toggle() {
 		expanded = !expanded;
 		if (expanded && !replies.length) load(1);
@@ -150,10 +168,64 @@
 		$replyBus.post = null;
 	}
 
+	let menuFor = null;
+	let editingId = null;
+	let editText = "";
+
+	const canShareR = r =>
+		r.post_origin !== "inbox" && (!isGroupPost || hasChatPerm(theChat, $user.name, "share_posts"));
+	const canPinR = r =>
+		isGroupPost && theChat && r.post_origin === theChat._id &&
+		(hasPermission(adminPermissions.EDIT_CHATS) ||
+			hasChatPerm(theChat, $user.name, r.pinned ? "unpin_messages" : "pin_messages"));
+	const canEditR = r =>
+		r.user === $user.name && (!isGroupPost || hasChatPerm(theChat, $user.name, "edit_messages"));
+	const canDeleteR = r =>
+		r.user === $user.name
+			? !isGroupPost || hasChatPerm(theChat, $user.name, "delete_own_messages")
+			: isGroupPost && theChat &&
+				(r.user === "Server"
+					? chatRank(theChat, $user.name) >= ADMIN_TIER
+					: hasChatPerm(theChat, $user.name, "delete_others_messages") &&
+						outranks(theChat, $user.name, r.user));
+
+	function startEdit(r) {
+		editingId = r.post_id;
+		editText = r.content || "";
+	}
+
+	async function saveEdit(r) {
+		const content = editText.trim();
+		if (!content) return;
+		try {
+			const resp = await fetch(`${apiUrl}posts?id=${r.post_id}`, {
+				method: "PATCH",
+				headers: {"Content-Type": "application/json", ...$authHeader},
+				body: JSON.stringify({content}),
+			});
+			if (!resp.ok) throw new Error(resp.status === 429 ? "Too many requests! Try again later." : "Edit failed");
+			r.content = content;
+			editingId = null;
+			replies = replies;
+		} catch (e) {
+			sendError = e.message;
+		}
+	}
+
+	function removeReply(r) {
+		replies = replies.filter(x => x.post_id !== r.post_id);
+		liveExtra -= 1;
+	}
+
 	let replyingTo = null;
+	let openThreads = {};
+	let nestedInput = "";
+	let nestedAlsoPost = false;
 
 	async function sendReply(target = post) {
-		const content = replyInput.trim();
+		const nested = target !== post;
+		const content = (nested ? nestedInput : replyInput).trim();
+		const useAlso = !nested && alsoPost && !(post.reply_to || []).length;
 		if (!content || sending) return;
 		sending = true;
 		sendError = "";
@@ -163,13 +235,18 @@
 			const resp = await fetch(endpoint, {
 				method: "POST",
 				headers: {"Content-Type": "application/json", ...$authHeader},
-				body: JSON.stringify({content, nonce, reply_to: [target.post_id], stickers: [], attachments: [], reply_only: !(alsoPost && canPostHere)}),
+				body: JSON.stringify({content, nonce, reply_to: [target.post_id], stickers: [], attachments: [], reply_only: !(useAlso && canPostHere)}),
 			});
 			const json = await resp.json();
 			if (!resp.ok) throw new Error(json.type || "Send failed");
-			replyInput = "";
-			alsoPost = false;
-			if (target !== post) {
+			if (nested) {
+				nestedInput = "";
+				nestedAlsoPost = false;
+			} else {
+				replyInput = "";
+				alsoPost = false;
+			}
+			if (nested) {
 				target.reply_count = (target.reply_count || 0) + 1;
 				replyingTo = null;
 				replies = replies;
@@ -199,7 +276,7 @@
 	}
 </script>
 
-{#if total > 0}
+{#if total > 0 && !bare}
 	<button
 		type="button"
 		class="replies-toggle"
@@ -239,7 +316,13 @@
 						{/if}
 						<span class="reply-time">{relativeDate(reply.date, $now)}</span>
 					</div>
-					{#if reply.content}
+					{#if editingId === reply.post_id}
+						<form class="reply-compose" on:submit|preventDefault={() => saveEdit(reply)}>
+							<input type="text" bind:value={editText} maxlength="4000" />
+							<button type="submit" disabled={!editText.trim()}>Save</button>
+							<button type="button" on:click={() => (editingId = null)}>Cancel</button>
+						</form>
+					{:else if reply.content}
 						<p class="reply-content">{@html fmt(reply.content, reply.emojis)}</p>
 					{/if}
 					{#if reply.attachments?.length}
@@ -271,33 +354,59 @@
 								<svg class="lite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 10l-5 5 5 5"/><path d="M4 15h11a4 4 0 0 0 0-8h-1"/></svg>
 							</button>
 						{/if}
+						{#if $user.name}
+							<span class="reply-menu-wrap">
+								<button type="button" class="circle more" title="More" on:click={() => (menuFor = menuFor === reply.post_id ? null : reply.post_id)} />
+								{#if menuFor === reply.post_id}
+									{#if $mobile}<div class="sheet-overlay" use:portal on:click={() => (menuFor = null)} />{:else}<div class="menu-backdrop" on:click={() => (menuFor = null)} />{/if}
+									<div
+										class="settings-controls reply-menu"
+										class:action-sheet={$mobile}
+										class:open={$mobile}
+										use:portal={$mobile}
+										use:swipeDismiss={{enabled: $mobile, onDismiss: () => (menuFor = null)}}
+										on:click={() => setTimeout(() => (menuFor = null))}
+									>
+										{#if canShareR(reply)}<button type="button" class="circle share" title="Share" on:click={() => modals.showModal(SharePostModal, {post: reply})} />{/if}
+										{#if canPinR(reply)}<button type="button" class="circle pin" class:filled={reply.pinned} title={reply.pinned ? "Unpin" : "Pin"} on:click={() => modals.showModal(PinPostModal, {post: reply, onDone: p => { reply.pinned = p; replies = replies; }})} />{/if}
+										{#if canEditR(reply)}<button type="button" class="circle pen" title="Edit" on:click={() => startEdit(reply)} />{/if}
+										{#if canDeleteR(reply)}
+											<button type="button" class="circle trash" title="Delete" on:click={() => modals.showModal(DeletePostModal, {post: reply, onDone: () => removeReply(reply)})} />
+										{:else if reply.user !== $user.name}
+											<button type="button" class="circle report" title="Report" on:click={() => modals.showModal(ReportPostModal, {post: reply})} />
+										{/if}
+										{#if hasPermission(adminPermissions.VIEW_POSTS)}<button type="button" class="circle admin" title="Moderate" on:click={() => modals.showModal(ModeratePostModal, {postid: reply.post_id})} />{/if}
+									</div>
+								{/if}
+							</span>
+						{/if}
 						{#if depth + 1 < MAX_DEPTH && (reply.reply_count || 0) > 0}
-							<svelte:self post={reply} depth={depth + 1} {onReply} chatPermChat={theChat} />
+							<button type="button" class="lite-btn" on:click={() => (openThreads[reply.post_id] = !openThreads[reply.post_id])}>
+								<svg class="lite-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style:transform={openThreads[reply.post_id] ? "rotate(180deg)" : ""}><polyline points="6 9 12 15 18 9"/></svg>
+								{reply.reply_count} {reply.reply_count === 1 ? "reply" : "replies"}
+							</button>
 						{:else if (reply.reply_count || 0) > 0}
 							<a class="lite-btn thread-link" href="/posts/{reply.post_id}" on:click|preventDefault={() => $goto(`/posts/${reply.post_id}`)}>
 								{reply.reply_count} {reply.reply_count === 1 ? "reply" : "replies"}
 							</a>
 						{/if}
 					</div>
+					{#if openThreads[reply.post_id] && depth + 1 < MAX_DEPTH}
+						<svelte:self post={reply} depth={depth + 1} {onReply} chatPermChat={theChat} bare />
+					{/if}
 					{#if replyingTo === reply.post_id}
 						<div class="nested-compose">
 							<form class="reply-compose" on:submit|preventDefault={() => sendReply(reply)}>
 								<input
 									type="text"
-									bind:value={replyInput}
+									bind:value={nestedInput}
 									placeholder="Reply to {reply.user}…"
 									maxlength="360"
 									disabled={sending}
 									autofocus
 								/>
-								<button type="submit" disabled={sending || !replyInput.trim()}>Reply</button>
+								<button type="submit" disabled={sending || !nestedInput.trim()}>Reply</button>
 							</form>
-							{#if canPostHere}
-								<label class="also-post">
-									<input type="checkbox" bind:checked={alsoPost} disabled={sending} />
-									Also send as a post
-								</label>
-							{/if}
 							{#if sendError}<p class="replies-note err">{sendError}</p>{/if}
 						</div>
 					{/if}
@@ -312,7 +421,7 @@
 				Load more replies
 			</button>
 		{/if}
-		{#if canReplyHere}
+		{#if canReplyHere && !bare}
 			<form class="reply-compose" on:submit|preventDefault={() => sendReply()}>
 				<input
 					type="text"
@@ -324,7 +433,7 @@
 				/>
 				<button type="submit" disabled={sending || !replyInput.trim()}>Reply</button>
 			</form>
-			{#if canPostHere}
+			{#if canPostHere && !(post.reply_to || []).length}
 				<label class="also-post">
 					<input type="checkbox" bind:checked={alsoPost} disabled={sending} />
 					Also send as a post
@@ -350,9 +459,17 @@
 		font-weight: 600;
 		cursor: pointer;
 	}
-	.replies-toggle:hover {
-		background: var(--orange-light, rgba(249, 119, 32, 0.12));
-		color: var(--orange, #f97720);
+	.replies-toggle:focus,
+	.replies-toggle:active {
+		background: transparent;
+		color: var(--gray, #888);
+		outline: none;
+	}
+	@media (hover: hover) {
+		.replies-toggle:hover {
+			background: rgba(255, 255, 255, 0.1);
+			color: inherit;
+		}
 	}
 	.replies-chevron {
 		width: 14px;
@@ -453,9 +570,16 @@
 		cursor: pointer;
 		text-decoration: none;
 	}
-	.lite-btn:hover:not(:disabled) {
-		background: var(--orange-light, rgba(249, 119, 32, 0.12));
-		color: var(--orange, #f97720);
+	.lite-btn:focus,
+	.lite-btn:active {
+		background: transparent;
+		outline: none;
+	}
+	@media (hover: hover) {
+		.lite-btn:hover:not(:disabled) {
+			background: rgba(255, 255, 255, 0.1);
+			color: inherit;
+		}
 	}
 	.lite-btn:disabled {
 		opacity: 0.45;
@@ -528,6 +652,78 @@
 	.also-post input {
 		margin: 0;
 		accent-color: var(--orange, #f97720);
+	}
+	.reply-menu-wrap {
+		position: relative;
+	}
+	.reply-menu-wrap :global(button.circle),
+	.reply-menu-wrap :global(button.circle:hover),
+	.reply-menu-wrap :global(button.circle:active) {
+		transform: none !important;
+	}
+	.menu-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 49;
+	}
+	.reply-menu-wrap {
+		display: inline-flex;
+		align-items: center;
+	}
+	.reply-menu-wrap > button.circle {
+		width: 28px;
+		height: 28px;
+		min-width: 28px;
+		margin: 0;
+		padding: 0;
+		background-size: 16px;
+		background-position: center;
+		background-repeat: no-repeat;
+		opacity: 0.55;
+		border: none;
+		background-color: transparent;
+	}
+	.reply-menu-wrap > button.circle:hover {
+		opacity: 1;
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+	.reply-menu:not(.action-sheet) {
+		position: absolute;
+		left: 0;
+		top: calc(100% + 4px);
+		z-index: 50;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 150px;
+		padding: 4px;
+		background: var(--background);
+		border: 2px solid var(--orange);
+		border-radius: 0.8em;
+		box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+	}
+	.reply-menu:not(.action-sheet) button.circle {
+		width: 100%;
+		height: auto;
+		min-height: 2.4em;
+		margin: 0;
+		border: none;
+		border-radius: 6px;
+		background-position: 0.7em center;
+		background-size: 1.1em;
+		padding-left: 2.6em;
+		text-align: left;
+		color: inherit;
+		background-color: transparent;
+		font-size: 0.95em;
+	}
+	.reply-menu:not(.action-sheet) button.circle::after {
+		content: attr(title);
+	}
+	.reply-menu:not(.action-sheet) button.circle:hover,
+	.reply-menu:not(.action-sheet) button.circle:focus-visible {
+		background-color: rgba(255, 255, 255, 0.12);
+		outline: none;
 	}
 	.nested-compose {
 		display: flex;
