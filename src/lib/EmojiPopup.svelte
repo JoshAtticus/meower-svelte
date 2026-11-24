@@ -384,7 +384,11 @@
 					{/each}
 				{/if}
 				{#if !filteredEmojis.length && !filteredStickers.length}
-					<p class="empty">No emotes in this chat yet.</p>
+					{#if !$chatEmotes[sectionChat._id]}
+						<p class="empty">Loading...</p>
+					{:else}
+						<p class="empty">No emotes in this chat yet.</p>
+					{/if}
 				{/if}
 			{/if}
 		</div>
