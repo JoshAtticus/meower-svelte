@@ -17,3 +17,14 @@
 		<LoadingImage src={url} alt={title} clickable />
 	</a>
 </div>
+
+<style>
+	.AttachmentClass {
+		max-width: 100%;
+		min-width: 0;
+	}
+	.AttachmentClass a {
+		display: block;
+		max-width: 100%;
+	}
+</style>

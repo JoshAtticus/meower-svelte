@@ -1410,6 +1410,12 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.25em;
+		max-width: 100%;
+		min-width: 0;
+	}
+	.post-images > :global(*) {
+		max-width: 100%;
+		min-width: 0;
 	}
 	.reply-box {
 		min-width: 0;
@@ -1473,6 +1479,10 @@
 		font-size: 0.75em;
 		margin-left: 0.5em;
 		font-style: normal;
+	}
+	.post-content :global(img:not(.emoji):not(.custom-emoji)) {
+		max-width: 100%;
+		height: auto;
 	}
 	.post-sticker {
 		max-width: 12em;

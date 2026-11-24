@@ -75,3 +75,14 @@
 		</a>
 	{/if}
 </div>
+
+<style>
+	.AttachmentClass {
+		max-width: 100%;
+		min-width: 0;
+	}
+	.AttachmentClass a {
+		display: block;
+		max-width: 100%;
+	}
+</style>

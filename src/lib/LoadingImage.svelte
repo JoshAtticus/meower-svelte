@@ -58,7 +58,7 @@
 	.li {
 		position: relative;
 		display: inline-block;
-		max-width: min(100%, var(--mw));
+		max-width: min(100%, var(--mw), calc(100vw - 4rem));
 		border-radius: 8px;
 		overflow: hidden;
 		vertical-align: top;
@@ -80,7 +80,7 @@
 		min-height: 0;
 	}
 	.li.known {
-		width: min(var(--mw), calc(var(--mh) * var(--r)));
+		width: min(var(--mw), calc(var(--mh) * var(--r)), calc(100vw - 4rem));
 	}
 	.li.clickable {
 		cursor: zoom-in;
