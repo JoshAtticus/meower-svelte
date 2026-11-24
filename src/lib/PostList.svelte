@@ -85,6 +85,11 @@
 			hasChatPerm($chat, $user.name, "reply_to_posts") ||
 			hasChatPerm($chat, $user.name, "send_messages"));
 
+	// the "also send as a post" choice only exists in feeds; in chats every reply is a normal message
+	$: showAlsoPost =
+		postOrigin === "home" ||
+		(isGroupPostOrigin && $chat.type === 0 && $chat.mode === "feed");
+
 	// User restriction status
 	let userRestricted = false;
 	$: {
@@ -650,10 +655,12 @@
 						/>
 					</div>
 				{/each}
-				<label class="also-post">
-					<input type="checkbox" bind:checked={alsoPostReply} />
-					Also send as a post
-				</label>
+				{#if showAlsoPost}
+					<label class="also-post">
+						<input type="checkbox" bind:checked={alsoPostReply} />
+						Also send as a post
+					</label>
+				{/if}
 			</div>
 		{/if}
 		<div
@@ -731,7 +738,7 @@
 							[],
 							pendingReplies.map(r => r.post_id),
 							sentAttachmentIds,
-							pendingReplies.length > 0 && !alsoPostReply
+							pendingReplies.length > 0 && showAlsoPost && !alsoPostReply
 						);
 						pendingReplies = [];
 						alsoPostReply = false;
