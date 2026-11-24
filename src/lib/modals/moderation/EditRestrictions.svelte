@@ -28,14 +28,19 @@
 			description: "Blocks creating new group chats and starting DMs.",
 		},
 		{
-			value: userRestrictions.EDITING_CHAT_NICKNAMES,
-			name: "Block editing group chat nicknames",
-			description: "Blocks editing group chat nicknames.",
+			value: userRestrictions.EDITING_CHAT_DETAILS,
+			name: "Block editing group chats",
+			description: "Blocks editing group chat details like nicknames, icons and settings.",
 		},
 		{
-			value: userRestrictions.EDITING_QUOTE,
-			name: "Block editing quote",
-			description: "Blocks editing their quote.",
+			value: userRestrictions.EDITING_PROFILE,
+			name: "Block editing profile",
+			description: "Blocks editing their profile (picture, quote and display name).",
+		},
+		{
+			value: userRestrictions.UPLOADING,
+			name: "Block uploading",
+			description: "Blocks uploading files, including attachments, icons, emojis and stickers.",
 		},
 	];
 

@@ -143,6 +143,13 @@
 
 	function addAttachments(files) {
 		if (!attachmentsAllowed()) return;
+		if (isRestricted(userRestrictions.UPLOADING)) {
+			modals.showModal(AccountBannedModal, {
+				ban: $user.ban,
+				feature: "uploading files",
+			});
+			return;
+		}
 		for (const file of files) {
 			if (pendingAttachments.length >= 10) {
 				attachError = "You can only attach up to 10 files.";

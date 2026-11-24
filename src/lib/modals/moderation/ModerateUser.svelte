@@ -371,8 +371,9 @@
 								userRestrictions.HOME_POSTS |
 								userRestrictions.CHAT_POSTS |
 								userRestrictions.NEW_CHATS |
-								userRestrictions.EDITING_CHAT_NICKNAMES |
-								userRestrictions.EDITING_QUOTE;
+								userRestrictions.EDITING_CHAT_DETAILS |
+								userRestrictions.EDITING_PROFILE |
+								userRestrictions.UPLOADING;
 						}
 					}}
 				>
@@ -435,11 +436,14 @@
 						{#if (banState.restrictions & userRestrictions.NEW_CHATS) === userRestrictions.NEW_CHATS}
 							<li>Block new chats</li>
 						{/if}
-						{#if (banState.restrictions & userRestrictions.EDITING_CHAT_NICKNAMES) === userRestrictions.EDITING_CHAT_NICKNAMES}
-							<li>Block editing group chat nicknames</li>
+						{#if (banState.restrictions & userRestrictions.EDITING_CHAT_DETAILS) === userRestrictions.EDITING_CHAT_DETAILS}
+							<li>Block editing group chats</li>
 						{/if}
-						{#if (banState.restrictions & userRestrictions.EDITING_QUOTE) === userRestrictions.EDITING_QUOTE}
-							<li>Block editing quote</li>
+						{#if (banState.restrictions & userRestrictions.EDITING_PROFILE) === userRestrictions.EDITING_PROFILE}
+							<li>Block editing profile</li>
+						{/if}
+						{#if (banState.restrictions & userRestrictions.UPLOADING) === userRestrictions.UPLOADING}
+							<li>Block uploading</li>
 						{/if}
 					</ul>
 				{/if}

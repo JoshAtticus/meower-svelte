@@ -15,7 +15,7 @@
 		class="modal-input white"
 		placeholder="Write something..."
 		maxlength="360"
-		disabled={isRestricted(userRestrictions.EDITING_QUOTE)}
+		disabled={isRestricted(userRestrictions.EDITING_PROFILE)}
 		bind:value={$user.quote}
 		on:change={() => clm.updateProfile({quote: $user.quote})}
 	/>

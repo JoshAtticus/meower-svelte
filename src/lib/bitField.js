@@ -50,8 +50,9 @@ export const userRestrictions = {
 	HOME_POSTS: 1,
 	CHAT_POSTS: 2,
 	NEW_CHATS: 4,
-	EDITING_CHAT_NICKNAMES: 8,
-	EDITING_QUOTE: 16,
+	EDITING_CHAT_DETAILS: 8,
+	EDITING_PROFILE: 16,
+	UPLOADING: 32,
 };
 
 export function hasPermission(permission) {

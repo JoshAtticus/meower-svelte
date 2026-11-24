@@ -151,7 +151,7 @@
 				style="font-style: italic;"
 				placeholder="Write something..."
 				maxlength="360"
-				disabled={isRestricted(userRestrictions.EDITING_QUOTE)}
+				disabled={isRestricted(userRestrictions.EDITING_PROFILE)}
 				bind:value={quote}
 			/>
 			<div class="quote-controls">
@@ -159,7 +159,7 @@
 					disabled={(displayName === ($user.display_name || "") ||
 						isRestricted(userRestrictions.EDITING_PROFILE)) &&
 						(quote === ($user.quote || "") ||
-							isRestricted(userRestrictions.EDITING_QUOTE))}
+							isRestricted(userRestrictions.EDITING_PROFILE))}
 					on:click={() => {
 						const changes = {};
 						if (
@@ -169,7 +169,7 @@
 							changes.display_name = displayName;
 						if (
 							quote !== ($user.quote || "") &&
-							!isRestricted(userRestrictions.EDITING_QUOTE)
+							!isRestricted(userRestrictions.EDITING_PROFILE)
 						)
 							changes.quote = quote;
 						clm.updateProfile(changes);

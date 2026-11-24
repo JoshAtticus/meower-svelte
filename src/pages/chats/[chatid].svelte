@@ -339,14 +339,14 @@
 								on:click={() => {
 									if (
 										isRestricted(
-											userRestrictions.EDITING_CHAT_NICKNAMES
+											userRestrictions.EDITING_CHAT_DETAILS
 										) &&
 										!$params.admin
 									) {
 										modals.showModal(AccountBannedModal, {
 											ban: $user.ban,
 											feature:
-												"editing group chat nicknames",
+												"editing group chats",
 										});
 									} else {
 										modals.showModal(
