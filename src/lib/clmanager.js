@@ -772,9 +772,12 @@ export async function setRelationship(username, state, extra = {}) {
  */
 export async function updateProfile(updatedValues) {
 	if (!_user.name) return;
+	const previous = Object.fromEntries(
+		Object.keys(updatedValues).map(key => [key, _user[key]])
+	);
 	Object.assign(_user, updatedValues);
 	user.set(_user);
-	return fetch(`${apiUrl}me/config`, {
+	const resp = await fetch(`${apiUrl}me/config`, {
 		method: "PATCH",
 		headers: {
 			"Content-Type": "application/json",
@@ -782,4 +785,14 @@ export async function updateProfile(updatedValues) {
 		},
 		body: JSON.stringify(updatedValues),
 	});
+	if (resp.status === 403) {
+		// rejected (e.g. the account is restricted from editing its profile): undo the optimistic change
+		Object.assign(_user, previous);
+		user.set(_user);
+		modals.showModal(AccountBannedModal, {
+			ban: _user.ban,
+			feature: "editing your profile",
+		});
+	}
+	return resp;
 }
