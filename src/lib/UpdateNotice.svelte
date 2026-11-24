@@ -98,12 +98,15 @@
 		background: var(--orange);
 		font-weight: 600;
 	}
-	.close {
-		width: 1.8em;
-		height: 1.8em;
+	.update-notice .close {
+		flex: 0 0 auto;
+		width: 2em;
+		height: 2em;
+		min-width: 0;
+		padding: 0;
 		border-radius: 50%;
-		color: inherit;
-		background: transparent;
+		color: var(--foreground);
+		background: rgba(128, 128, 128, 0.2);
 		opacity: 0.7;
 		font-size: 1.1em;
 		line-height: 1;
@@ -116,6 +119,7 @@
 	.icon {
 		width: 1em;
 		height: 1em;
+		stroke: currentColor;
 	}
 	.close:hover {
 		opacity: 1;

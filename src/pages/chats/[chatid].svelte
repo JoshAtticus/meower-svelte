@@ -572,6 +572,7 @@
 										desc: "This chat has reached the maximum member limit of 256! You may not add anymore members until there are fewer than 256 members.",
 									});
 								} else {
+									if ($mobile) showMembers = false;
 									modals.showModal(AddMemberModeModal);
 								}
 							}}

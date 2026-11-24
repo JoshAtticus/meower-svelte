@@ -25,7 +25,7 @@
 	let kind = "emoji";
 	let active = 0;
 	let query = "";
-	let pos = {left: 0, bottom: 0};
+	let pos = {left: 0, top: null, bottom: null};
 	let loadedAll = false;
 
 	function ensureLoaded() {
@@ -73,8 +73,14 @@
 	}
 
 	function place() {
+		// below the composer, unless there isn't room for the list
 		const r = input.getBoundingClientRect();
-		pos = {left: Math.max(8, r.left), bottom: window.innerHeight - r.top + 6};
+		const needed = items.length * 52 + 24;
+		const left = Math.max(8, r.left);
+		pos =
+			window.innerHeight - r.bottom >= needed || r.top < needed
+				? {left, top: r.bottom + 6, bottom: null}
+				: {left, top: null, bottom: window.innerHeight - r.top + 6};
 	}
 
 	function check() {
@@ -173,7 +179,7 @@
 </script>
 
 {#if items.length}
-	<div class="suggestions" style:left="{pos.left}px" style:bottom="{pos.bottom}px" role="listbox">
+	<div class="suggestions" style:left="{pos.left}px" style:top={pos.top !== null ? `${pos.top}px` : null} style:bottom={pos.bottom !== null ? `${pos.bottom}px` : null} role="listbox">
 		{#each items as item, i (item._id)}
 			<button
 				type="button"

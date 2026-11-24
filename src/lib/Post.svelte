@@ -15,6 +15,7 @@
 	import Attachment from "./Attachment.svelte";
 	import ExternalImage from "./ExternalImage.svelte";
 	import LoadingImage from "./LoadingImage.svelte";
+	import InviteCard from "./InviteCard.svelte";
 
 	import ConfirmHyperlinkModal from "./modals/ConfirmHyperlink.svelte";
 	import DeletePostModal from "./modals/DeletePost.svelte";
@@ -69,6 +70,15 @@
 	let webhook = false;
 	let postReplies;
 	let repliesTotal = 0;
+
+	// group chat invite links in the message become invite cards
+	$: inviteCodes = (() => {
+		const codes = [];
+		const re = /https?:\/\/([^\s/]+)\/invite\/([A-Za-z0-9_-]{6,16})/g;
+		for (const m of (post.content || "").matchAll(re))
+			if (m[1] === location.host && !codes.includes(m[2])) codes.push(m[2]);
+		return codes.slice(0, 3);
+	})();
 
 	let images = [];
 
@@ -890,6 +900,9 @@
 		<p style="color: crimson;">{error}</p>
 	{/if}
 	{#if !editing}
+		{#each inviteCodes as inviteCode (inviteCode)}
+			<InviteCard code={inviteCode} />
+		{/each}
 		<div class="post-images">
 			{#each post.stickers || [] as sticker}
 				<LoadingImage
