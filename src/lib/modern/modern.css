@@ -830,3 +830,10 @@ main.layout-modern.layout-modern .chats .chat-heading h1 {
 	white-space: nowrap;
 	min-width: 0;
 }
+
+/* Global top spacing: a page whose first card is its header bar (the sticky
+   blurred one) sits flush with the top; every other page gets breathing room
+   above its content so nothing is jammed against the edge. */
+main.layout-modern.layout-modern .view > *:not(.container):not(.groupchat):not(:has(> div.container:first-child)):not(:has(> #chat > div.container:first-child)) {
+	padding-top: 0.8em;
+}
