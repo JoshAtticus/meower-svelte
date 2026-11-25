@@ -10,6 +10,7 @@
 	import FormattedDate from "../../lib/FormattedDate.svelte";
 	import ViewPinsModal from "../../lib/modals/chats/ViewPins.svelte";
 	import AddMemberModeModal from "../../lib/modals/chats/AddMember_Mode.svelte";
+	import SearchChatModal from "../../lib/modals/chats/SearchChat.svelte";
 	import AccountBannedModal from "../../lib/modals/safety/AccountBanned.svelte";
 	import ModerateChatModal from "../../lib/modals/moderation/ModerateChat.svelte";
 
@@ -362,6 +363,13 @@
 								title="View pinned posts"
 								on:click={() =>
 									modals.showModal(ViewPinsModal)}
+							/>
+						{/if}
+						{#if !$params.admin}
+							<button
+								class="circle search"
+								title="Search messages"
+								on:click={() => modals.showModal(SearchChatModal)}
 							/>
 						{/if}
 						<button

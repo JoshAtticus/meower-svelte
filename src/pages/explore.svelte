@@ -164,7 +164,17 @@
 							</span>
 						</button>
 					{:else if item.type === "post"}
-						<Post post={item.post} showJump={true} />
+						<div class="post-result">
+							{#if item.origin}
+								<button
+									class="origin"
+									on:click={() =>
+										$goto(item.origin.id === "home" ? "/home" : `/chats/${item.origin.id}`)}
+									>in {item.origin.name}</button
+								>
+							{/if}
+							<Post post={item.post} showJump={true} />
+						</div>
 					{/if}
 				{/each}
 			</div>
@@ -249,6 +259,27 @@
 		padding: 0.3em 0.9em;
 		font-weight: 600;
 		white-space: nowrap;
+		cursor: pointer;
+	}
+	.post-result {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.2em;
+		margin-bottom: 0.5em;
+	}
+	.post-result > :global(*:last-child) {
+		width: 100%;
+	}
+	.origin {
+		margin: 0;
+		padding: 0.1em 0.7em;
+		border: 1px solid var(--hairline, var(--gray, #ccc));
+		border-radius: 999px;
+		background: transparent;
+		color: inherit;
+		font-size: 0.8em;
+		opacity: 0.8;
 		cursor: pointer;
 	}
 	.chip.selected {
