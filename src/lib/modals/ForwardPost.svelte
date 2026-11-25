@@ -96,11 +96,11 @@
 				<button type="button" class="dest" disabled={!!sending} on:click={() => forward(dest)}>
 					<span class="who">
 						{#if dest.id === "home"}
-							<span class="home-icon">M</span>
+							<span class="icon-slot"><span class="home-icon">M</span></span>
 						{:else if dest.dm}
-							<PFP raw icon={($profileCache[dest.dm] || {}).pfp_data ?? -1} avatar={($profileCache[dest.dm] || {}).avatar} avatarColor={($profileCache[dest.dm] || {}).avatar_color} alt="" size={0.5} />
+							<span class="icon-slot"><PFP raw icon={($profileCache[dest.dm] || {}).pfp_data ?? -1} avatar={($profileCache[dest.dm] || {}).avatar} avatarColor={($profileCache[dest.dm] || {}).avatar_color} alt="" size={0.733} /></span>
 						{:else}
-							<ChatIcon chat={dest.chat} size={0.5} />
+							<span class="icon-slot"><ChatIcon chat={dest.chat} size={1} /></span>
 						{/if}
 						<span class="name">{dest.name}</span>
 					</span>
@@ -141,8 +141,8 @@
 		justify-content: space-between;
 		align-items: center;
 		width: 100%;
-		margin: 0 0 0.25em;
-		padding: 0.5em 0.7em;
+		margin: 0 0 0.3em;
+		padding: 0.45em 0.8em;
 		border: 1px solid rgba(128, 128, 128, 0.35);
 		border-radius: 8px;
 		background: transparent;
@@ -151,23 +151,37 @@
 		text-align: left;
 		cursor: pointer;
 	}
+	.name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 	.who {
 		display: flex;
 		align-items: center;
-		gap: 0.6em;
+		gap: 0.8em;
 		min-width: 0;
 	}
-	.home-icon {
-		display: inline-flex;
+	.icon-slot {
+		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 1.4em;
-		height: 1.4em;
-		border-radius: 0.4em;
+		flex: 0 0 auto;
+		width: 2.75em;
+		height: 2.75em;
+	}
+	.home-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.75em;
+		height: 2.75em;
+		box-sizing: border-box;
+		border-radius: 0.9em;
 		background: var(--orange);
 		color: var(--foreground-orange, #fff);
 		font-weight: 700;
-		font-size: 1.1em;
+		font-size: 1em;
 	}
 	.send {
 		color: var(--orange);
