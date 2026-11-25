@@ -15,6 +15,8 @@
 	import PinPostModal from "./modals/PinPost.svelte";
 	import {replyBus} from "./replyBus.js";
 	import {addFancyElements} from "./postFormat.js";
+	import ReplyBox from "./ReplyBox.svelte";
+	import LoadingImage from "./LoadingImage.svelte";
 	import {goto} from "@roxi/routify";
 	import {portal} from "./portal.js";
 	import {swipeDismiss} from "./swipeDismiss.js";
@@ -39,11 +41,11 @@
 	let pages = 1;
 	let loading = false;
 	let liveExtra = 0; // replies arrived live that aren't in the fetched page count
-	let replyInput = "";
 	let sending = false;
 	let sendError = "";
 	let alsoPost = false;
-	let composeInput;
+	let mainBox;
+	let nestedBox;
 
 	$: total = (post.reply_count || 0) + liveExtra;
 
@@ -120,6 +122,7 @@
 				attachments: r.attachments || [],
 				reactions: r.reactions || [],
 				emojis: r.emojis || [],
+				stickers: r.stickers || [],
 				reply_to: r.reply_to || [],
 				reply_count: r.reply_count || 0,
 				author: r.author,
@@ -154,7 +157,7 @@
 			if (!replies.length) load(1);
 		}
 		await tick();
-		composeInput?.focus();
+		mainBox?.focus();
 	}
 
 	// Live: posts arriving whose reply_to contains this post bump the count and
@@ -218,14 +221,12 @@
 
 	let replyingTo = null;
 	let openThreads = {};
-	let nestedInput = "";
 	let nestedAlsoPost = false;
 
-	async function sendReply(target = post) {
+	async function sendReply(target, content, stickers = []) {
 		const nested = target !== post;
-		const content = (nested ? nestedInput : replyInput).trim();
 		const useAlso = !nested && alsoPost && !(post.reply_to || []).length;
-		if (!content || sending) return;
+		if ((!content && !stickers.length) || sending) return false;
 		sending = true;
 		sendError = "";
 		const nonce = Math.random().toString();
@@ -234,22 +235,17 @@
 			const resp = await fetch(endpoint, {
 				method: "POST",
 				headers: {"Content-Type": "application/json", ...$authHeader},
-				body: JSON.stringify({content, nonce, reply_to: [target.post_id], stickers: [], attachments: [], reply_only: !(useAlso && canPostHere)}),
+				body: JSON.stringify({content, nonce, reply_to: [target.post_id], stickers, attachments: [], reply_only: !(useAlso && canPostHere)}),
 			});
 			const json = await resp.json();
 			if (!resp.ok) throw new Error(json.type || "Send failed");
-			if (nested) {
-				nestedInput = "";
-				nestedAlsoPost = false;
-			} else {
-				replyInput = "";
-				alsoPost = false;
-			}
+			if (!nested) alsoPost = false;
+			if (!nested) { /* keep going */ }
 			if (nested) {
 				target.reply_count = (target.reply_count || 0) + 1;
 				replyingTo = null;
 				replies = replies;
-				return;
+				return true;
 			}
 			const newReply = {
 				post_id: json._id,
@@ -259,6 +255,7 @@
 				attachments: json.attachments || [],
 				reactions: json.reactions || [],
 				emojis: json.emojis || [],
+				stickers: json.stickers || [],
 				reply_to: json.reply_to || [post.post_id],
 				reply_count: 0,
 				author: json.author,
@@ -267,8 +264,10 @@
 			liveExtra += 1;
 			if (expanded && !replies.some(r => r.post_id === newReply.post_id))
 				replies = [...replies, newReply];
+			return true;
 		} catch (e) {
 			sendError = e.message || "Couldn't send reply.";
+			return false;
 		} finally {
 			sending = false;
 		}
@@ -324,6 +323,15 @@
 					{:else if reply.content}
 						<p class="reply-content">{@html fmt(reply.content, reply.emojis)}</p>
 					{/if}
+					{#each reply.stickers || [] as sticker}
+						<LoadingImage
+							src="{uploadsUrl}stickers/{sticker._id || sticker}"
+							alt={sticker.name || "Sticker"}
+							thumbhash={sticker.thumbhash}
+							maxWidth="10em"
+							maxHeight="10em"
+						/>
+					{/each}
 					{#if reply.attachments?.length}
 						<div class="reply-attachments">
 							{#each reply.attachments as a}
@@ -396,17 +404,13 @@
 					{/if}
 					{#if replyingTo === reply.post_id}
 						<div class="nested-compose">
-							<form class="reply-compose" on:submit|preventDefault={() => sendReply(reply)}>
-								<input
-									type="text"
-									bind:value={nestedInput}
-									placeholder="Reply to {reply.user}..."
-									maxlength="360"
-									disabled={sending}
-									autofocus
-								/>
-								<button type="submit" disabled={sending || !nestedInput.trim()}>Reply</button>
-							</form>
+							<ReplyBox
+								bind:this={nestedBox}
+								placeholder="Reply to {reply.user}..."
+								chatId={post.post_origin === "home" ? null : post.post_origin}
+								{sending}
+								onSend={(content, stickers) => sendReply(reply, content, stickers)}
+							/>
 							{#if sendError}<p class="replies-note err">{sendError}</p>{/if}
 						</div>
 					{/if}
@@ -422,17 +426,12 @@
 			</button>
 		{/if}
 		{#if canReplyHere && !bare}
-			<form class="reply-compose" on:submit|preventDefault={() => sendReply()}>
-				<input
-					type="text"
-					bind:this={composeInput}
-					bind:value={replyInput}
-					placeholder="Write a reply..."
-					maxlength="360"
-					disabled={sending}
-				/>
-				<button type="submit" disabled={sending || !replyInput.trim()}>Reply</button>
-			</form>
+			<ReplyBox
+				bind:this={mainBox}
+				chatId={post.post_origin === "home" ? null : post.post_origin}
+				{sending}
+				onSend={(content, stickers) => sendReply(post, content, stickers)}
+			/>
 			{#if canPostHere && !(post.reply_to || []).length}
 				<label class="also-post">
 					<input type="checkbox" bind:checked={alsoPost} disabled={sending} />
@@ -617,6 +616,7 @@
 		font-weight: 600;
 		cursor: pointer;
 	}
+	/* inline edit form */
 	.reply-compose {
 		display: flex;
 		gap: 0.4em;
