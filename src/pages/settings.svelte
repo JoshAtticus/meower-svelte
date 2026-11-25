@@ -1,5 +1,6 @@
 <!-- You probably know what this is. -->
 <script>
+	import {goto} from "@roxi/routify";
 	import {systemDark} from "../lib/responsiveness.js";
 	import Container from "../lib/Container.svelte";
 	import FormattedDate from "../lib/FormattedDate.svelte";
@@ -11,7 +12,6 @@
 	import ChangeUsernameModal from "../lib/modals/settings/ChangeUsername.svelte";
 	import LogoutEverywhereModal from "../lib/modals/settings/LogoutEverywhere.svelte";
 	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
-	import BotsModal from "../lib/modals/settings/Bots.svelte";
 	import MyReportsModal from "../lib/modals/settings/MyReports.svelte";
 	import DeleteAccountModal from "../lib/modals/settings/DeleteAccount.svelte";
 	import NewLayoutTourModal from "../lib/modals/settings/NewLayoutTour.svelte";
@@ -315,7 +315,7 @@
 					</div>
 					<button
 						type="button"
-						on:click={() => modals.showModal(BotsModal)}
+						on:click={() => $goto("/bots")}
 						>Manage</button
 					>
 				</div>
