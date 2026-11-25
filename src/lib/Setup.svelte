@@ -138,6 +138,12 @@
 	$: validCode =
 		/^\d{6}$/.test(cleanedCode) || /^[0-9a-fA-F]{10}$/.test(cleanedCode);
 
+	// the request couldn't be sent (socket not open) or got no reply
+	function connectionError(e) {
+		if (e === "Timed out" || e instanceof Error)
+			return "Couldn't reach Meower. Check your connection and try again.";
+	}
+
 	async function submit2FA() {
 		if (!validCode || verifying || !pending2FA) return;
 		verifying = true;
@@ -163,7 +169,7 @@
 					? "That code didn't work."
 					: e === "E:106 | Too many requests"
 					? "Too many attempts! Please try again later."
-					: `Unexpected ${e} error!`;
+					: connectionError(e) || `Unexpected ${e} error!`;
 		}
 		verifying = false;
 	}
@@ -174,9 +180,10 @@
 		autoLogin = false,
 		savedLogin = false
 	) {
+		let settled = false;
 		setTimeout(
 			() => {
-				if ($user.name) return;
+				if (settled || $user.name) return;
 				loginStatus = "Logging in...";
 			},
 			autoLogin ? 500 : 0
@@ -194,6 +201,7 @@
 				},
 			});
 		} catch (e) {
+			settled = true;
 			if (autoLogin) return mainSetup();
 			switch (e) {
 				case "E:103 | ID not found":
@@ -228,11 +236,12 @@
 					loginStatus = "Too many requests! Please try again later.";
 					break;
 				default:
-					loginStatus = `Unexpected ${e} error!`;
+					loginStatus = connectionError(e) || `Unexpected ${e} error!`;
 			}
 			return;
 		}
 
+		settled = true;
 		loginStatus = "";
 		BGM.playBGM($user.bgm_song);
 		screen.set("main");
