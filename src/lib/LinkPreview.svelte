@@ -39,7 +39,7 @@
 {#if preview}
 	<a class="link-preview" href={preview.url || url} target="_blank" rel="noreferrer noopener" on:click={open}>
 		{#if preview.image && preview.large}
-			<LoadingImage src={preview.image} alt="" maxWidth="100%" maxHeight="12em" />
+			<LoadingImage src={preview.image} alt="" maxWidth="100%" maxHeight="12em" radius="0" />
 		{/if}
 		<span class="body">
 			{#if preview.image && !preview.large}
@@ -81,7 +81,7 @@
 		height: 4.5em;
 		flex: 0 0 auto;
 		object-fit: cover;
-		border-radius: 8px;
+		border-radius: 0;
 	}
 	.text {
 		display: flex;

@@ -14,6 +14,7 @@
 	export let maxWidth = "28em";
 	export let maxHeight = "15em";
 	export let clickable = false;
+	export let radius = "8px";
 	// base64 ThumbHash: a tiny blurred preview shown until the image loads
 	export let thumbhash = "";
 
@@ -53,6 +54,7 @@
 	style:--r={ratio || null}
 	style:--mw={maxWidth}
 	style:--mh={maxHeight}
+	style:border-radius={radius}
 	style:aspect-ratio={known ? ratio : null}
 	style:background-image={placeholder && !loaded ? `url(${placeholder})` : null}
 >
