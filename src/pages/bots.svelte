@@ -207,7 +207,6 @@
 <div class="bots">
 	<Container>
 		<h1>Bots</h1>
-		<p class="sub">Bot accounts you own. <button class="link" on:click={() => $goto("/settings")}>Back to settings</button></p>
 	</Container>
 
 	{#if error}
