@@ -2,7 +2,9 @@ import {get} from "svelte/store";
 import {user} from "./stores.js";
 import {mentionsUser} from "./unread.js";
 
-const audio = new Audio("../src/assets/menu_notify.wav");
+import notifySound from "../assets/menu_notify.wav";
+
+const audio = new Audio(notifySound);
 
 export function playNotification() {
 	// Mix with other audio instead of taking over (iOS would otherwise pause
