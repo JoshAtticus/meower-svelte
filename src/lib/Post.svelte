@@ -934,7 +934,7 @@
 		{#if post.forwarded_from}
 			<div class="forwarded">
 				<span class="fwd-label">
-					Forwarded from <b>@{post.forwarded_from.user}</b>{#if post.forwarded_from.origin_name} in   {post.forwarded_from.origin_name}{/if}
+					Forwarded from <b>@{post.forwarded_from.user}</b>{#if post.forwarded_from.origin_name}{" in " + post.forwarded_from.origin_name}{/if}
 				</span>
 				<span class="fwd-text">{post.forwarded_from.content || ""}</span>
 				{#if post.forwarded_from.attachments}
