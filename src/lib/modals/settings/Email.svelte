@@ -16,11 +16,12 @@
 
 	$: state = $user.email_state || {};
 
-	const ERRORS = {
+	const MESSAGES = {
 		invalidEmail: "That doesn't look like a valid email address.",
-		emailBlocked: "That email provider isn't allowed. Please use a different address.",
+		emailBlocked:
+			"That email provider isn't allowed. Please use a different address.",
 		emailInUse: "That email is already used by another account.",
-		invalidCredentials: "Incorrect password.",
+		invalidCredentials: "That password isn't right.",
 		noEmail: "Add an email address first.",
 		alreadyVerified: "Your email is already verified.",
 	};
@@ -38,12 +39,17 @@
 			const json = await resp.json().catch(() => ({}));
 			if (!resp.ok) {
 				error =
-					ERRORS[json.type] ||
-					(resp.status === 429 ? "Too many attempts! Please try again later." : "Something went wrong.");
+					MESSAGES[json.type] ||
+					(resp.status === 429
+						? "Too many attempts. Try again in a few minutes."
+						: `Something went wrong (code ${resp.status}).`);
 				return null;
 			}
 			await refreshEmailState();
 			return json;
+		} catch (e) {
+			error = "Couldn't reach the server.";
+			return null;
 		} finally {
 			loading = false;
 		}
@@ -53,6 +59,7 @@
 		const json = await call("", "PUT", {email: email.trim(), password});
 		if (json) {
 			password = "";
+			email = "";
 			notice = json.sent
 				? "Check your inbox for the verification link."
 				: "Saved, but we couldn't send the email. Try resending in a moment.";
@@ -61,7 +68,10 @@
 
 	async function resend() {
 		const json = await call("resend", "POST");
-		if (json) notice = json.sent ? "Verification email sent." : "We couldn't send the email. Try again in a moment.";
+		if (json)
+			notice = json.sent
+				? "Verification email sent."
+				: "We couldn't send the email. Try again in a moment.";
 	}
 
 	onMount(refreshEmailState);
@@ -70,41 +80,88 @@
 <Modal showClose={true} on:close={modals.closeLastModal}>
 	<h2 slot="header">Email</h2>
 	<div slot="default">
-		{#if state.has_email}
-			<p>
-				<b>{state.email}</b>
-				{state.verified ? " is verified." : " is not verified yet."}
-			</p>
-			{#if !state.verified}
-				<p>Open the link we emailed you. It expires after 24 hours.</p>
-				<div class="modal-buttons">
-					<button on:click={resend} disabled={loading}>Resend email</button>
-				</div>
-			{/if}
-		{:else}
-			<p>Add an email address to verify your account.</p>
-		{/if}
 		<form on:submit|preventDefault={save}>
-			<input type="text"
-				inputmode="email" class="modal-input white" placeholder={state.has_email ? "New email address" : "Email address"} maxlength="254" autocomplete="email" bind:value={email} />
-			<input type="password" class="modal-input white" placeholder="Current password" maxlength="255" autocomplete="current-password" bind:value={password} />
-			{#if error}<p class="err">{error}</p>{/if}
-			{#if notice}<p>{notice}</p>{/if}
+			<p class="info">
+				{#if state.has_email}
+					<b>{state.email}</b>
+					{state.verified
+						? "is verified."
+						: "isn't verified yet. Open the link we emailed you, which expires after 24 hours."}
+				{:else}
+					Add an email address to verify your account. It's only used
+					for verification and security alerts.
+				{/if}
+			</p>
+			<label for="email-address"
+				><b>{state.has_email ? "New email address" : "Email address"}</b
+				></label
+			>
+			<input
+				id="email-address"
+				type="text"
+				inputmode="email"
+				class="modal-input white"
+				placeholder="you@example.com"
+				maxlength="254"
+				autocomplete="email"
+				disabled={loading}
+				bind:value={email}
+			/>
+			<label for="email-password"><b>Password</b></label>
+			<input
+				id="email-password"
+				type="password"
+				class="modal-input white"
+				placeholder="Your current password..."
+				autocomplete="current-password"
+				disabled={loading}
+				bind:value={password}
+			/>
+			{#if error}<p class="error">{error}</p>{/if}
+			{#if notice}<p class="info notice">{notice}</p>{/if}
 			<div class="modal-buttons">
-				<button type="submit" disabled={loading || !email.trim() || !password}>{state.has_email ? "Change email" : "Add email"}</button>
+				{#if state.has_email && !state.verified}
+					<button type="button" disabled={loading} on:click={resend}
+						>Resend email</button
+					>
+				{/if}
+				<button
+					type="submit"
+					disabled={loading || !email.trim() || !password}
+					>{loading
+						? "Saving..."
+						: state.has_email
+						? "Change email"
+						: "Add email"}</button
+				>
 			</div>
 		</form>
 	</div>
 </Modal>
 
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5em;
+	.info {
+		margin: 0 0 0.8em;
+		font-size: 0.85em;
+		opacity: 0.75;
 	}
-	.err {
-		color: crimson;
+	.notice {
+		margin: 0.7em 0 0;
+	}
+	label {
+		display: block;
+		margin: 0.7em 0 0.3em;
+	}
+	input {
+		width: 100%;
+		box-sizing: border-box;
 		margin: 0;
+	}
+	.error {
+		color: crimson;
+		margin: 0.7em 0 0;
+	}
+	.modal-buttons {
+		margin-top: 1em;
 	}
 </style>
