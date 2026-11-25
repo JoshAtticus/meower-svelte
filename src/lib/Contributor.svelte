@@ -5,6 +5,8 @@
 	export let username = "";
 	export let url = "";
 	export let pfp = null;
+	export let avatar = "";
+	export let avatarColor = "";
 	export let isMeower = false;
 
 	$: if (isMeower) url = "/users/" + username;
@@ -21,9 +23,15 @@
 		$goto(url);
 	}}
 >
-	{#if isMeower && pfp != null}
+	{#if isMeower && (pfp != null || avatar)}
 		<div class="contrib-pfp">
-			<PFP icon={Number(pfp)} alt={username} size={3 / 3.75} />
+			<PFP
+				icon={pfp != null ? Number(pfp) : -1}
+				{avatar}
+				{avatarColor}
+				alt={username}
+				size={3 / 3.75}
+			/>
 		</div>
 	{:else if pfp}
 		<img class="contrib-pfp" src={pfp} alt={username} />

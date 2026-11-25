@@ -6,6 +6,7 @@
 	import meowy from "../assets/meowy.svg";
 
 	import Contributor from "../lib/Contributor.svelte";
+	import MeowerContributor from "../lib/MeowerContributor.svelte";
 
 	const REPO_OWNER = "JoshAtticus";
 	const REPO_NAME = "meower-svelte";
@@ -72,9 +73,12 @@
 	<h2>The Council</h2>
 	<p>These people have the highest authority of the Meower2 project.</p>
 	<div class="contributors-list">
-		<Contributor username="JoshAtticus" pfp={29} isMeower={true}>
+		<MeowerContributor username="JoshAtticus">
 			Current owner of Meower2
-		</Contributor>
+		</MeowerContributor>
+		<MeowerContributor username="Tnix">
+			Moderator and previous owner of Meower
+		</MeowerContributor>
 	</div>
 </Container>
 <Container>
