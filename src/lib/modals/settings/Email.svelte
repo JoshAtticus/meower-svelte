@@ -67,7 +67,7 @@
 	onMount(refreshEmailState);
 </script>
 
-<Modal on:close={modals.closeLastModal}>
+<Modal showClose={true} on:close={modals.closeLastModal}>
 	<h2 slot="header">Email</h2>
 	<div slot="default">
 		{#if state.has_email}
@@ -76,10 +76,10 @@
 				{state.verified ? " is verified." : " is not verified yet."}
 			</p>
 			{#if !state.verified}
-				<p>
-					Open the link we emailed you. It expires after 24 hours.
-					<button class="link-button" on:click={resend} disabled={loading}>Resend email</button>
-				</p>
+				<p>Open the link we emailed you. It expires after 24 hours.</p>
+				<div class="modal-buttons">
+					<button on:click={resend} disabled={loading}>Resend email</button>
+				</div>
 			{/if}
 		{:else}
 			<p>Add an email address to verify your account.</p>
@@ -92,7 +92,6 @@
 			{#if notice}<p>{notice}</p>{/if}
 			<div class="modal-buttons">
 				<button type="submit" disabled={loading || !email.trim() || !password}>{state.has_email ? "Change email" : "Add email"}</button>
-				<button type="button" class="white" on:click={modals.closeLastModal}>Close</button>
 			</div>
 		</form>
 	</div>
@@ -107,15 +106,5 @@
 	.err {
 		color: crimson;
 		margin: 0;
-	}
-	.link-button {
-		background: none;
-		border: none;
-		padding: 0;
-		margin: 0;
-		color: var(--orange);
-		text-decoration: underline;
-		cursor: pointer;
-		font: inherit;
 	}
 </style>

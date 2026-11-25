@@ -14,7 +14,7 @@
 		</p>
 		<div class="modal-buttons">
 			<button on:click={() => modals.replaceLastModal(EmailModal)}>Verify email</button>
-			<button class="white" on:click={modals.closeLastModal}>Not now</button>
+			<button on:click={modals.closeLastModal}>Not now</button>
 		</div>
 	</div>
 </Modal>
