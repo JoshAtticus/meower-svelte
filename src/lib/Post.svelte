@@ -16,6 +16,7 @@
 	import ExternalImage from "./ExternalImage.svelte";
 	import LoadingImage from "./LoadingImage.svelte";
 	import InviteCard from "./InviteCard.svelte";
+	import LinkPreview from "./LinkPreview.svelte";
 
 	import ConfirmHyperlinkModal from "./modals/ConfirmHyperlink.svelte";
 	import DeletePostModal from "./modals/DeletePost.svelte";
@@ -78,6 +79,21 @@
 		for (const m of (post.content || "").matchAll(re))
 			if (m[1] === location.host && !codes.includes(m[2])) codes.push(m[2]);
 		return codes.slice(0, 3);
+	})();
+
+	// the first external link in a message gets a preview card
+	$: previewUrl = (() => {
+		const re = /https?:\/\/[^\s<>"')\]]+/g;
+		for (const m of (post.content || "").matchAll(re)) {
+			const link = m[0].replace(/[.,;:!?]+$/, "");
+			try {
+				const u = new URL(link);
+				if (u.host === location.host) continue;
+				if (IMAGE_HOST_WHITELIST.some(o => link.toLowerCase().startsWith(o.toLowerCase()))) continue;
+				return link;
+			} catch {}
+		}
+		return null;
 	})();
 
 	let images = [];
@@ -903,6 +919,9 @@
 		{#each inviteCodes as inviteCode (inviteCode)}
 			<InviteCard code={inviteCode} />
 		{/each}
+		{#if previewUrl && !inviteCodes.length && !post.isDeleted}
+			<LinkPreview url={previewUrl} />
+		{/if}
 		<div class="post-images">
 			{#each post.stickers || [] as sticker}
 				<LoadingImage
