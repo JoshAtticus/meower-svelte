@@ -28,7 +28,7 @@ import unloadedProfile from "./unloadedprofile.js";
 import {profileCache} from "./loadProfile.js";
 import {stringToTheme, applyTheme, removeTheme} from "./CustomTheme.js";
 import {linkUrl, apiUrl} from "./urls.js";
-import {markChatRead} from "./unread.js";
+import {markChatRead, recordMention, mentionsUser} from "./unread.js";
 import * as modals from "./modals.js";
 
 import {tick} from "svelte";
@@ -635,6 +635,8 @@ export async function connect() {
 				}
 			} else {
 				_chats[chatIndex].last_active = cmd.val.t.e;
+				if (cmd.val.u !== _user.name && mentionsUser(cmd.val.p, _user.name))
+					recordMention(cmd.val.post_origin, cmd.val.t.e);
 				chats.set(_chats);
 			}
 			if (cmd.val.u === _user.name) {

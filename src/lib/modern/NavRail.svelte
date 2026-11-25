@@ -7,7 +7,7 @@
 	import LogoutModal from "../modals/Logout.svelte";
 
 	import {user, friends, chats, OOBERunning} from "../stores.js";
-	import {chatReads, isChatUnread} from "../unread.js";
+	import {chatReads, chatMentions, isChatUnread, isChatMentioned} from "../unread.js";
 	import * as modals from "../modals.js";
 
 	import logo from "../../assets/logo.svg";
@@ -48,6 +48,7 @@
 			href: "/chats",
 			active: $isActive("./chats", {}, {strict: false}),
 			badge: $chats.some(c => isChatUnread(c, $chatReads)),
+			mention: $chats.some(c => isChatMentioned(c, $chatReads, $chatMentions)),
 		},
 		{label: "Explore", icon: search, href: "/explore", active: $isActive("./explore")},
 	];
@@ -89,7 +90,7 @@
 				<span class="micon" style:--icon={`url(${item.icon})`} />
 				<span class="nav-label">{item.label}</span>
 				{#if item.badge}
-					<span class="nav-badge" aria-label="Unread" />
+					<span class="nav-badge" class:mention={item.mention} aria-label={item.mention ? "Mentioned" : "Unread"} />
 				{/if}
 			</button>
 		{/each}
@@ -296,9 +297,14 @@
 		width: 0.55em;
 		height: 0.55em;
 		border-radius: 50%;
-		background: crimson;
+		background: var(--orange);
 		margin-left: auto;
 		flex-shrink: 0;
+	}
+	.nav-badge.mention {
+		width: 0.8em;
+		height: 0.8em;
+		background: crimson;
 	}
 	.nav-item.active .nav-badge {
 		box-shadow: 0 0 0 2px var(--orange);

@@ -4,7 +4,7 @@
 	import PFP from "../PFP.svelte";
 
 	import {chats, user} from "../stores.js";
-	import {chatReads, isChatUnread} from "../unread.js";
+	import {chatReads, chatMentions, isChatUnread, isChatMentioned} from "../unread.js";
 	import loadProfile, {profileCache} from "../loadProfile.js";
 
 	import liveIcon from "../../assets/chat_join.svg";
@@ -76,7 +76,9 @@
 								.join(", ")}</span
 					>
 				{/if}
-				{#if isChatUnread(chat, $chatReads)}
+				{#if isChatMentioned(chat, $chatReads, $chatMentions)}
+					<span class="mention-pill" aria-label="Mentioned">@</span>
+				{:else if isChatUnread(chat, $chatReads)}
 					<span class="panel-badge" aria-label="Unread" />
 				{/if}
 			</button>
@@ -182,7 +184,23 @@
 		width: 0.55em;
 		height: 0.55em;
 		border-radius: 50%;
+		background: var(--orange);
+		flex-shrink: 0;
+	}
+	.mention-pill {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.3em;
+		height: 1.3em;
+		padding: 0 0.25em;
+		box-sizing: border-box;
+		border-radius: 999px;
 		background: crimson;
+		color: white;
+		font-size: 0.7em;
+		font-weight: 700;
+		line-height: 1;
 		flex-shrink: 0;
 	}
 </style>

@@ -6,7 +6,7 @@
 	import LogoutModal from "../modals/Logout.svelte";
 
 	import {user, friends, chats} from "../stores.js";
-	import {chatReads, isChatUnread} from "../unread.js";
+	import {chatReads, chatMentions, isChatUnread, isChatMentioned} from "../unread.js";
 	import {swipeDismiss} from "../swipeDismiss.js";
 	import * as modals from "../modals.js";
 
@@ -55,6 +55,7 @@
 			href: "/chats",
 			active: $isActive("./chats", {}, {strict: false}),
 			badge: $chats.some(c => isChatUnread(c, $chatReads)),
+			mention: $chats.some(c => isChatMentioned(c, $chatReads, $chatMentions)),
 		},
 		{
 			label: "Inbox",
@@ -86,7 +87,7 @@
 			<span class="micon" style:--icon={`url(${tab.icon})`} />
 			<span class="tab-label">{tab.label}</span>
 			{#if tab.badge}
-				<span class="tab-badge" aria-label="Unread" />
+				<span class="tab-badge" class:mention={tab.mention} aria-label={tab.mention ? "Mentioned" : "Unread"} />
 			{/if}
 		</button>
 	{/each}
@@ -272,6 +273,9 @@
 	}
 	.tab.active {
 		color: var(--orange);
+	}
+	.tab-badge.mention {
+		background: crimson !important;
 	}
 	.tab-badge {
 		position: absolute;

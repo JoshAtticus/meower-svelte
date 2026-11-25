@@ -19,7 +19,7 @@
 	import LeaveChatModal from "../../lib/modals/chats/LeaveChat.svelte";
 
 	import {chats, user, authHeader} from "../../lib/stores.js";
-	import {chatReads, isChatUnread} from "../../lib/unread.js";
+	import {chatReads, chatMentions, isChatUnread, isChatMentioned} from "../../lib/unread.js";
 	import {apiUrl} from "../../lib/urls.js";
 	import {default as loadProfile, profileCache} from "../../lib/loadProfile.js";
 	import PFP from "../../lib/PFP.svelte";
@@ -194,7 +194,9 @@
 							on:click={() => $goto(`/chats/${chat._id}`)}
 						>
 							<span class="chat-heading-icon"><ChatIcon {chat} /></span>
-							{#if isChatUnread(chat, $chatReads)}
+							{#if isChatMentioned(chat, $chatReads, $chatMentions)}
+								<span class="mention-pill" aria-label="Mentioned">@</span>
+							{:else if isChatUnread(chat, $chatReads)}
 								<span class="unread-dot" />
 							{/if}
 							<h1>{chat.nickname}</h1>
@@ -280,12 +282,28 @@
 	.chat-heading h1 {
 		margin: 0 0 0.1em;
 	}
+	.mention-pill {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.3em;
+		height: 1.3em;
+		padding: 0 0.25em;
+		box-sizing: border-box;
+		border-radius: 999px;
+		background: crimson;
+		color: white;
+		font-size: 0.6em;
+		font-weight: 700;
+		line-height: 1;
+		flex-shrink: 0;
+	}
 	.unread-dot {
 		display: inline-block;
 		width: 0.55em;
 		height: 0.55em;
 		border-radius: 50%;
-		background: crimson;
+		background: var(--orange);
 		flex-shrink: 0;
 	}
 	.member-stack {
