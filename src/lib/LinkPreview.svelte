@@ -39,7 +39,7 @@
 {#if preview}
 	<a class="link-preview" href={preview.url || url} target="_blank" rel="noreferrer noopener" on:click={open}>
 		{#if preview.image && preview.large}
-			<LoadingImage src={preview.image} alt="" maxWidth="28em" maxHeight="14em" />
+			<LoadingImage src={preview.image} alt="" maxWidth="100%" maxHeight="12em" />
 		{/if}
 		<span class="body">
 			{#if preview.image && !preview.large}
@@ -58,15 +58,15 @@
 	.link-preview {
 		display: flex;
 		flex-direction: column;
-		gap: 0.4em;
-		max-width: 28em;
+		gap: 0.5em;
+		width: min(100%, 28em);
 		min-width: 0;
 		margin-top: 0.5em;
-		padding: 0.6em 0.8em;
+		padding: 0.6em 0.8em 0.7em;
 		box-sizing: border-box;
 		border: 1px solid rgba(128, 128, 128, 0.4);
-		border-left: 4px solid var(--orange);
-		border-radius: 10px;
+		border-top: 4px solid var(--orange);
+		border-radius: 0;
 		color: inherit;
 		text-decoration: none;
 		overflow: hidden;
