@@ -14,6 +14,25 @@
 	import LogoutEverywhereModal from "../lib/modals/settings/LogoutEverywhere.svelte";
 	import SwitchBGMSFXModal from "../lib/modals/settings/SwitchBGMSFX.svelte";
 	import SwitchThemeModal from "../lib/modals/settings/SwitchTheme.svelte";
+	import BasicModal from "../lib/modals/Basic.svelte";
+	import ConfirmActionModal from "../lib/modals/ConfirmAction.svelte";
+	import ConfirmHyperlinkModal from "../lib/modals/ConfirmHyperlink.svelte";
+	import ConnectionFailedModal from "../lib/modals/ConnectionFailed.svelte";
+	import EditProfileModal from "../lib/modals/EditProfile.svelte";
+	import EmailRequiredModal from "../lib/modals/EmailRequired.svelte";
+	import LoginModal from "../lib/modals/Login.svelte";
+	import SearchResultsModal from "../lib/modals/SearchResults.svelte";
+	import SignupModal from "../lib/modals/Signup.svelte";
+	import TwoFactorModal from "../lib/modals/TwoFactor.svelte";
+	import RemoveFriendModal from "../lib/modals/RemoveFriend.svelte";
+	import AccountBannedModal from "../lib/modals/safety/AccountBanned.svelte";
+	import AccountCreationBlockedModal from "../lib/modals/safety/AccountCreationBlocked.svelte";
+	import BlockUserModal from "../lib/modals/safety/BlockUser.svelte";
+	import ChangeUsernameModal from "../lib/modals/settings/ChangeUsername.svelte";
+	import EmailModal from "../lib/modals/settings/Email.svelte";
+	import MyReportsModal from "../lib/modals/settings/MyReports.svelte";
+	import NewLayoutTourModal from "../lib/modals/settings/NewLayoutTour.svelte";
+	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
 
 	import {OOBERunning, groupCats, user} from "../lib/stores.js";
 	import * as clm from "../lib/clmanager.js";
@@ -32,6 +51,26 @@
 		{name: "Logout everywhere", component: LogoutEverywhereModal},
 		{name: "Background music", component: SwitchBGMSFXModal},
 		{name: "Switch theme", component: SwitchThemeModal},
+		{name: "Basic message", component: BasicModal, data: {title: "Example", desc: "This is a basic message modal."}},
+		{name: "Confirm action", component: ConfirmActionModal, data: {title: "Are you sure?", desc: "This does nothing.", confirmLabel: "Confirm", onConfirm: () => {}}},
+		{name: "Confirm link", component: ConfirmHyperlinkModal, data: {link: "https://example.com"}},
+		{name: "Connection failed", component: ConnectionFailedModal},
+		{name: "Edit profile", component: EditProfileModal, data: {tab: "picture"}},
+		{name: "Verify your email (gate popup)", component: EmailRequiredModal},
+		{name: "Email settings", component: EmailModal},
+		{name: "Login", component: LoginModal},
+		{name: "Sign up", component: SignupModal},
+		{name: "Search results", component: SearchResultsModal, data: {type: "users", query: "meower"}},
+		{name: "Two-factor code prompt", component: TwoFactorModal, data: {onSubmit: async () => { throw "I:011 | Invalid Password"; }}},
+		{name: "Two-factor settings", component: TwoFactorSettingsModal},
+		{name: "Remove friend", component: RemoveFriendModal, data: {username: "EasterEgg"}},
+		{name: "Block user", component: BlockUserModal, data: {username: "EasterEgg"}},
+		{name: "Account restricted", component: AccountBannedModal, data: {ban: {state: "temp_restriction", restrictions: 2, expires: Math.floor(Date.now() / 1000) + 86400, reason: "Example reason"}, feature: "posting"}},
+		{name: "Account banned", component: AccountBannedModal, data: {ban: {state: "temp_ban", restrictions: 0, expires: Math.floor(Date.now() / 1000) + 86400, reason: "Example reason"}, feature: ""}},
+		{name: "Account creation blocked", component: AccountCreationBlockedModal},
+		{name: "Change username", component: ChangeUsernameModal},
+		{name: "My reports", component: MyReportsModal},
+		{name: "New layout tour", component: NewLayoutTourModal},
 	];
 	let selectedModal = 0;
 
@@ -67,13 +106,13 @@
 				<option value={i}>{modal.name}</option>
 			{/each}
 		</select>
-		<button on:click={() => modals.showModal(allModals[selectedModal].component)}
+		<button on:click={() => modals.showModal(allModals[selectedModal].component, allModals[selectedModal].data)}
 			>Show</button
 		>
 		<button
 			on:click={() => {
 				selectedModal = Math.floor(Math.random() * allModals.length);
-				modals.showModal(allModals[selectedModal].component);
+				modals.showModal(allModals[selectedModal].component, allModals[selectedModal].data);
 			}}>Random</button
 		>
 	</Container>
