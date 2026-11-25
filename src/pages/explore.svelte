@@ -251,6 +251,7 @@
 		gap: 0.4em;
 		overflow-x: auto;
 		overflow-y: hidden;
+		padding: 2px 1px;
 		scrollbar-width: none;
 		-ms-overflow-style: none;
 		-webkit-overflow-scrolling: touch;
@@ -260,6 +261,7 @@
 	}
 	.chip {
 		flex: 0 0 auto;
+		margin: 0;
 	}
 	.chip {
 		border: 1px solid var(--hairline, var(--gray, #ccc));
