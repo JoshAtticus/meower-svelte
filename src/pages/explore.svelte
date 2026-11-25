@@ -102,7 +102,6 @@
 <div class="explore">
 	<Container>
 		<h1>Explore</h1>
-		<p class="subtitle">Top posts and search</p>
 		<form
 			class="explore-search"
 			autocomplete="off"
@@ -248,9 +247,19 @@
 	}
 	.type-chips {
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		gap: 0.4em;
-		overflow: hidden;
+		overflow-x: auto;
+		overflow-y: hidden;
+		scrollbar-width: none;
+		-ms-overflow-style: none;
+		-webkit-overflow-scrolling: touch;
+	}
+	.type-chips::-webkit-scrollbar {
+		display: none;
+	}
+	.chip {
+		flex: 0 0 auto;
 	}
 	.chip {
 		border: 1px solid var(--hairline, var(--gray, #ccc));
