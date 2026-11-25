@@ -33,6 +33,28 @@
 	import MyReportsModal from "../lib/modals/settings/MyReports.svelte";
 	import NewLayoutTourModal from "../lib/modals/settings/NewLayoutTour.svelte";
 	import TwoFactorSettingsModal from "../lib/modals/settings/TwoFactorSettings.svelte";
+	import ClearPostsModal from "../lib/modals/moderation/ClearPosts.svelte";
+	import ClearQuoteModal from "../lib/modals/moderation/ClearQuote.svelte";
+	import CreateNetblockModal from "../lib/modals/moderation/CreateNetblock.svelte";
+	import ModDeleteAccountModal from "../lib/modals/moderation/DeleteAccount.svelte";
+	import DeleteNetblockModal from "../lib/modals/moderation/DeleteNetblock.svelte";
+	import EditRestrictionsModal from "../lib/modals/moderation/EditRestrictions.svelte";
+	import EmailDomainsModal from "../lib/modals/moderation/EmailDomains.svelte";
+	import EnableRepairModeModal from "../lib/modals/moderation/EnableRepairMode.svelte";
+	import KickAllUsersModal from "../lib/modals/moderation/KickAllUsers.svelte";
+	import ModPanelModal from "../lib/modals/moderation/ModPanel.svelte";
+	import ModerateChatModal from "../lib/modals/moderation/ModerateChat.svelte";
+	import ModerateIPModal from "../lib/modals/moderation/ModerateIP.svelte";
+	import ModeratePostModal from "../lib/modals/moderation/ModeratePost.svelte";
+	import ModerateUserModal from "../lib/modals/moderation/ModerateUser.svelte";
+	import NetblockNotesModal from "../lib/modals/moderation/NetblockNotes.svelte";
+	import RecentNetblocksModal from "../lib/modals/moderation/RecentNetblocks.svelte";
+	import RecentUsersModal from "../lib/modals/moderation/RecentUsers.svelte";
+	import ReportNotesModal from "../lib/modals/moderation/ReportNotes.svelte";
+	import SendAnnouncementModal from "../lib/modals/moderation/SendAnnouncement.svelte";
+	import SetAdminPermissionsModal from "../lib/modals/moderation/SetAdminPermissions.svelte";
+	import ViewPostsModal from "../lib/modals/moderation/ViewPosts.svelte";
+	import BotsModal from "../lib/modals/settings/Bots.svelte";
 
 	import {OOBERunning, groupCats, user} from "../lib/stores.js";
 	import * as clm from "../lib/clmanager.js";
@@ -71,6 +93,28 @@
 		{name: "Change username", component: ChangeUsernameModal},
 		{name: "My reports", component: MyReportsModal},
 		{name: "New layout tour", component: NewLayoutTourModal},
+		{name: "Clear posts", component: ClearPostsModal, data: {username: "EasterEgg", postOrigin: "home"}},
+		{name: "Clear quote", component: ClearQuoteModal, data: {username: "EasterEgg"}},
+		{name: "Create netblock", component: CreateNetblockModal, data: {cidr: "203.0.113.0/24"}},
+		{name: "Delete account (moderation)", component: ModDeleteAccountModal, data: {user: {_id: "EasterEgg", flags: 0, delete_after: null}}},
+		{name: "Delete netblock", component: DeleteNetblockModal, data: {cidr: "203.0.113.0/24"}},
+		{name: "Edit restrictions", component: EditRestrictionsModal, data: {username: "EasterEgg"}},
+		{name: "Blocked email domains", component: EmailDomainsModal},
+		{name: "Enable repair mode", component: EnableRepairModeModal},
+		{name: "Kick all users", component: KickAllUsersModal},
+		{name: "Moderation panel", component: ModPanelModal},
+		{name: "Moderate chat", component: ModerateChatModal},
+		{name: "Moderate IP", component: ModerateIPModal, data: {ip: "203.0.113.5"}},
+		{name: "Moderate post", component: ModeratePostModal, data: {postid: "example"}},
+		{name: "Moderate user", component: ModerateUserModal, data: {username: "EasterEgg"}},
+		{name: "Netblock notes", component: NetblockNotesModal, data: {cidr: "203.0.113.0/24"}},
+		{name: "Recent netblocks", component: RecentNetblocksModal},
+		{name: "Recent users", component: RecentUsersModal},
+		{name: "Report notes", component: ReportNotesModal, data: {reportid: "example"}},
+		{name: "Send announcement", component: SendAnnouncementModal, data: {announcement: "Example announcement"}},
+		{name: "Set admin permissions", component: SetAdminPermissionsModal, data: {user: {_id: "EasterEgg", permissions: 0}}},
+		{name: "View posts", component: ViewPostsModal, data: {username: "EasterEgg", userProtected: false}},
+		{name: "Bots (old modal)", component: BotsModal},
 	];
 	let selectedModal = 0;
 
@@ -98,8 +142,8 @@
 	</Container>
 	<Container>
 		<h1>Modals</h1>
-		Pick a modal to open, or let fate decide (moderation, harmful and
-		errored ones are left out).
+		Pick a modal to open, or let fate decide. Moderation modals only work with
+		the right permissions (the server checks).
 		<br /><br />
 		<select bind:value={selectedModal}>
 			{#each allModals as modal, i}
