@@ -349,6 +349,11 @@ button.share {
 	background-size: 55%;
 }
 
+button.forward {
+	background-image: url("./forward.svg");
+	background-size: 55%;
+}
+
 button.reply {
 	background-image: url("./reply.svg");
 	background-size: 55%;
@@ -655,6 +660,7 @@ img.custom-emoji:not([data-l]) {
 .icon-menu button.pin { --icon: url("./pin.svg"); }
 .icon-menu button.pin.filled { --icon: url("./pin_filled.svg"); }
 .icon-menu button.share { --icon: url("./share.svg"); }
+.icon-menu button.forward { --icon: url("./forward.svg"); }
 .icon-menu button.pen { --icon: url("./pen.svg"); }
 .icon-menu button.trash { --icon: url("./trash.svg"); }
 .icon-menu button.report { --icon: url("./report.svg"); }

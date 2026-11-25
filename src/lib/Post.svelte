@@ -23,6 +23,7 @@
 	import ReportPostModal from "./modals/safety/ReportPost.svelte";
 	import ModeratePostModal from "./modals/moderation/ModeratePost.svelte";
 	import SharePostModal from "./modals/SharePost.svelte";
+	import ForwardPostModal from "./modals/ForwardPost.svelte";
 	import PinPostModal from "./modals/PinPost.svelte";
 	import EmojiPopup from "./EmojiPopup.svelte";
 	import EmoteAutocomplete from "./EmoteAutocomplete.svelte";
@@ -552,6 +553,14 @@
 							title="Share post"
 							on:click={() =>
 								modals.showModal(SharePostModal, {post})}
+						/>
+					{/if}
+					{#if !editing && $user.name && post.post_id && !post.pending && !post.isDeleted && post.post_origin !== "inbox" && post.user !== "Server"}
+						<button
+							class="circle forward"
+							title="Forward message"
+							on:click={() =>
+								modals.showModal(ForwardPostModal, {post})}
 						/>
 					{/if}
 					{#if !editing && canPin}
