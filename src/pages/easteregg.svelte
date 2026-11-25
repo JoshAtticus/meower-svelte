@@ -79,7 +79,7 @@
 	</Container>
 	<Container>
 		<h1>Background Music</h1>
-		Music that plays while you use Meower.
+		Music that plays while you use Meower. So exciting
 		<br /><br />
 		<label>
 			<input

@@ -43,7 +43,7 @@
 	import {shiftHeld} from "./keyDetect.js";
 	import {mobile} from "./responsiveness.js";
 	import {modernLayout} from "./modernLayout.js";
-	import {playNotification} from "./sounds.js";
+	import {notifyForPost} from "./sounds.js";
 	import * as modals from "./modals.js";
 	import PagedList from "./PagedList.svelte";
 	import Container from "./Container.svelte";
@@ -582,6 +582,7 @@
 						}
 						if (post.reply_to && post.reply_to.length)
 							replyBus.set({post});
+						notifyForPost(cmd.val);
 						return;
 					}
 					if (items.some(p => p.post_id === cmd.val._id)) {
@@ -596,9 +597,7 @@
 					}
 					if (post.reply_to && post.reply_to.length)
 						replyBus.set({post});
-					// only when sound effects are explicitly on
-					if ($user.sfx === true && cmd.val.u !== $user.name)
-						playNotification();
+					notifyForPost(cmd.val);
 				}
 			});
 			destroy = () => clm.link.off(evId);

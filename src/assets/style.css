@@ -657,6 +657,7 @@ img.custom-emoji:not([data-l]) {
 .icon-menu button.star { --icon: url("./star.svg"); }
 .icon-menu button.star.filled { --icon: url("./star_filled.svg"); }
 .icon-menu button.close { --icon: url("./close.svg"); }
+.icon-menu button.settings { --icon: url("./settings.svg"); }
 .icon-menu button.pin { --icon: url("./pin.svg"); }
 .icon-menu button.pin.filled { --icon: url("./pin_filled.svg"); }
 .icon-menu button.share { --icon: url("./share.svg"); }

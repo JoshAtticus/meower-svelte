@@ -2,6 +2,7 @@
 <script>
 	import BasicModal from "./modals/Basic.svelte";
 	import LeaveChatModal from "./modals/chats/LeaveChat.svelte";
+	import ChatSoundsModal from "./modals/chats/ChatSounds.svelte";
 
 	import {chats, user} from "./stores.js";
 	import {mobile} from "./responsiveness.js";
@@ -67,6 +68,12 @@
 				class:filled={pinned}
 				title={pinned ? "Unpin chat" : "Pin chat"}
 				on:click={togglePin}
+			/>
+			<button
+				type="button"
+				class="circle settings"
+				title="Notification sounds"
+				on:click={() => modals.showModal(ChatSoundsModal, {chat})}
 			/>
 			{#if !pinned}
 				<button

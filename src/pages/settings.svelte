@@ -221,6 +221,23 @@
 					on:change={() => clm.updateProfile({sfx: $user.sfx})}
 				/>
 			</label>
+			{#if $user.sfx}
+				<label class="row">
+					<div class="row-text">
+						<h3>Notify me for</h3>
+						<span class="row-sub">
+							Which messages play a sound. You can also set this per chat from the chat list.
+						</span>
+					</div>
+					<select
+						bind:value={$user.sfx_scope}
+						on:change={() => clm.updateProfile({sfx_scope: $user.sfx_scope})}
+					>
+						<option value="all">All messages</option>
+						<option value="mentions">Mentions &amp; replies only</option>
+					</select>
+				</label>
+			{/if}
 		{:else if tab === "privacy"}
 			<label class="row">
 				<div class="row-text">
