@@ -286,7 +286,7 @@
 				>
 				<br />
 				<button on:click={() => page.set("join")}
-					>Create an account</button
+					>Sign up</button
 				> <br />
 				{#if localStorage.getItem("meower_savedusername")}
 					<button
@@ -357,7 +357,7 @@
 		</div>
 	{:else if $page === "2fa"}
 		<div class="fullcenter">
-			<h1>Two-factor authentication</h1>
+			<h1>Verify it's you</h1>
 
 			<form class="column-ui" on:submit|preventDefault={submit2FA}>
 				<input
