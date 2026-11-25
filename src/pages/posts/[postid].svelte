@@ -49,6 +49,7 @@
 			content: post.p,
 			attachments: post.attachments,
 			stickers: post.stickers,
+			forwarded_from: post.forwarded_from,
 			reply_to: post.reply_to,
 			reply_count: post.reply_count || 0,
 			author: post.author,

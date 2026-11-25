@@ -182,6 +182,12 @@
 					post.pinned ? "unpin_messages" : "pin_messages"
 				)));
 
+	// forwarding follows the chat's sharing setting
+	$: originChat = ($chats || []).find(c => c._id === post.post_origin);
+	$: canForward =
+		$user.name &&
+		(!originChat || originChat.type !== 0 || originChat.allow_sharing !== false) &&
+		(!isGroupPost || hasChatPerm($chat, $user.name, "share_posts"));
 	$: canShare =
 		!isGroupPost || hasChatPerm($chat, $user.name, "share_posts");
 
@@ -555,7 +561,7 @@
 								modals.showModal(SharePostModal, {post})}
 						/>
 					{/if}
-					{#if !editing && $user.name && post.post_id && !post.pending && !post.isDeleted && post.post_origin !== "inbox" && post.user !== "Server"}
+					{#if !editing && canForward && post.post_id && !post.pending && !post.isDeleted && post.post_origin !== "inbox" && post.user !== "Server"}
 						<button
 							class="circle forward"
 							title="Forward message"
@@ -925,6 +931,20 @@
 		<p style="color: crimson;">{error}</p>
 	{/if}
 	{#if !editing}
+		{#if post.forwarded_from}
+			<div class="forwarded">
+				<span class="fwd-label">
+					Forwarded from <b>@{post.forwarded_from.user}</b>{#if post.forwarded_from.origin_name} in {post.forwarded_from.origin_name}{/if}
+				</span>
+				<span class="fwd-text">{post.forwarded_from.content || ""}</span>
+				{#if post.forwarded_from.attachments}
+					<span class="fwd-label">{post.forwarded_from.attachments} attachment{post.forwarded_from.attachments === 1 ? "" : "s"}</span>
+				{/if}
+				{#if post.forwarded_from.can_jump}
+					<button type="button" class="fwd-jump" on:click={() => $goto(`/posts/${post.forwarded_from.post_id}`)}>Jump to message</button>
+				{/if}
+			</div>
+		{/if}
 		{#each inviteCodes as inviteCode (inviteCode)}
 			<InviteCard code={inviteCode} />
 		{/each}
@@ -1159,6 +1179,39 @@
 		max-width: 100%;
 	}
 
+	.forwarded {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.2em;
+		margin: 0.5em 0;
+		padding: 0.5em 0.8em;
+		border: 1px solid rgba(128, 128, 128, 0.4);
+		border-top: 4px solid var(--orange);
+		overflow-wrap: anywhere;
+	}
+	.fwd-label {
+		font-size: 0.8em;
+		opacity: 0.7;
+	}
+	.fwd-text {
+		white-space: pre-wrap;
+		display: -webkit-box;
+		-webkit-line-clamp: 8;
+		line-clamp: 8;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.fwd-jump {
+		margin: 0.3em 0 0;
+		padding: 0.2em 0.8em;
+		border: none;
+		border-radius: 999px;
+		background: var(--orange);
+		color: var(--foreground-orange, #fff);
+		font-weight: 600;
+		cursor: pointer;
+	}
 	.post-tag {
 		display: inline-flex;
 		align-items: center;
@@ -1677,5 +1730,38 @@
 	:global(main.layout-modern.layout-mobile) .inbox-avatar {
 		width: 36px;
 		height: 36px;
+	}
+	.forwarded {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.2em;
+		margin: 0.5em 0;
+		padding: 0.5em 0.8em;
+		border: 1px solid rgba(128, 128, 128, 0.4);
+		border-top: 4px solid var(--orange);
+		overflow-wrap: anywhere;
+	}
+	.fwd-label {
+		font-size: 0.8em;
+		opacity: 0.7;
+	}
+	.fwd-text {
+		white-space: pre-wrap;
+		display: -webkit-box;
+		-webkit-line-clamp: 8;
+		line-clamp: 8;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+	.fwd-jump {
+		margin: 0.3em 0 0;
+		padding: 0.2em 0.8em;
+		border: none;
+		border-radius: 999px;
+		background: var(--orange);
+		color: var(--foreground-orange, #fff);
+		font-weight: 600;
+		cursor: pointer;
 	}
 </style>

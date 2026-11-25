@@ -58,6 +58,7 @@
 						content: item.post.p,
 						attachments: item.post.attachments || [],
 						stickers: item.post.stickers || [],
+						forwarded_from: item.post.forwarded_from ,
 						reply_to: item.post.reply_to || [],
 						reply_count: item.post.reply_count || 0,
 						reactions: item.post.reactions || [],

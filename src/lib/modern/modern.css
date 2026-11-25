@@ -333,6 +333,11 @@ main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .setti
 	mask-image: url("../../assets/members.svg");
 }
 main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
+	button.circle.search::after {
+	-webkit-mask-image: url("../../assets/search.svg");
+	mask-image: url("../../assets/search.svg");
+}
+main.layout-modern.layout-modern:not(.layout-mobile) #chat > .container > .settings-controls
 	button.circle.admin::after {
 	-webkit-mask-image: url("../../assets/shield.svg");
 	mask-image: url("../../assets/shield.svg");

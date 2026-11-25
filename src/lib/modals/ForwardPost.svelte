@@ -5,6 +5,9 @@
 	import {authHeader, chats, user} from "../stores.js";
 	import {apiUrl} from "../urls.js";
 	import * as modals from "../modals.js";
+	import ChatIcon from "../ChatIcon.svelte";
+	import PFP from "../PFP.svelte";
+	import {profileCache} from "../loadProfile.js";
 	import {goto} from "@roxi/routify";
 
 	export let modalData = {};
@@ -19,6 +22,8 @@
 		{id: "home", name: "Home"},
 		...$chats
 			.map(c => ({
+				chat: c,
+				dm: c.type === 1 ? c.members.find(m => m !== $user.name) : null,
 				id: c._id,
 				name:
 					c.type === 1
@@ -27,18 +32,6 @@
 			}))
 			.sort((a, b) => a.name.localeCompare(b.name)),
 	].filter(d => d.name.toLowerCase().includes(filter.trim().toLowerCase()));
-
-	function buildContent() {
-		const quoted = (post.content || "")
-			.split("\n")
-			.map(line => "> " + line)
-			.join("\n");
-		const extra = (post.attachments || []).length
-			? `\n> (${post.attachments.length} attachment${post.attachments.length === 1 ? "" : "s"} not included)`
-			: "";
-		const head = `${comment.trim()}${comment.trim() ? "\n\n" : ""}Forwarded from @${post.user}:\n`;
-		return (head + quoted + extra).slice(0, 4000);
-	}
 
 	async function forward(dest) {
 		if (sending) return;
@@ -51,7 +44,8 @@
 					method: "POST",
 					headers: {"Content-Type": "application/json", ...$authHeader},
 					body: JSON.stringify({
-						content: buildContent(),
+						content: comment.trim(),
+						forward_of: post.post_id,
 						nonce: Math.random().toString(),
 						stickers: [],
 						attachments: [],
@@ -100,7 +94,16 @@
 		<div class="list">
 			{#each destinations as dest (dest.id)}
 				<button type="button" class="dest" disabled={!!sending} on:click={() => forward(dest)}>
-					<span class="name">{dest.name}</span>
+					<span class="who">
+						{#if dest.id === "home"}
+							<span class="home-icon">M</span>
+						{:else if dest.dm}
+							<PFP raw icon={($profileCache[dest.dm] || {}).pfp_data ?? -1} avatar={($profileCache[dest.dm] || {}).avatar} avatarColor={($profileCache[dest.dm] || {}).avatar_color} alt="" size={0.5} />
+						{:else}
+							<ChatIcon chat={dest.chat} size={0.5} />
+						{/if}
+						<span class="name">{dest.name}</span>
+					</span>
 					<span class="send">{sending === dest.id ? "Sending..." : "Send"}</span>
 				</button>
 			{:else}
@@ -147,6 +150,24 @@
 		font: inherit;
 		text-align: left;
 		cursor: pointer;
+	}
+	.who {
+		display: flex;
+		align-items: center;
+		gap: 0.6em;
+		min-width: 0;
+	}
+	.home-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.4em;
+		height: 1.4em;
+		border-radius: 0.4em;
+		background: var(--orange);
+		color: var(--foreground-orange, #fff);
+		font-weight: 700;
+		font-size: 1.1em;
 	}
 	.send {
 		color: var(--orange);
