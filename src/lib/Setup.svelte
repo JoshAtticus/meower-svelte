@@ -9,7 +9,6 @@
 	import {mobile} from "./responsiveness.js";
 	import unloadedProfile from "./unloadedprofile.js";
 	import * as clm from "./clmanager.js";
-	import TwoFactorModal from "./modals/TwoFactor.svelte";
 	import * as modals from "./modals.js";
 	const link = clm.link;
 	// @ts-ignore
@@ -129,6 +128,46 @@
 	 * @param {string} username
 	 * @param {string} password
 	 */
+	let pending2FA = null;
+	let twoFactorCode = "";
+	let verifying = false;
+	const autofocus = node => node.focus();
+
+	// 6-digit authenticator code or 10-character recovery code
+	$: cleanedCode = twoFactorCode.replace(/\s+/g, "");
+	$: validCode =
+		/^\d{6}$/.test(cleanedCode) || /^[0-9a-fA-F]{10}$/.test(cleanedCode);
+
+	async function submit2FA() {
+		if (!validCode || verifying || !pending2FA) return;
+		verifying = true;
+		loginStatus = "";
+		try {
+			// the server accepts the code appended to the password
+			await clm.meowerRequest({
+				cmd: "direct",
+				val: {
+					cmd: "authpswd",
+					val: {
+						username: pending2FA.username,
+						pswd: pending2FA.password + cleanedCode,
+					},
+				},
+			});
+			pending2FA = null;
+			BGM.playBGM($user.bgm_song);
+			screen.set("main");
+		} catch (e) {
+			loginStatus =
+				e === "I:011 | Invalid Password"
+					? "That code didn't work."
+					: e === "E:106 | Too many requests"
+					? "Too many attempts! Please try again later."
+					: `Unexpected ${e} error!`;
+		}
+		verifying = false;
+	}
+
 	async function doLogin(
 		username,
 		password,
@@ -174,20 +213,9 @@
 					break;
 				case "I:016 | 2FA Required":
 					loginStatus = "";
-					modals.showModal(TwoFactorModal, {
-						onSubmit: async code => {
-							// the server accepts the code appended to the password
-							await clm.meowerRequest({
-								cmd: "direct",
-								val: {
-									cmd: "authpswd",
-									val: {username: username, pswd: password + code},
-								},
-							});
-							BGM.playBGM($user.bgm_song);
-							screen.set("main");
-						},
-					});
+					pending2FA = {username, password};
+					twoFactorCode = "";
+					page.set("2fa");
 					break;
 				case "E:018 | Account Banned":
 					loginStatus = "";
@@ -324,6 +352,38 @@
 						}}>Go back</button
 					>
 					<button type="submit">Log in</button>
+				</div>
+			</form>
+		</div>
+	{:else if $page === "2fa"}
+		<div class="fullcenter">
+			<h1>Two-factor authentication</h1>
+
+			<form class="column-ui" on:submit|preventDefault={submit2FA}>
+				<input
+					type="text"
+					inputmode="numeric"
+					autocomplete="one-time-code"
+					placeholder="Authenticator or recovery code"
+					maxlength="12"
+					disabled={verifying}
+					bind:value={twoFactorCode}
+					use:autofocus
+				/>
+				<span class="login-status">{loginStatus}</span>
+				<div class="buttons">
+					<button
+						type="button"
+						on:click|preventDefault={() => {
+							pending2FA = null;
+							loginStatus = "";
+							page.set("login");
+							return false;
+						}}>Go back</button
+					>
+					<button type="submit" disabled={!validCode || verifying}
+						>Verify</button
+					>
 				</div>
 			</form>
 		</div>
