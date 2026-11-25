@@ -809,3 +809,19 @@ main.layout-modern.layout-modern .chats .profile-header-info.small .profile-user
 main.layout-modern.layout-modern .chats .profile-header-info.small .profile-active {
 	font-size: 0.85em;
 }
+
+/* profile pages have no sticky header bar: give the profile card room above */
+main.layout-modern.layout-modern .view > div.profile-page {
+	padding-top: 0.8em;
+}
+/* chat list cards: keep the title clear of the menu button */
+main.layout-modern.layout-modern .chats .chat-heading {
+	padding-right: 2.6em;
+	min-width: 0;
+}
+main.layout-modern.layout-modern .chats .chat-heading h1 {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	min-width: 0;
+}

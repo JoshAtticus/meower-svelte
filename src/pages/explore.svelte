@@ -237,9 +237,9 @@
 	}
 	.type-chips {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.4em;
-		overflow-x: auto;
-		padding-bottom: 0.2em;
+		overflow: hidden;
 	}
 	.chip {
 		border: 1px solid var(--hairline, var(--gray, #ccc));

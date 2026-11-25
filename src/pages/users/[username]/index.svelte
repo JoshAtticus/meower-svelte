@@ -47,7 +47,7 @@
 
 </script>
 
-<div>
+<div class="profile-page">
 	{#await loadProfile()}
 		<div class="fullcenter">
 			<Loading />

@@ -4,7 +4,6 @@ import MarkdownIt from "markdown-it";
 import hljs from "highlight.js/lib/common";
 import "highlight.js/styles/github-dark.css";
 import twemoji from "twemoji";
-import {goto} from "@roxi/routify";
 
 import ConfirmHyperlinkModal from "./modals/ConfirmHyperlink.svelte";
 import * as modals from "./modals.js";
@@ -38,7 +37,9 @@ export function confirmLink(link) {
 	}
 	let url = new URL(link, location.href);
 	if (url.host === location.host) {
-		$goto(url.pathname);
+		// (a store can't be used outside a component, so drive the router through history)
+		history.pushState({}, "", url.pathname + url.search);
+		window.dispatchEvent(new PopStateEvent("popstate"));
 	} else {
 		modals.showModal(ConfirmHyperlinkModal, {link});
 	}
