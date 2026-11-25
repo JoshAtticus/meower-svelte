@@ -115,6 +115,20 @@
 			<img class="inline-meowy" src={meowy} height="24" alt="Meowy" /> Original
 			creator of Meowy
 		</Contributor>
+		<Contributor
+			username="tnix100"
+			url="https://scratch.mit.edu/users/tnix100/"
+			pfp="https://avatars.githubusercontent.com/u/61485190?v=4"
+		>
+			Previous owner of Meower
+		</Contributor>
+		<Contributor
+			username="MikeDev101"
+			url="https://scratch.mit.edu/users/MikeDev101/"
+			pfp="https://avatars.githubusercontent.com/u/12957745?v=4"
+		>
+			Previous owner of Meower
+		</Contributor>
 	</div>
 </Container>
 <!--
