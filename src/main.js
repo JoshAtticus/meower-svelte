@@ -1,3 +1,4 @@
+import "./lib/emailGate.js";
 import App from "./App.svelte";
 
 try {

@@ -1,6 +1,7 @@
 <!-- You probably know what this is. -->
 <script>
 	import {goto} from "@roxi/routify";
+	import EmailModal from "../lib/modals/settings/Email.svelte";
 	import {systemDark} from "../lib/responsiveness.js";
 	import Container from "../lib/Container.svelte";
 	import FormattedDate from "../lib/FormattedDate.svelte";
@@ -307,6 +308,21 @@
 					>Manage</button
 				>
 			</div>
+			{#if !$user.bot}
+				<div class="row">
+					<div class="row-text">
+						<h3>Email</h3>
+						<span class="row-sub">
+							{#if $user.email_state?.has_email}
+								{$user.email_state.email} ({$user.email_state.verified ? "verified" : "not verified"})
+							{:else}
+								Add and verify an email address
+							{/if}
+						</span>
+					</div>
+					<button type="button" on:click={() => modals.showModal(EmailModal)}>Manage</button>
+				</div>
+			{/if}
 			{#if !$user.bot}
 				<div class="row">
 					<div class="row-text">

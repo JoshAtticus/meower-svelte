@@ -119,6 +119,12 @@
 			name: "Send announcements",
 			description: "Allows sending announcements.",
 		},
+		{
+			value: adminPermissions.MANAGE_EMAILS,
+			name: "Manage emails",
+			description:
+				"Allows viewing users' email addresses and verification status, and blocking email domains.",
+		},
 	];
 
 	export let modalData;

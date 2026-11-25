@@ -335,11 +335,12 @@
 				class="column-ui"
 				on:submit|preventDefault={e => {
 					const username = e.target[0].value;
-					const password = e.target[1].value;
-					const confirmPassword = e.target[2].value;
-					if (!(username && password)) {
+					const email = e.target[1].value.trim();
+					const password = e.target[2].value;
+					const confirmPassword = e.target[3].value;
+					if (!(username && password && email)) {
 						loginStatus =
-							"You must specify a username and a password to create an account!";
+							"You must specify a username, an email and a password to create an account!";
 						return false;
 					}
 					if (password !== confirmPassword) {
@@ -357,6 +358,7 @@
 							val: {
 								username: username,
 								pswd: password,
+								email: email,
 							},
 						},
 						listener: "join",
@@ -382,6 +384,15 @@
 									loginStatus =
 										"Usernames must not have spaces or other special characters!";
 									break;
+								case "E:130 | Invalid email":
+									loginStatus = "That doesn't look like a valid email address.";
+									break;
+								case "E:131 | Email domain not allowed":
+									loginStatus = "That email provider isn't allowed. Please use a different address.";
+									break;
+								case "E:132 | Email in use":
+									loginStatus = "That email is already used by another account.";
+									break;
 								case "E:106 | Too many requests":
 									loginStatus =
 										"Too many requests! Please try again later.";
@@ -406,6 +417,12 @@
 				}}
 			>
 				<input type="text" placeholder="Username" maxlength="20" />
+				<input
+					type="email"
+					placeholder="Email"
+					maxlength="254"
+					autocomplete="email"
+				/>
 				<input
 					type="password"
 					placeholder="Password"

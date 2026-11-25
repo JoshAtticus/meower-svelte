@@ -11,7 +11,7 @@
 
 	import {focus} from "@roxi/routify";
 
-	let username, password, confirmPassword, acceptTerms, loading, error;
+	let username, password, confirmPassword, acceptTerms, loading, error, email;
 </script>
 
 <Modal on:close={modals.closeLastModal}>
@@ -20,8 +20,8 @@
 		<form
 			on:change={() => (error = "")}
 			on:submit|preventDefault={async () => {
-				if (!username || !password) {
-					error = "You must specify a username and password!";
+				if (!username || !password || !email) {
+					error = "You must specify a username, email and password!";
 					return;
 				}
 				if (password !== confirmPassword) {
@@ -38,6 +38,7 @@
 						val: {
 							username: username,
 							pswd: password,
+							email: email.trim(),
 						},
 					},
 				})
@@ -61,6 +62,15 @@
 							case "E:019 | Illegal characters detected":
 								error =
 									"Usernames must not have spaces or other special characters!";
+								break;
+							case "E:130 | Invalid email":
+								error = "That doesn't look like a valid email address.";
+								break;
+							case "E:131 | Email domain not allowed":
+								error = "That email provider isn't allowed. Please use a different address.";
+								break;
+							case "E:132 | Email in use":
+								error = "That email is already used by another account.";
 								break;
 							case "E:106 | Too many requests":
 								error =
@@ -95,6 +105,18 @@
 				disabled={loading}
 				bind:value={username}
 				use:focus
+			/>
+			<br /><br />
+			<label for="email"><b>Email</b></label>
+			<input
+				id="email"
+				type="email"
+				class="modal-input white"
+				placeholder="Email address..."
+				maxlength="254"
+				autocomplete="email"
+				disabled={loading}
+				bind:value={email}
 			/>
 			<br /><br />
 			<label for="password" style={error ? "color: crimson;" : ""}>

@@ -39,6 +39,16 @@
 
 	let {username} = modalData;
 
+	let emailInfo = null;
+	async function loadEmailInfo() {
+		if (!hasPermission(adminPermissions.MANAGE_EMAILS)) return;
+		try {
+			const resp = await fetch(`${apiUrl}admin/users/${username}/email`, {headers: $authHeader});
+			if (resp.ok) emailInfo = await resp.json();
+		} catch {}
+	}
+	loadEmailInfo();
+
 	let user;
 	let system, deleted, userProtected;
 	let alertText, alertStatus;
@@ -305,6 +315,19 @@
 				</table>
 
 				<br /><br />
+			{/if}
+
+			{#if emailInfo}
+				<h2>Email</h2>
+				<p>
+					{#if emailInfo.email}
+						{emailInfo.email}
+						({emailInfo.verified ? "verified" : "not verified"})
+					{:else}
+						No email set.
+					{/if}
+				</p>
+				<br />
 			{/if}
 
 			{#if hasPermission(adminPermissions.VIEW_NOTES)}

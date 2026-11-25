@@ -44,6 +44,8 @@ export const adminPermissions = {
 	EDIT_CHATS: 131072,
 
 	SEND_ANNOUNCEMENTS: 262144,
+
+	MANAGE_EMAILS: 524288,
 };
 
 export const userRestrictions = {

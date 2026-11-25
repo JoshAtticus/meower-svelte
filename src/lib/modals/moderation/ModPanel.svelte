@@ -1,4 +1,5 @@
 <script>
+	import EmailDomainsModal from "./EmailDomains.svelte";
 	import Modal from "../../Modal.svelte";
 	import Loading from "../../Loading.svelte";
 	import Container from "../../Container.svelte";
@@ -218,6 +219,12 @@
 				</div>
 			</form>
 		{/if}
+		{#if hasPermission(adminPermissions.MANAGE_EMAILS)}
+			<h2>Email domains</h2>
+			<button on:click={() => modals.showModal(EmailDomainsModal)}>Manage blocked domains</button>
+			<br /><br />
+		{/if}
+
 		{#if hasPermission(adminPermissions.SEND_ANNOUNCEMENTS)}
 			<h2>Send Announcement</h2>
 			<form

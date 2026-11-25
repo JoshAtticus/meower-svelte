@@ -1,5 +1,6 @@
 <!-- Meower Svelte, the app itself. -->
 <script>
+	import EmailBanner from "../lib/EmailBanner.svelte";
 	import Setup from "../lib/Setup.svelte";
 	import OOBE from "../lib/OOBE/Main.svelte";
 	import Sidebar from "../lib/Sidebar.svelte";
@@ -130,6 +131,7 @@
 				</div>
 			{:else if !remounting}
 				<div class="view">
+					<EmailBanner />
 					<slot />
 				</div>
 				{#if $modernLayout && !$mobile && !$params.chatid}
