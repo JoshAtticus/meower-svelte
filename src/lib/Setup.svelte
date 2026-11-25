@@ -418,7 +418,8 @@
 			>
 				<input type="text" placeholder="Username" maxlength="20" />
 				<input
-					type="email"
+					type="text"
+				inputmode="email"
 					placeholder="Email"
 					maxlength="254"
 					autocomplete="email"

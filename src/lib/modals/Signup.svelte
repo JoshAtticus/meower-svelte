@@ -110,7 +110,8 @@
 			<label for="email"><b>Email</b></label>
 			<input
 				id="email"
-				type="email"
+				type="text"
+				inputmode="email"
 				class="modal-input white"
 				placeholder="Email address..."
 				maxlength="254"

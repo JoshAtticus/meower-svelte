@@ -85,7 +85,8 @@
 			<p>Add an email address to verify your account.</p>
 		{/if}
 		<form on:submit|preventDefault={save}>
-			<input type="email" class="modal-input white" placeholder={state.has_email ? "New email address" : "Email address"} maxlength="254" autocomplete="email" bind:value={email} />
+			<input type="text"
+				inputmode="email" class="modal-input white" placeholder={state.has_email ? "New email address" : "Email address"} maxlength="254" autocomplete="email" bind:value={email} />
 			<input type="password" class="modal-input white" placeholder="Current password" maxlength="255" autocomplete="current-password" bind:value={password} />
 			{#if error}<p class="err">{error}</p>{/if}
 			{#if notice}<p>{notice}</p>{/if}
