@@ -221,26 +221,6 @@
 					on:change={() => clm.updateProfile({sfx: $user.sfx})}
 				/>
 			</label>
-			<div class="row">
-				<label class="row-text row-toggle-label" for="bgm-toggle">
-					<h3>Background Music</h3>
-				</label>
-				<div class="row-actions">
-					{#if $user.bgm}
-						<button
-							type="button"
-							on:click={() => modals.showModal(SwitchBGMSFXModal)}
-							>Change song</button
-						>
-					{/if}
-					<input
-						id="bgm-toggle"
-						type="checkbox"
-						bind:checked={$user.bgm}
-						on:change={() => clm.updateProfile({bgm: $user.bgm})}
-					/>
-				</div>
-			</div>
 		{:else if tab === "privacy"}
 			<label class="row">
 				<div class="row-text">

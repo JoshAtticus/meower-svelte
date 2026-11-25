@@ -15,23 +15,25 @@
 	import SwitchBGMSFXModal from "../lib/modals/settings/SwitchBGMSFX.svelte";
 	import SwitchThemeModal from "../lib/modals/settings/SwitchTheme.svelte";
 
-	import {OOBERunning, groupCats} from "../lib/stores.js";
+	import {OOBERunning, groupCats, user} from "../lib/stores.js";
+	import * as clm from "../lib/clmanager.js";
 	import * as modals from "../lib/modals.js";
 
 	import version from "../lib/version.js";
 
 	const allModals = [
-		DebugModal,
-		LogoutModal,
-		ServerSelectorModal,
-		CreateChatModal,
-		ChangePasswordModal,
-		CustomThemeModal,
-		DeleteAccountModal,
-		LogoutEverywhereModal,
-		SwitchBGMSFXModal,
-		SwitchThemeModal,
+		{name: "Debug", component: DebugModal},
+		{name: "Logout", component: LogoutModal},
+		{name: "Server selector", component: ServerSelectorModal},
+		{name: "Create chat", component: CreateChatModal},
+		{name: "Change password", component: ChangePasswordModal},
+		{name: "Custom theme", component: CustomThemeModal},
+		{name: "Delete account", component: DeleteAccountModal},
+		{name: "Logout everywhere", component: LogoutEverywhereModal},
+		{name: "Background music", component: SwitchBGMSFXModal},
+		{name: "Switch theme", component: SwitchThemeModal},
 	];
+	let selectedModal = 0;
 
 	const PFP_COUNT = 34;
 
@@ -56,17 +58,43 @@
 		You found a secret! Here you can mess around with a bit of Meower Svelte.
 	</Container>
 	<Container>
-		<h1>Modal Roulette</h1>
-		Press the button below to pick a random modal (of course with moderation,
-		harmful and errored ones removed)
+		<h1>Modals</h1>
+		Pick a modal to open, or let fate decide (moderation, harmful and
+		errored ones are left out).
 		<br /><br />
+		<select bind:value={selectedModal}>
+			{#each allModals as modal, i}
+				<option value={i}>{modal.name}</option>
+			{/each}
+		</select>
+		<button on:click={() => modals.showModal(allModals[selectedModal].component)}
+			>Show</button
+		>
 		<button
 			on:click={() => {
-				let randModal =
-					allModals[Math.round(Math.random() * allModals.length - 1)];
-				modals.showModal(randModal);
-			}}>Me!</button
+				selectedModal = Math.floor(Math.random() * allModals.length);
+				modals.showModal(allModals[selectedModal].component);
+			}}>Random</button
 		>
+	</Container>
+	<Container>
+		<h1>Background Music</h1>
+		Music that plays while you use Meower.
+		<br /><br />
+		<label>
+			<input
+				type="checkbox"
+				bind:checked={$user.bgm}
+				on:change={() => clm.updateProfile({bgm: $user.bgm})}
+			/>
+			Play background music
+		</label>
+		{#if $user.bgm}
+			<br /><br />
+			<button on:click={() => modals.showModal(SwitchBGMSFXModal)}
+				>Change song</button
+			>
+		{/if}
 	</Container>
 	<Container>
 		<h1>Group Cats</h1>
