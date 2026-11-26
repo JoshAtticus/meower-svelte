@@ -94,71 +94,92 @@
 {/if}
 
 <style>
+	/* same look as the main composer card (modern layout) */
 	.reply-compose {
 		display: flex;
-		align-items: flex-end;
+		align-items: center;
 		gap: 0.4em;
+		padding: 0.3em 0.4em 0.3em 0.9em;
+		background-color: var(--surface);
+		border: solid 1px var(--hairline);
+		border-radius: 16px;
+		transition: border-color 0.15s;
+	}
+	.reply-compose:focus-within {
+		border-color: var(--orange);
 	}
 	.reply-input {
 		flex: 1;
 		min-width: 0;
 		max-height: 8em;
 		overflow-y: auto;
-		border: 1px solid var(--hairline, var(--gray, #ccc));
-		border-radius: 16px;
-		padding: 0.35em 0.8em;
+		padding: 0.25em 0;
+		border: none;
 		background: transparent;
-		color: inherit;
+		color: var(--foreground);
 		outline: none;
+		line-height: 1.4;
+		white-space: pre-wrap;
 		overflow-wrap: anywhere;
-	}
-	.reply-input:focus {
-		border-color: var(--orange, #f97720);
+		cursor: text;
 	}
 	.reply-input:global(.empty)::before {
 		content: attr(data-placeholder);
-		opacity: 0.55;
+		opacity: 0.5;
 		pointer-events: none;
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.reply-input :global(img.composer-emoji) {
-		width: 1.4em;
-		height: 1.4em;
+		width: 1.35em;
+		height: 1.35em;
+		object-fit: contain;
 		vertical-align: -0.3em;
+		margin: 0 0.05em;
 	}
 	button {
-		border: none;
 		margin: 0;
 		cursor: pointer;
 	}
-	.send {
-		border-radius: 16px;
-		padding: 0.35em 1em;
-		background: var(--orange, #f97720);
-		color: white;
-		font-weight: 600;
-	}
-	.send:disabled {
-		opacity: 0.5;
-	}
 	.emoji-btn {
-		display: inline-flex;
+		display: flex;
 		align-items: center;
 		justify-content: center;
 		flex: 0 0 auto;
-		width: 2em;
-		height: 2em;
+		width: 2.2em;
+		height: 2.2em;
+		min-width: 0;
 		padding: 0;
+		border: none;
 		border-radius: 50%;
 		background: transparent;
-		color: inherit;
+		color: var(--foreground);
+	}
+	.emoji-btn:hover {
+		background-color: var(--surface-2);
 	}
 	.emoji-icon {
-		width: 1.3em;
-		height: 1.3em;
+		width: 1.3rem;
+		height: 1.3rem;
 		background-color: currentColor;
 		-webkit-mask: var(--icon) center / contain no-repeat;
 		mask: var(--icon) center / contain no-repeat;
-		opacity: 0.7;
+	}
+	.send {
+		flex: 0 0 auto;
+		min-width: 0;
+		padding: 0.35em 1.1em;
+		border: none;
+		border-radius: 999px;
+		background-color: var(--orange);
+		color: var(--foreground-orange);
+		font-weight: bold;
+	}
+	.send:disabled {
+		opacity: 0.5;
+		cursor: default;
 	}
 	.popup-overlay {
 		position: fixed;
