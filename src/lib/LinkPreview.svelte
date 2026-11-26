@@ -62,10 +62,9 @@
 		width: min(100%, 28em);
 		min-width: 0;
 		margin-top: 0.5em;
-		padding: 0.6em 0.8em 0.7em;
+		padding: 0.7em 0.8em;
 		box-sizing: border-box;
 		border: 1px solid rgba(128, 128, 128, 0.4);
-		border-top: 4px solid var(--orange);
 		border-radius: 0;
 		color: inherit;
 		text-decoration: none;
