@@ -25,10 +25,10 @@
 		$user.favorited_chats = $user.favorited_chats.filter(chatId =>
 			$chats.some(_chat => _chat._id === chatId)
 		);
-		if ($user.favorited_chats.length >= 50) {
+		if ($user.favorited_chats.length >= 5) {
 			modals.showModal(BasicModal, {
 				title: "Too many pins!",
-				desc: "Sorry, you can only have up to 50 pinned chats!",
+				desc: "You can pin up to 5 chats. Unpin one to pin another.",
 			});
 		} else {
 			$user.favorited_chats.push(chat._id);

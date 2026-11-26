@@ -11,10 +11,14 @@
 
 	import {goto, isActive} from "@roxi/routify";
 
-	$: sorted = [
-		...$chats.filter(c => c.favorite),
-		...$chats.filter(c => !c.favorite),
-	];
+	const byActivity = (a, b) => (b.last_active || 0) - (a.last_active || 0);
+	$: pinned = $chats
+		.filter(c => $user.favorited_chats.includes(c._id))
+		.sort(byActivity);
+	$: unpinned = $chats
+		.filter(c => !$user.favorited_chats.includes(c._id))
+		.sort(byActivity);
+	$: sorted = [...pinned, ...unpinned];
 	$: sorted.forEach(chat => {
 		if (chat.type === 1)
 			loadProfile(
@@ -40,7 +44,10 @@
 			</span>
 			<span class="panel-name">Livechat</span>
 		</button>
-		{#each sorted as chat (chat._id)}
+		{#each sorted as chat, i (chat._id)}
+			{#if pinned.length && i === pinned.length}
+				<hr class="panel-divider" />
+			{/if}
 			<button
 				class="panel-chat"
 				class:active={$isActive("./chats/:id", {id: chat._id})}
@@ -122,6 +129,12 @@
 	.panel-list::-webkit-scrollbar-thumb {
 		background: var(--hairline);
 		border-radius: 99px;
+	}
+	.panel-divider {
+		border: none;
+		height: 1px;
+		margin: 0.4em 0.6em;
+		background: var(--hairline);
 	}
 	.panel-chat {
 		position: relative;

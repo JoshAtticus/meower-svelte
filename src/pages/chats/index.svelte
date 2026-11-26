@@ -167,8 +167,9 @@
 			Post history isn't saved here.
 		</div>
 	</Container>
-	{#each sortedChats as chat (chat._id)}
+	{#each sortedChats as chat, i (chat._id)}
 		<div
+			class:pin-split={favoritedChats.length > 0 && i === favoritedChats.length}
 			transition:fly|local={{y: -50, duration: 250}}
 			animate:flip={{duration: 250}}
 		>
@@ -297,6 +298,19 @@
 		font-weight: 700;
 		line-height: 1;
 		flex-shrink: 0;
+	}
+	.pin-split {
+		position: relative;
+		margin-top: 1.4em;
+	}
+	.pin-split::before {
+		content: "";
+		position: absolute;
+		top: -0.7em;
+		left: 0.4em;
+		right: 0.4em;
+		height: 1px;
+		background: var(--hairline, rgba(128, 128, 128, 0.4));
 	}
 	.unread-dot {
 		display: inline-block;
