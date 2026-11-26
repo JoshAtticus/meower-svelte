@@ -156,7 +156,7 @@
 				{#each nonPosts as item (item.type + ":" + (item.user?._id || item.chat?._id))}
 					{#if item.type === "user"}
 						<button class="result-row user-row" on:click={() => $goto(`/users/${item.user._id}`)}>
-							<PFP raw icon={item.user.pfp_data ?? -1} avatar={item.user.avatar || ""} avatarColor={item.user.avatar_color} size={0.8} />
+							<PFP icon={item.user.pfp_data ?? -1} avatar={item.user.avatar || ""} avatarColor={item.user.avatar_color} size={0.8} />
 							<span class="result-main">
 								{#if item.user.display_name}
 									<b>{item.user.display_name}</b>
