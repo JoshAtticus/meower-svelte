@@ -26,10 +26,9 @@
 <Modal showClose={true} on:close={modals.closeLastModal}>
 	<h2 slot="header">Notification sounds</h2>
 	<div slot="default">
-		<p class="info">
-			Which messages in {chat.nickname || "this chat"} play a sound.
-			{#if !$user.sfx}Sound effects are off in your settings, so nothing will play.{/if}
-		</p>
+		{#if !$user.sfx}
+			<p class="info">Sound effects are off in your settings, so nothing will play.</p>
+		{/if}
 		{#each [["default", `Use my default (${globalLabel})`], ["all", "All messages"], ["mentions", "Mentions & replies only"]] as [id, label]}
 			<label class="option">
 				<input
@@ -56,8 +55,9 @@
 	.option {
 		display: flex;
 		align-items: center;
-		gap: 0.6em;
-		margin: 0.4em 0;
+		gap: 0.7em;
+		margin: 0.5em 0;
+		cursor: pointer;
 	}
 	.modal-buttons {
 		margin-top: 1em;
