@@ -30,6 +30,16 @@
 	];
 
 	let query = $params.q || "";
+	let activeQuery = query;
+	let lastParam = query;
+	$: {
+		const fromUrl = $params.q || "";
+		if (fromUrl !== lastParam) {
+			lastParam = fromUrl;
+			activeQuery = fromUrl;
+			query = fromUrl;
+		}
+	}
 	let type = "all";
 	let searchTimer;
 	let statsOpen = false;
@@ -45,7 +55,7 @@
 		searchError = "";
 		try {
 			const resp = await fetch(
-				`${apiUrl}search/?q=${encodeURIComponent($params.q)}&type=${type}&page=${p}`,
+				`${apiUrl}search/?q=${encodeURIComponent(activeQuery)}&type=${type}&page=${p}`,
 				{headers: $authHeader}
 			);
 			if (!resp.ok) throw new Error("Response code " + resp.status);
@@ -84,7 +94,7 @@
 		}
 	}
 	function loadMore() { runSearch(page + 1, true); }
-	$: if ($params.q || type) { results = []; counts = null; runSearch(1); }
+	$: if (activeQuery && type) { results = []; counts = null; runSearch(1); }
 
 	$: nonPosts = results.filter(item => item.type !== "post");
 	$: postGroups = results
@@ -99,12 +109,19 @@
 
 	$: range = $params.range || "week";
 
+	// updating the URL without routing keeps the page (and your typing) intact
+	function applyQuery(q) {
+		activeQuery = q.trim() ? q : "";
+		history.replaceState(
+			history.state,
+			"",
+			activeQuery ? `/explore?q=${encodeURIComponent(activeQuery)}` : `/explore?range=${range}`
+		);
+	}
 	function setQuery(q) {
 		query = q;
 		clearTimeout(searchTimer);
-		searchTimer = setTimeout(() => {
-			$goto("/explore", q ? {q} : {range});
-		}, 300);
+		searchTimer = setTimeout(() => applyQuery(q), 300);
 	}
 	function setRange(r) {
 		$goto("/explore", {range: r});
@@ -117,7 +134,7 @@
 		<form
 			class="explore-search"
 			autocomplete="off"
-			on:submit|preventDefault={() => $goto("/explore", query ? {q: query} : {range})}
+			on:submit|preventDefault={() => applyQuery(query)}
 		>
 			<input
 				type="search"
@@ -130,7 +147,7 @@
 		</form>
 	</Container>
 
-	{#if $params.q}
+	{#if activeQuery}
 		<Container>
 			<div class="type-chips">
 				{#each TYPES as [value, label]}
@@ -150,7 +167,7 @@
 			{#if loading}<Loading />{/if}
 			{#if searchError}<p class="explore-empty" style="color:crimson">{searchError}</p>{/if}
 			{#if !loading && !searchError && results.length === 0}
-				<p class="explore-empty">Nothing found for "{$params.q}".</p>
+				<p class="explore-empty">Nothing found for "{activeQuery}".</p>
 			{/if}
 			<div class="results">
 				{#each nonPosts as item (item.type + ":" + (item.user?._id || item.chat?._id))}
@@ -188,7 +205,7 @@
 							{:else}
 								<ChatIcon
 									chat={{_id: group.origin.id, nickname: group.origin.name, icon: group.origin.icon, icon_color: group.origin.icon_color, type: group.origin.type}}
-									size={0.5}
+									size={0.8}
 								/>
 							{/if}
 							<span class="result-main"><b>{group.origin.name}</b></span>
@@ -299,7 +316,7 @@
 	}
 	.post-group {
 		min-width: 0;
-		margin-top: 0.8em;
+		margin-top: 0.4em;
 	}
 	.post-result {
 		min-width: 0;
@@ -311,17 +328,18 @@
 		box-sizing: border-box;
 	}
 	.group-head {
-		margin-bottom: 0.4em;
+		margin: 0 0 0.4em;
+		padding: 0.3em 0.4em;
 	}
 	.home-tile {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 2.75em;
-		height: 2.75em;
+		width: 2.2em;
+		height: 2.2em;
 		flex: 0 0 auto;
 		box-sizing: border-box;
-		border-radius: 0.9em;
+		border-radius: 0.72em;
 		background: var(--orange);
 		color: var(--foreground-orange);
 	}
