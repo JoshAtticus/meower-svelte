@@ -7,6 +7,7 @@
 	import LargeCount from "../lib/LargeCount.svelte";
 	import ChatIcon from "../lib/ChatIcon.svelte";
 	import PFP from "../lib/PFP.svelte";
+	import homeIcon from "../assets/home.svg";
 
 	import {apiUrl} from "../lib/urls.js";
 	import {authHeader, user} from "../lib/stores.js";
@@ -85,6 +86,17 @@
 	function loadMore() { runSearch(page + 1, true); }
 	$: if ($params.q || type) { results = []; counts = null; runSearch(1); }
 
+	$: nonPosts = results.filter(item => item.type !== "post");
+	$: postGroups = results
+		.filter(item => item.type === "post")
+		.reduce((groups, item) => {
+			const origin = item.origin || {id: item.post.post_origin, name: "Chat"};
+			let group = groups.find(g => g.origin.id === origin.id);
+			if (!group) groups.push((group = {origin, items: []}));
+			group.items.push(item);
+			return groups;
+		}, []);
+
 	$: range = $params.range || "week";
 
 	function setQuery(q) {
@@ -141,7 +153,7 @@
 				<p class="explore-empty">Nothing found for "{$params.q}".</p>
 			{/if}
 			<div class="results">
-				{#each results as item (item.type + ":" + (item.user?._id || item.chat?._id || item.post?._id))}
+				{#each nonPosts as item (item.type + ":" + (item.user?._id || item.chat?._id))}
 					{#if item.type === "user"}
 						<button class="result-row user-row" on:click={() => $goto(`/users/${item.user._id}`)}>
 							<PFP raw icon={item.user.pfp_data ?? -1} avatar={item.user.avatar || ""} avatarColor={item.user.avatar_color} size={0.8} />
@@ -163,19 +175,28 @@
 								<span class="result-sub">{item.chat.members} member{item.chat.members === 1 ? "" : "s"}</span>
 							</span>
 						</button>
-					{:else if item.type === "post"}
-						<div class="post-result">
-							{#if item.origin}
-								<button
-									class="origin"
-									on:click={() =>
-										$goto(item.origin.id === "home" ? "/home" : `/chats/${item.origin.id}`)}
-									>in {item.origin.name}</button
-								>
-							{/if}
-							<Post post={item.post} showJump={true} />
-						</div>
 					{/if}
+				{/each}
+				{#each postGroups as group (group.origin.id)}
+					<div class="post-group">
+						<button
+							class="result-row group-head"
+							on:click={() => $goto(group.origin.id === "home" ? "/home" : `/chats/${group.origin.id}`)}
+						>
+							{#if group.origin.id === "home"}
+								<span class="home-tile"><span class="micon" style:--icon={`url(${homeIcon})`} /></span>
+							{:else}
+								<ChatIcon
+									chat={{_id: group.origin.id, nickname: group.origin.name, icon: group.origin.icon, icon_color: group.origin.icon_color, type: group.origin.type}}
+									size={0.5}
+								/>
+							{/if}
+							<span class="result-main"><b>{group.origin.name}</b></span>
+						</button>
+						{#each group.items as item (item.post.post_id)}
+							<div class="post-result"><Post post={item.post} showJump={true} /></div>
+						{/each}
+					</div>
 				{/each}
 			</div>
 			{#if page < pages}
@@ -273,26 +294,43 @@
 		white-space: nowrap;
 		cursor: pointer;
 	}
+	.results {
+		min-width: 0;
+	}
+	.post-group {
+		min-width: 0;
+		margin-top: 0.8em;
+	}
 	.post-result {
+		min-width: 0;
+		max-width: 100%;
+	}
+	.post-result > :global(*) {
+		min-width: 0;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+	.group-head {
+		margin-bottom: 0.4em;
+	}
+	.home-tile {
 		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.2em;
-		margin-bottom: 0.5em;
+		align-items: center;
+		justify-content: center;
+		width: 2.75em;
+		height: 2.75em;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		border-radius: 0.9em;
+		background: var(--orange);
+		color: var(--foreground-orange);
 	}
-	.post-result > :global(*:last-child) {
-		width: 100%;
-	}
-	.origin {
-		margin: 0;
-		padding: 0.1em 0.7em;
-		border: 1px solid var(--hairline, var(--gray, #ccc));
-		border-radius: 999px;
-		background: transparent;
-		color: inherit;
-		font-size: 0.8em;
-		opacity: 0.8;
-		cursor: pointer;
+	.home-tile .micon {
+		width: 1.4em;
+		height: 1.4em;
+		background-color: currentColor;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+		mask: var(--icon) center / contain no-repeat;
 	}
 	.chip.selected {
 		background: var(--orange, #f97720);
