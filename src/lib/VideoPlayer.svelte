@@ -1,4 +1,5 @@
 <script>
+	let boxWidth = 400;
 	export let src;
 	export let poster = "";
 	export let downloadUrl = "";
@@ -78,6 +79,8 @@
 <div
 	class="meower-video"
 	class:fullscreen
+	class:compact={boxWidth < 260}
+	bind:clientWidth={boxWidth}
 	bind:this={containerEl}
 	on:mouseenter={() => (hovering = true)}
 	on:mouseleave={() => (hovering = false)}
@@ -360,12 +363,30 @@
 	}
 
 	.time {
+		white-space: nowrap;
+		flex: 0 0 auto;
 		font-size: 0.72em;
 		font-variant-numeric: tabular-nums;
 		opacity: 0.9;
 	}
 	.spacer {
 		flex: 1;
+	}
+	.ctrl-btn,
+	.vol-wrap {
+		flex: 0 0 auto;
+	}
+	.compact .controls-row {
+		flex-wrap: wrap;
+		row-gap: 0.1em;
+	}
+	.compact .time {
+		order: -1;
+		flex-basis: 100%;
+		text-align: center;
+	}
+	.compact .vol {
+		display: none;
 	}
 
 	.vol-wrap {
