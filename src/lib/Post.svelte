@@ -1455,8 +1455,9 @@
 		line-height: 1.2;
 	}
 	.reaction.mine {
-		background-color: var(--orange);
-		color: white;
+		background-color: color-mix(in srgb, var(--orange) 24%, transparent);
+		color: var(--foreground);
+		font-weight: 700;
 	}
 	.reaction-emoji,
 	.reaction-emoji :global(img.emoji) {
@@ -1490,9 +1491,6 @@
 	}
 	.reaction-pfp + .reaction-pfp {
 		margin-left: -0.55em;
-	}
-	.reaction.mine .reaction-pfp {
-		border-color: var(--orange);
 	}
 	.reaction-count {
 		font-weight: bold;
@@ -1684,13 +1682,16 @@
 		background-color: var(--surface-2);
 	}
 	:global(main.layout-modern) .reaction.mine {
-		background-color: var(--orange);
+		--mine-bg: color-mix(in srgb, var(--orange) 24%, var(--surface-2));
+		background-color: var(--mine-bg);
+		border-color: var(--orange);
+		color: var(--foreground);
 	}
 	:global(main.layout-modern) .reaction .reaction-pfp {
 		border-color: var(--surface-2);
 	}
 	:global(main.layout-modern) .reaction.mine .reaction-pfp {
-		border-color: var(--orange);
+		border-color: var(--mine-bg);
 	}
 	/* @username sits on the line under the display name, before the time */
 	.author-username {
