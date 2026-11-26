@@ -10,13 +10,13 @@
 	import {swipeDismiss} from "../swipeDismiss.js";
 	import * as modals from "../modals.js";
 
-	import home from "../../assets/home.svg";
+	import home from "../../assets/tab_home.svg";
 	import exploreIcon from "../../assets/explore.svg";
 	import shield from "../../assets/shield.svg";
 	import ModPanelModal from "../modals/moderation/ModPanel.svelte";
-	import mail from "../../assets/mail.svg";
+	import mail from "../../assets/tab_inbox.svg";
 	import friendsIcon from "../../assets/friends.svg";
-	import gc from "../../assets/chat.svg";
+	import gc from "../../assets/tab_chats.svg";
 	import profile from "../../assets/profile.svg";
 	import settings from "../../assets/settings.svg";
 	import logout from "../../assets/logout.svg";
