@@ -226,7 +226,7 @@
 					<div class="row-text">
 						<h3>Notify me for</h3>
 						<span class="row-sub">
-							Which messages play a sound. You can also set this per chat from the chat list.
+							Can be overridden per chat from the chat list menu.
 						</span>
 					</div>
 					<select
